@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>3D Escape</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -822,6 +822,21 @@ window._FB_CFG={
 }
 #plz-inthint.show{opacity:1;}
 </style>
+<script>
+  // Prevent browser zoom gestures while preserving single-finger game controls.
+  document.addEventListener('gesturestart', function (event) {
+    event.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturechange', function (event) {
+    event.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gestureend', function (event) {
+    event.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchmove', function (event) {
+    if (event.touches.length > 1) event.preventDefault();
+  }, { passive: false });
+</script>
 </head>
 <body>
 <canvas id="c"></canvas>
