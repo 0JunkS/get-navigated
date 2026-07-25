@@ -7829,9 +7829,11 @@ function plzInit(){
   if(ws&&ws.readyState===WebSocket.OPEN){
     ws.send(JSON.stringify({type:'plaza_join'}));
   }
-  // BGM
-  const bgm=document.getElementById('plaza-bgm');
-  if(bgm){bgm.volume=0.45;bgm.play().catch(()=>{});}
+  // Use the same BGM as the home screen.
+  if(typeof bgm!=='undefined'){
+    bgm.volume=_settings.bgmVol;
+    bgm.play().catch(()=>{});
+  }
   // system message
   _plzChatMsg(null,'애로우 시티 광장에 입장했습니다.','sys');
   // start loop
@@ -8990,9 +8992,7 @@ function closePlaza(){
   // WS leave
   const ws=_plzSocWs();
   if(ws&&ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:'plaza_leave'}));
-  // stop BGM
-  const bgm=document.getElementById('plaza-bgm');
-  if(bgm){bgm.pause();bgm.currentTime=0;}
+  // Keep the home-screen BGM playing when leaving the plaza.
   plzOtherPlayers.clear();
   plzKeys={};plzJoyX=0;plzJoyY=0;
 }
@@ -9222,8 +9222,6 @@ window.closePlaza=closePlaza;
       <button id="plaza-send">전송</button>
     </div>
   </div>
-  <!-- BGM -->
-  <audio id="plaza-bgm" src="plaza_bgm.mp3" loop preload="none"></audio>
 </div>
 <div id="story-box">
   <div id="story-inner">
@@ -9253,5 +9251,5 @@ window.closePlaza=closePlaza;
 <div id="boss-shuffle-warn">⚡ 배열 변경!</div>
 <canvas id="boss-glitch-canvas"></canvas>
 
-</body>
+<script src="https://replit-cdn.com/replit-pill/replit-pill.global.js" data-repl-id="8d9504ce-9633-4262-bc70-72566d5abe5f"></script></body>
 </html>
