@@ -207,18 +207,27 @@ function getLevelArrowCount(i){return diffConfig(i).count;}
 // SKINS
 // ══════════════════════════════════════════════════
 const SKINS=[
-  {id:'default',name:'기본',    desc:'모던 젬 스타일',      price:0,  emoji:'💠',pc:'p-free', r:0.55,m:0.15},
-  {id:'gold',   name:'골드',    desc:'반짝이는 금빛 유광',  price:50, emoji:'✨',pc:'p-cheap',r:0.06,m:0.92,fc:'#FFD700'},
-  {id:'silver', name:'실버',    desc:'고급 은빛 도금',      price:60, emoji:'🥈',pc:'p-cheap',r:0.04,m:0.97,fc:'#d0d4e0'},
-  {id:'chrome', name:'크롬',    desc:'완벽한 크롬 마감',    price:90, emoji:'💿',pc:'p-cheap',r:0.0, m:1.0, fc:'#e8eeff'},
-  {id:'neon',   name:'네온',    desc:'빛나는 형광 글로우',  price:150,emoji:'💡',pc:'p-cheap',r:1.0, m:0.0, neon:true},
-  {id:'crystal',name:'크리스탈',desc:'투명한 유리 질감',    price:350,emoji:'💎',pc:'p-exp',  r:0.0, m:0.1, tr:true,op:0.42,crystal:true},
-  {id:'car',    name:'자동차',  desc:'달리는 자동차 모양',  price:500,emoji:'🚗',pc:'p-exp',  shape:'car'},
-  {id:'rocket', name:'로켓',    desc:'솟아오르는 로켓 형태', price:600,emoji:'🚀',pc:'p-exp',  shape:'rocket'},
-  {id:'star',   name:'별',      desc:'다섯 꼭짓점 별 모양',  price:400,emoji:'⭐',pc:'p-exp',  shape:'star'},
-  {id:'sword',  name:'검',      desc:'날카로운 검 형태',      price:500,emoji:'⚔️',pc:'p-exp',  shape:'sword'},
-  {id:'mushroom',name:'버섯',   desc:'귀여운 버섯 모양',      price:300,emoji:'🍄',pc:'p-cheap',shape:'mushroom'},
-  {id:'crystal2',name:'크리스탈 샤드',desc:'날카로운 크리스탈 파편',price:700,emoji:'🔷',pc:'p-exp',shape:'crystal2'},
+  {id:'default',  name:'기본',         desc:'모던 젬 스타일',           price:0,   emoji:'💠',pc:'p-free',  r:0.55,m:0.15,                         rarity:'common'},
+  {id:'gold',     name:'골드',         desc:'반짝이는 금빛 유광',       price:50,  emoji:'✨',pc:'p-cheap', r:0.06,m:0.92,fc:'#FFD700',            rarity:'common'},
+  {id:'silver',   name:'실버',         desc:'고급 은빛 도금',           price:60,  emoji:'🥈',pc:'p-cheap', r:0.04,m:0.97,fc:'#d0d4e0',            rarity:'common'},
+  {id:'chrome',   name:'크롬',         desc:'완벽한 크롬 마감',         price:90,  emoji:'💿',pc:'p-cheap', r:0.0, m:1.0, fc:'#e8eeff',            rarity:'common'},
+  {id:'neon',     name:'네온',         desc:'빛나는 형광 글로우',       price:150, emoji:'💡',pc:'p-cheap', r:1.0, m:0.0, neon:true,               rarity:'rare'},
+  {id:'crystal',  name:'크리스탈',     desc:'투명한 유리 질감',         price:350, emoji:'💎',pc:'p-exp',   r:0.0, m:0.1, tr:true,op:0.42,crystal:true, rarity:'epic'},
+  {id:'car',      name:'자동차',       desc:'달리는 자동차 모양',       price:500, emoji:'🚗',pc:'p-exp',   shape:'car',                           rarity:'rare'},
+  {id:'rocket',   name:'로켓',         desc:'솟아오르는 로켓 형태',     price:600, emoji:'🚀',pc:'p-exp',   shape:'rocket',                        rarity:'epic'},
+  {id:'star',     name:'별',           desc:'다섯 꼭짓점 별 모양',      price:400, emoji:'⭐',pc:'p-exp',   shape:'star',                          rarity:'rare'},
+  {id:'sword',    name:'검',           desc:'날카로운 검 형태',         price:500, emoji:'⚔️',pc:'p-exp',   shape:'sword',                         rarity:'epic'},
+  {id:'mushroom', name:'버섯',         desc:'귀여운 버섯 모양',         price:300, emoji:'🍄',pc:'p-cheap', shape:'mushroom',                      rarity:'common'},
+  {id:'crystal2', name:'크리스탈 샤드',desc:'날카로운 크리스탈 파편',   price:700, emoji:'🔷',pc:'p-exp',   shape:'crystal2',                      rarity:'epic'},
+  // ── 에로맵 & 신규 스킨 ──────────────────────────────────
+  {id:'flame',    name:'불꽃',         desc:'타오르는 불꽃 화살',       price:400, emoji:'🔥',pc:'p-exp',   shape:'flame',                         rarity:'rare'},
+  {id:'ice',      name:'얼음',         desc:'차가운 얼음 화살',         price:400, emoji:'❄️',pc:'p-exp',   shape:'ice',                           rarity:'rare'},
+  {id:'thunder',  name:'번개',         desc:'번쩍이는 번개 화살',       price:700, emoji:'⚡',pc:'p-exp',   shape:'thunder',                       rarity:'epic'},
+  {id:'dragon',   name:'드래곤',       desc:'전설의 드래곤 화살 · 에로맵 전용', price:0, emoji:'🐉',pc:'p-gacha', shape:'dragon', gacha:true,      rarity:'legendary'},
+  {id:'rainbow',  name:'무지개',       desc:'화려한 무지개 화살',       price:800, emoji:'🌈',pc:'p-exp',   shape:'rainbow',                       rarity:'epic'},
+  {id:'ghost',    name:'유령',         desc:'투명한 유령 화살',         price:450, emoji:'👻',pc:'p-exp',   shape:'ghost',                         rarity:'rare'},
+  {id:'lava',     name:'용암',         desc:'뜨거운 용암 화살',         price:900, emoji:'🌋',pc:'p-exp',   shape:'lava',                          rarity:'epic'},
+  {id:'cosmic',   name:'코스믹',       desc:'우주의 힘 · 에로맵 전용', price:0,   emoji:'🌟',pc:'p-gacha', shape:'cosmic', gacha:true,             rarity:'legendary'},
 ];
 
 // ══════════════════════════════════════════════════
@@ -248,6 +257,7 @@ const MAPS=[
 let coins=0, owned=new Set(['default']), activeSkin='default', progress=0;
 let ownedMaps=new Set(['default']), activeMap='default';
 let clearedLevels={};
+let skinDates={}; // { skinId: timestamp }
 
 function loadSave(){
   try{
@@ -258,6 +268,9 @@ function loadSave(){
     ownedMaps=new Set(JSON.parse(localStorage.getItem('e3_mown')||'["default"]'));
     activeMap=localStorage.getItem('e3_map')||'default';
     clearedLevels=JSON.parse(localStorage.getItem('e3_clv')||'{}');
+    skinDates=JSON.parse(localStorage.getItem('e3_skin_dates')||'{}');
+    // 기본 스킨 날짜 없으면 초기화
+    if(!skinDates['default'])skinDates['default']=Date.now();
   }catch{}
 }
 function doSave(){
@@ -269,9 +282,11 @@ function doSave(){
     localStorage.setItem('e3_mown',JSON.stringify([...ownedMaps]));
     localStorage.setItem('e3_map',activeMap);
     localStorage.setItem('e3_clv',JSON.stringify(clearedLevels));
+    localStorage.setItem('e3_skin_dates',JSON.stringify(skinDates));
   }catch{}
   if(_fbUser)fbCloudSave();
 }
+function recordSkinDate(id){if(!skinDates[id])skinDates[id]=Date.now();}
 function reward(idx,liv,maxLiv){
   const b=idx<10?10+idx*9:95+(idx-9)*15;
   return b+Math.floor((liv/maxLiv)*b*0.5);
@@ -1269,14 +1284,40 @@ window.setShopTab=function(tab){
   document.getElementById('skin-grid').classList.toggle('hidden',tab!=='skin');
   document.getElementById('map-grid').classList.toggle('hidden',tab!=='map');
 };
+const RARITY_COLOR={common:'#aaa',rare:'#4cc9f0',epic:'#a855f7',legendary:'#FFD700'};
+const RARITY_LABEL={common:'일반',rare:'✦ 희귀',epic:'✦✦ 에픽',legendary:'✦✦✦ 전설'};
 function renderShopGrid(){
   updateCoins();
   const sg=document.getElementById('skin-grid');sg.innerHTML='';
-  SKINS.forEach(s=>{const ow=owned.has(s.id),eq=activeSkin===s.id;const isGacha=!!s.gacha;const card=document.createElement('div');card.className='sk'+(eq?' eq':ow?' own':isGacha&&!ow?' gacha-locked':'');card.innerHTML=`<span class="sk-ico">${s.emoji}</span><div class="sk-name">${s.name}</div><div class="sk-desc">${s.desc}</div><div class="sk-price ${s.pc}">${isGacha&&!ow?'가챠 전용':s.price===0?'무료':s.price+' 💰'}</div>${eq?'<span class="sk-badge b-eq">장착중</span>':ow?'<span class="sk-badge b-own">보유</span>':isGacha?'<span class="sk-badge b-gacha">가챠</span>':''}`;card.onclick=()=>skinTap(s.id);sg.appendChild(card);});
+  SKINS.forEach(s=>{
+    const ow=owned.has(s.id),eq=activeSkin===s.id;
+    const isGacha=!!s.gacha;
+    const rv=s.rarity||'common';
+    const rc=RARITY_COLOR[rv];
+    const rl=RARITY_LABEL[rv];
+    const card=document.createElement('div');
+    card.className='sk'+(eq?' eq':ow?' own':isGacha&&!ow?' gacha-locked':'');
+    card.innerHTML=`<span class="sk-ico">${s.emoji}</span><div class="sk-name">${s.name}</div><div class="sk-desc">${s.desc}</div><div class="sk-rarity-badge" style="color:${rc};font-size:9px;font-weight:900;margin-bottom:4px;letter-spacing:1px">${rl}</div><div class="sk-price ${s.pc}">${isGacha&&!ow?'에로맵 전용':s.price===0?'무료':s.price+' 💰'}</div>${eq?'<span class="sk-badge b-eq">장착중</span>':ow?'<span class="sk-badge b-own">보유</span>':isGacha?'<span class="sk-badge b-gacha">에로맵</span>':''}${(ow||eq)?`<button class="sk-info-btn" onclick="event.stopPropagation();openSkinDetail('${s.id}')">📅 정보</button>`:''}`;
+    card.onclick=()=>skinTap(s.id);sg.appendChild(card);
+  });
   const mg=document.getElementById('map-grid');mg.innerHTML='';
   MAPS.forEach(m=>{const ow=ownedMaps.has(m.id),eq=activeMap===m.id;const isGacha=!!m.gacha;const card=document.createElement('div');card.className='sk'+(eq?' eq':ow?' own':isGacha&&!ow?' gacha-locked':'');card.innerHTML=`<span class="sk-ico">${m.emoji}</span><div class="sk-name">${m.name}</div><div class="sk-desc">${m.desc}</div><div class="sk-price ${m.pc}">${isGacha&&!ow?'가챠 전용':m.price===0?'무료':m.price+' 💰'}</div>${eq?'<span class="sk-badge b-eq">장착중</span>':ow?'<span class="sk-badge b-own">보유</span>':isGacha?'<span class="sk-badge b-gacha">가챠</span>':''}`;card.onclick=()=>mapTap(m.id);mg.appendChild(card);});
 }
-function skinTap(id){const s=SKINS.find(x=>x.id===id);if(!s)return;if(!owned.has(id)){if(coins<s.price){popup('코인 부족 😢',innerWidth/2,innerHeight*.5,'#ff6b6b');return;}coins-=s.price;owned.add(id);doSave();}activeSkin=id;doSave();renderShopGrid();updateCoins();}
+function skinTap(id){const s=SKINS.find(x=>x.id===id);if(!s)return;if(!owned.has(id)){if(coins<s.price){popup('코인 부족 😢',innerWidth/2,innerHeight*.5,'#ff6b6b');return;}coins-=s.price;owned.add(id);recordSkinDate(id);doSave();}activeSkin=id;doSave();renderShopGrid();updateCoins();}
+function openSkinDetail(id){
+  const s=SKINS.find(x=>x.id===id);if(!s)return;
+  const RARITY_MAP={common:{label:'일반',col:'#aaa'},rare:{label:'✦ 희귀',col:'#4cc9f0'},epic:{label:'✦✦ 에픽',col:'#a855f7'},legendary:{label:'✦✦✦ 전설',col:'#FFD700'}};
+  const rv=RARITY_MAP[s.rarity||'common'];
+  const ts=skinDates[id];
+  const dateStr=ts?new Date(ts).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}):'알 수 없음';
+  const el=document.getElementById('skin-detail-modal');
+  document.getElementById('sdm-emoji').textContent=s.emoji;
+  document.getElementById('sdm-name').textContent=s.name;
+  document.getElementById('sdm-rarity').textContent=rv.label;
+  document.getElementById('sdm-rarity').style.color=rv.col;
+  document.getElementById('sdm-date').textContent='📅 획득일: '+dateStr;
+  el.style.display='flex';
+}
 function mapTap(id){const m=MAPS.find(x=>x.id===id);if(!m)return;if(!ownedMaps.has(id)){if(coins<m.price){popup('코인 부족 😢',innerWidth/2,innerHeight*.5,'#ff6b6b');return;}coins-=m.price;ownedMaps.add(id);doSave();}applyMap(id);renderShopGrid();updateCoins();if(phase==='menu'||phase==='shop')initDemo();}
 
 // ══════════════════════════════════════════════════
@@ -7538,4 +7579,501 @@ window.closePlaza=closePlaza;
   // 페이지 로드 직후에도 표시
   setTimeout(_checkPlazaBtn,500);
 })();
+
+
+// ══════════════════════════════════════════════════
+// EROMAP — 포켓몬고 스타일 GPS 시스템
+// ══════════════════════════════════════════════════
+
+const EROMAP={
+  open:false,canvas:null,ctx:null,rafId:null,watchId:null,
+  lat:null,lon:null,startLat:null,startLon:null,
+  prevLat:null,prevLon:null,lastMoveTime:0,isMoving:false,
+  arrows:[],   // {id, skinId, lat, lon, collected, floatT}
+  weather:{code:0,temp:0,emoji:'☀️',name:'맑음',bgDay:'#1a3a5c',bgNight:'#06061a'},
+  particles:[],
+  t:0,jumpT:0,
+  SCALE:2.5,   // px per meter
+  COLLECT_R:20 // 수집 반경 (m)
+};
+
+const WMAP={
+  0: {emoji:'☀️',name:'맑음',     bgDay:'#2a4a6a',bgNight:'#06061a',pfn:'sun'},
+  1: {emoji:'🌤️',name:'대체로 맑음',bgDay:'#2a4565',bgNight:'#07071f',pfn:'sun'},
+  2: {emoji:'⛅',name:'부분 흐림',  bgDay:'#3a4555',bgNight:'#0c0c22',pfn:'cloud'},
+  3: {emoji:'☁️',name:'흐림',       bgDay:'#3a3a45',bgNight:'#111120',pfn:'cloud'},
+  45:{emoji:'🌫️',name:'안개',      bgDay:'#4a4a50',bgNight:'#151520',pfn:'fog'},
+  51:{emoji:'🌦️',name:'이슬비',    bgDay:'#2a3545',bgNight:'#0a0f1e',pfn:'rain'},
+  61:{emoji:'🌧️',name:'비',        bgDay:'#253040',bgNight:'#080e1c',pfn:'rain'},
+  71:{emoji:'❄️',name:'눈',         bgDay:'#3a4a5a',bgNight:'#0e1424',pfn:'snow'},
+  80:{emoji:'🌦️',name:'소나기',    bgDay:'#253040',bgNight:'#080e1c',pfn:'rain'},
+  95:{emoji:'⛈️',name:'뇌우',      bgDay:'#1e222e',bgNight:'#050810',pfn:'storm'},
+};
+function getWInfo(code){
+  const ks=Object.keys(WMAP).map(Number).sort((a,b)=>a-b);
+  let best=0;for(const k of ks){if(k<=code)best=k;}
+  return WMAP[best]||WMAP[0];
+}
+
+function openEroMap(){
+  EROMAP.open=true;
+  const ov=document.getElementById('eromap-ov');
+  ov.classList.add('on');
+  EROMAP.canvas=document.getElementById('eromap-canvas');
+  EROMAP.ctx=EROMAP.canvas.getContext('2d');
+  resizeEroCanvas();
+  window.addEventListener('resize',resizeEroCanvas);
+  updateEroTime();
+  setInterval(updateEroTime,1000);
+
+  // GPS
+  if('geolocation' in navigator){
+    navigator.geolocation.getCurrentPosition(pos=>eroGPSInit(pos),()=>eroSimulate(),{enableHighAccuracy:true,timeout:8000});
+    EROMAP.watchId=navigator.geolocation.watchPosition(pos=>eroGPSUpdate(pos),()=>{},{enableHighAccuracy:true,maximumAge:2000,timeout:8000});
+  } else {
+    eroSimulate();
+  }
+
+  // 날씨
+  setTimeout(()=>fetchEroWeather(),500);
+
+  // 파티클 초기화
+  EROMAP.particles=[];
+
+  eroLoop();
+}
+
+function closeEroMap(){
+  EROMAP.open=false;
+  document.getElementById('eromap-ov').classList.remove('on');
+  if(EROMAP.rafId)cancelAnimationFrame(EROMAP.rafId);
+  if(EROMAP.watchId!=null)navigator.geolocation.clearWatch(EROMAP.watchId);
+  window.removeEventListener('resize',resizeEroCanvas);
+}
+
+function resizeEroCanvas(){
+  const c=EROMAP.canvas;
+  c.width=window.innerWidth;
+  c.height=window.innerHeight;
+}
+
+function eroSimulate(){
+  // GPS 없으면 시뮬레이션 (서울 좌표)
+  EROMAP.lat=37.5665;EROMAP.lon=126.9780;
+  EROMAP.startLat=EROMAP.lat;EROMAP.startLon=EROMAP.lon;
+  spawnEroArrows();
+  document.getElementById('eromap-gps').textContent='📍 위치: 시뮬레이션 모드';
+}
+
+function eroGPSInit(pos){
+  EROMAP.lat=pos.coords.latitude;
+  EROMAP.lon=pos.coords.longitude;
+  EROMAP.startLat=EROMAP.lat;EROMAP.startLon=EROMAP.lon;
+  EROMAP.prevLat=EROMAP.lat;EROMAP.prevLon=EROMAP.lon;
+  spawnEroArrows();
+  document.getElementById('eromap-gps').textContent=`📍 ${EROMAP.lat.toFixed(4)}°N, ${EROMAP.lon.toFixed(4)}°E`;
+}
+
+function eroGPSUpdate(pos){
+  const newLat=pos.coords.latitude,newLon=pos.coords.longitude;
+  if(EROMAP.lat!==null){
+    const dlat=newLat-EROMAP.lat,dlon=newLon-EROMAP.lon;
+    const dist=Math.sqrt(dlat*dlat+dlon*dlon)*111000;
+    if(dist>1){EROMAP.isMoving=true;EROMAP.lastMoveTime=Date.now();}
+  }
+  EROMAP.lat=newLat;EROMAP.lon=newLon;
+  document.getElementById('eromap-gps').textContent=`📍 ${newLat.toFixed(4)}°N, ${newLon.toFixed(4)}°E`;
+  checkEroCollection();
+}
+
+async function fetchEroWeather(){
+  if(EROMAP.lat===null)return;
+  try{
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${EROMAP.lat}&longitude=${EROMAP.lon}&current=temperature_2m,weather_code&timezone=auto`);
+    const d=await r.json();
+    const code=d.current?.weather_code??0;
+    const temp=Math.round(d.current?.temperature_2m??20);
+    const wi=getWInfo(code);
+    EROMAP.weather={code,temp,emoji:wi.emoji,name:wi.name,bgDay:wi.bgDay,bgNight:wi.bgNight,pfn:wi.pfn||'none'};
+    document.getElementById('eromap-weather-txt').textContent=`${wi.emoji} ${wi.name} ${temp}°C`;
+    // 파티클 초기화
+    initEroParticles(wi.pfn);
+  }catch{}
+}
+
+function initEroParticles(pfn){
+  EROMAP.particles=[];
+  if(pfn==='rain'||pfn==='storm'){
+    for(let i=0;i<60;i++){
+      EROMAP.particles.push({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,
+        vy:8+Math.random()*6,vx:-1-Math.random(),type:'rain'});
+    }
+  }else if(pfn==='snow'){
+    for(let i=0;i<40;i++){
+      EROMAP.particles.push({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,
+        vy:1+Math.random()*2,vx:(Math.random()-.5)*0.5,r:2+Math.random()*3,type:'snow'});
+    }
+  }
+}
+
+function spawnEroArrows(){
+  EROMAP.arrows=[];
+  if(EROMAP.lat===null)return;
+  const allSkins=SKINS.filter(s=>!s.gacha||owned.has(s.id));
+  // 에로맵 전용 스킨은 항상 스폰 (희귀)
+  const eroSkins=SKINS.filter(s=>s.gacha&&!owned.has(s.id));
+
+  for(let i=0;i<12;i++){
+    const angle=Math.random()*Math.PI*2;
+    const dist=30+Math.random()*90; // 30~120m
+    const dlat=dist*Math.cos(angle)/111000;
+    const dlon=dist*Math.sin(angle)/(111000*Math.cos(EROMAP.lat*Math.PI/180));
+    // 미보유 스킨 우선, 없으면 보유 스킨
+    const notOwned=allSkins.filter(s=>!owned.has(s.id));
+    let pool=notOwned.length>0?(Math.random()<0.7?notOwned:allSkins):allSkins;
+    if(i<2&&eroSkins.length>0)pool=eroSkins; // 에로맵 전용 먼저 2개
+    const sk=pool[Math.floor(Math.random()*pool.length)];
+    EROMAP.arrows.push({
+      id:`ea_${i}`,skinId:sk.id,
+      lat:EROMAP.lat+dlat,lon:EROMAP.lon+dlon,
+      collected:false,floatT:Math.random()*Math.PI*2
+    });
+  }
+}
+
+function checkEroCollection(){
+  if(!EROMAP.arrows.length||EROMAP.lat===null)return;
+  const R=EROMAP.COLLECT_R;
+  let anyNear=false;
+  EROMAP.arrows.forEach(a=>{
+    if(a.collected)return;
+    const dlat=(a.lat-EROMAP.lat)*111000;
+    const dlon=(a.lon-EROMAP.lon)*111000*Math.cos(EROMAP.lat*Math.PI/180);
+    const dist=Math.sqrt(dlat*dlat+dlon*dlon);
+    if(dist<R){
+      anyNear=true;
+      collectEroArrow(a);
+    }
+  });
+}
+
+function collectEroArrow(a){
+  if(a.collected)return;
+  a.collected=true;
+  const sk=SKINS.find(s=>s.id===a.skinId);
+  if(!sk)return;
+  const wasNew=!owned.has(sk.id);
+  if(wasNew){
+    owned.add(sk.id);
+    recordSkinDate(sk.id);
+    doSave();
+    showEroCollectBanner(`✨ 새 화살표 획득! ${sk.emoji} ${sk.name}`,'new');
+  }else{
+    // 이미 보유 → 코인 보상
+    const bonus=sk.rarity==='legendary'?200:sk.rarity==='epic'?80:sk.rarity==='rare'?40:20;
+    coins+=bonus;doSave();
+    showEroCollectBanner(`${sk.emoji} 이미 보유! +${bonus} 💰`,'coin');
+  }
+  // 30초 후 재스폰
+  setTimeout(()=>respawnEroArrow(a),30000);
+}
+
+function respawnEroArrow(a){
+  a.collected=false;
+  const angle=Math.random()*Math.PI*2;
+  const dist=30+Math.random()*90;
+  if(EROMAP.lat===null)return;
+  const dlat=dist*Math.cos(angle)/111000;
+  const dlon=dist*Math.sin(angle)/(111000*Math.cos(EROMAP.lat*Math.PI/180));
+  a.lat=EROMAP.lat+dlat;a.lon=EROMAP.lon+dlon;
+  const notOwned=SKINS.filter(s=>!owned.has(s.id)&&!s.gacha);
+  const pool=notOwned.length>0?notOwned:SKINS.filter(s=>!s.gacha);
+  a.skinId=pool[Math.floor(Math.random()*pool.length)].id;
+}
+
+let eroBannerTimer=null;
+function showEroCollectBanner(msg,type){
+  const el=document.getElementById('eromap-collect-banner');
+  el.textContent=msg;
+  el.className='eromap-collect-banner '+(type==='new'?'ero-new':'ero-coin');
+  el.style.opacity='1';el.style.transform='translateY(0)';
+  if(eroBannerTimer)clearTimeout(eroBannerTimer);
+  eroBannerTimer=setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(-30px)';},2500);
+}
+
+function updateEroTime(){
+  const now=new Date();
+  const h=String(now.getHours()).padStart(2,'0');
+  const m=String(now.getMinutes()).padStart(2,'0');
+  const s=String(now.getSeconds()).padStart(2,'0');
+  const el=document.getElementById('eromap-time');
+  if(el)el.textContent=`${h}:${m}:${s}`;
+}
+
+function gpsToPixel(lat,lon){
+  if(EROMAP.lat===null)return{x:0,y:0};
+  const cx=EROMAP.canvas.width/2,cy=EROMAP.canvas.height/2;
+  const cosLat=Math.cos(EROMAP.lat*Math.PI/180);
+  const dx=(lon-EROMAP.lon)*111000*cosLat*EROMAP.SCALE;
+  const dy=-(lat-EROMAP.lat)*111000*EROMAP.SCALE;
+  return{x:cx+dx,y:cy+dy};
+}
+
+function eroLoop(){
+  if(!EROMAP.open)return;
+  EROMAP.rafId=requestAnimationFrame(eroLoop);
+  EROMAP.t+=0.016;
+
+  // 이동 체크
+  if(Date.now()-EROMAP.lastMoveTime>1500)EROMAP.isMoving=false;
+
+  drawEroMap();
+}
+
+function isNightTime(){
+  const h=new Date().getHours();
+  return h<6||h>=20;
+}
+
+function drawEroMap(){
+  const ctx=EROMAP.ctx,W=EROMAP.canvas.width,H=EROMAP.canvas.height;
+  if(!ctx)return;
+
+  const night=isNightTime();
+  const bgCol=night?(EROMAP.weather.bgNight||'#06061a'):(EROMAP.weather.bgDay||'#1a3a5c');
+
+  // ── 배경 하늘
+  ctx.fillStyle=bgCol;
+  ctx.fillRect(0,0,W,H);
+
+  // ── 타일 맵 (중심 = 플레이어)
+  drawEroTiles(ctx,W,H);
+
+  // ── 화살표 아이템
+  EROMAP.arrows.forEach(a=>{
+    if(a.collected)return;
+    const p=gpsToPixel(a.lat,a.lon);
+    if(p.x<-60||p.x>W+60||p.y<-60||p.y>H+60)return;
+    drawEroArrowItem(ctx,a,p.x,p.y);
+  });
+
+  // ── 수집 반경 (반투명 원)
+  if(EROMAP.lat!==null){
+    const cx=W/2,cy=H/2;
+    const rPx=EROMAP.COLLECT_R*EROMAP.SCALE;
+    ctx.beginPath();ctx.arc(cx,cy,rPx,0,Math.PI*2);
+    ctx.strokeStyle='rgba(76,201,240,0.25)';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle='rgba(76,201,240,0.05)';ctx.fill();
+  }
+
+  // ── 플레이어 캐릭터
+  drawEroPlayer(ctx,W/2,H/2);
+
+  // ── 파티클 (날씨)
+  drawEroParticles(ctx,W,H);
+
+  // ── HUD 시간
+  ctx.save();
+  ctx.fillStyle='rgba(0,0,0,0.45)';
+  ctx.fillRect(W/2-60,14,120,36);
+  ctx.fillStyle='#fff';ctx.font='bold 20px monospace';ctx.textAlign='center';
+  const now=new Date();
+  ctx.fillText(`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`,W/2,38);
+  ctx.restore();
+
+  // ── 나침반 (N)
+  ctx.save();
+  ctx.fillStyle='rgba(0,0,0,0.5)';
+  ctx.beginPath();ctx.arc(W-36,36,18,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#ff4444';ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('N',W-36,36);
+  ctx.restore();
+}
+
+function drawEroTiles(ctx,W,H){
+  const TILE=48;
+  const offX=(EROMAP.lon!==null?(EROMAP.lon*111000*EROMAP.SCALE)%TILE:0);
+  const offY=(EROMAP.lat!==null?(EROMAP.lat*111000*EROMAP.SCALE)%TILE:0);
+
+  // 기본 잔디
+  ctx.fillStyle='#1a2f1a';
+  ctx.fillRect(0,0,W,H);
+
+  // 도로 (수평)
+  const ROAD_W=24;
+  for(let y=-TILE;y<H+TILE;y+=TILE*3){
+    const ry=(y+offY%( TILE*3));
+    ctx.fillStyle='#2a2a35';
+    ctx.fillRect(0,ry,W,ROAD_W);
+    // 차선
+    ctx.fillStyle='rgba(255,255,255,0.06)';
+    ctx.fillRect(0,ry+ROAD_W/2-1,W,2);
+  }
+  // 도로 (수직)
+  for(let x=-TILE;x<W+TILE;x+=TILE*3){
+    const rx=(x+offX%(TILE*3));
+    ctx.fillStyle='#2a2a35';
+    ctx.fillRect(rx,0,ROAD_W,H);
+    ctx.fillStyle='rgba(255,255,255,0.06)';
+    ctx.fillRect(rx+ROAD_W/2-1,0,2,H);
+  }
+
+  // 건물 블록 (격자 사이)
+  const seed=(Math.floor((EROMAP.lon||0)*1000)%9999);
+  for(let bx=-1;bx<Math.ceil(W/TILE/3)+1;bx++){
+    for(let by=-1;by<Math.ceil(H/TILE/3)+1;by++){
+      const bxi=bx*TILE*3+offX%(TILE*3);
+      const byi=by*TILE*3+offY%(TILE*3);
+      const r=(seed+bx*13+by*7)%100;
+      if(r<55){
+        // 건물
+        ctx.fillStyle=`rgba(${20+r%20},${20+r%15},${35+r%25},0.9)`;
+        ctx.fillRect(bxi+ROAD_W+2,byi+ROAD_W+2,TILE*3-ROAD_W-6,TILE*3-ROAD_W-6);
+        // 창문
+        ctx.fillStyle='rgba(255,240,120,0.12)';
+        for(let wi=0;wi<3;wi++){for(let wj=0;wj<3;wj++){
+          if((r+wi*wj)%3!==0)ctx.fillRect(bxi+ROAD_W+6+wi*12,byi+ROAD_W+8+wj*12,8,6);
+        }}
+      }else if(r<75){
+        // 공원 (초록)
+        ctx.fillStyle='rgba(30,70,30,0.8)';
+        ctx.fillRect(bxi+ROAD_W+2,byi+ROAD_W+2,TILE*3-ROAD_W-6,TILE*3-ROAD_W-6);
+        // 나무들
+        for(let ti=0;ti<3;ti++){
+          const tx=bxi+ROAD_W+8+ti*18,ty=byi+ROAD_W+8+(ti%2)*18;
+          ctx.fillStyle='#2d6a2d';ctx.beginPath();ctx.arc(tx,ty,7,0,Math.PI*2);ctx.fill();
+          ctx.fillStyle='#3a8a3a';ctx.beginPath();ctx.arc(tx-1,ty-1,5,0,Math.PI*2);ctx.fill();
+        }
+      }
+    }
+  }
+}
+
+function drawEroPlayer(ctx,cx,cy){
+  const sk=SKINS.find(s=>s.id===activeSkin)||SKINS[0];
+  // 점프 애니메이션
+  let jumpY=0;
+  if(EROMAP.isMoving){
+    jumpY=Math.abs(Math.sin(EROMAP.t*8))*-18;
+  }else{
+    jumpY=Math.sin(EROMAP.t*2)*-2; // 숨쉬기
+  }
+
+  const py=cy+jumpY;
+
+  // 그림자
+  ctx.save();
+  ctx.globalAlpha=EROMAP.isMoving?0.3:0.5;
+  ctx.fillStyle='rgba(0,0,0,0.6)';
+  ctx.beginPath();
+  const shadowScale=1-jumpY*(-0.015);
+  ctx.ellipse(cx,cy+2,18*shadowScale,6*shadowScale,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // 스킨 이모지
+  ctx.save();
+  const s=EROMAP.isMoving?1.1+Math.abs(Math.sin(EROMAP.t*8))*0.08:1.0;
+  ctx.translate(cx,py);ctx.scale(s,s);
+  ctx.font='32px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+
+  // 글로우
+  const rc=RARITY_COLOR[sk.rarity||'common']||'#fff';
+  ctx.shadowColor=rc;ctx.shadowBlur=12;
+  ctx.fillText(sk.emoji,0,0);
+  ctx.shadowBlur=0;
+
+  // 움직일 때 앞으로 기울기
+  if(EROMAP.isMoving){
+    const lean=-0.2;
+    ctx.rotate(lean);
+  }
+  ctx.restore();
+
+  // 방향 화살표 (장식)
+  ctx.save();
+  ctx.translate(cx,py-26);
+  ctx.fillStyle='rgba(76,201,240,0.7)';
+  ctx.font='12px serif';ctx.textAlign='center';
+  if(EROMAP.isMoving)ctx.fillText('▲',0,0);
+  ctx.restore();
+}
+
+function drawEroArrowItem(ctx,a,x,y){
+  const sk=SKINS.find(s=>s.id===a.skinId)||SKINS[0];
+  const isNew=!owned.has(sk.id);
+  const rc=RARITY_COLOR[sk.rarity||'common']||'#aaa';
+
+  a.floatT+=0.025;
+  const fy=Math.sin(a.floatT)*5;
+
+  ctx.save();
+  ctx.translate(x,y+fy);
+
+  // 발광 원
+  const glowR=isNew?24:18;
+  const grad=ctx.createRadialGradient(0,0,2,0,0,glowR);
+  grad.addColorStop(0,rc.replace(')',',0.3)').replace('rgb','rgba')||'rgba(255,255,255,0.3)');
+  grad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=grad;
+  ctx.beginPath();ctx.arc(0,0,glowR,0,Math.PI*2);ctx.fill();
+
+  // 외곽 원
+  ctx.strokeStyle=rc;ctx.lineWidth=isNew?2:1;ctx.globalAlpha=0.8;
+  ctx.beginPath();ctx.arc(0,0,16,0,Math.PI*2);ctx.stroke();
+
+  // 이모지
+  ctx.globalAlpha=1;
+  ctx.font=isNew?'22px serif':'18px serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor=rc;ctx.shadowBlur=8;
+  ctx.fillText(sk.emoji,0,0);
+  ctx.shadowBlur=0;
+
+  // 미보유 표시 (신규)
+  if(isNew){
+    ctx.fillStyle='#fff';ctx.font='bold 8px sans-serif';ctx.textAlign='center';
+    ctx.fillStyle=rc;
+    ctx.fillText('NEW',0,-22);
+  }
+
+  // 희귀도 점
+  if(sk.rarity==='legendary'){
+    for(let i=0;i<3;i++){
+      ctx.fillStyle=rc;ctx.beginPath();
+      ctx.arc(-8+i*8,20,2,0,Math.PI*2);ctx.fill();
+    }
+  }else if(sk.rarity==='epic'){
+    for(let i=0;i<2;i++){ctx.fillStyle=rc;ctx.beginPath();ctx.arc(-4+i*8,20,2,0,Math.PI*2);ctx.fill();}
+  }else if(sk.rarity==='rare'){
+    ctx.fillStyle=rc;ctx.beginPath();ctx.arc(0,20,2,0,Math.PI*2);ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function drawEroParticles(ctx,W,H){
+  EROMAP.particles.forEach(p=>{
+    if(p.type==='rain'){
+      ctx.save();ctx.globalAlpha=0.5;
+      ctx.strokeStyle='#aad8ff';ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x+p.vx*3,p.y+p.vy*1.5);ctx.stroke();
+      ctx.restore();
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.y>H){p.y=0;p.x=Math.random()*W;}
+    }else if(p.type==='snow'){
+      ctx.save();ctx.globalAlpha=0.7;
+      ctx.fillStyle='#eef5ff';
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+      p.x+=p.vx+Math.sin(EROMAP.t+p.r)*0.3;p.y+=p.vy;
+      if(p.y>H){p.y=0;p.x=Math.random()*W;}
+    }
+  });
+}
+
+// 에로맵 버튼 이벤트
+document.getElementById('btn-eromap')?.addEventListener('click',()=>{openEroMap();});
+document.getElementById('eromap-exit')?.addEventListener('click',()=>{closeEroMap();});
+document.getElementById('sdm-close')?.addEventListener('click',()=>{document.getElementById('skin-detail-modal').style.display='none';});
 

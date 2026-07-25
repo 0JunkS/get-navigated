@@ -87,7 +87,34 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
 .b-own{background:rgba(90,200,90,0.25);color:#90ee90}
 .b-gacha{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff}
 .sk.gacha-locked{position:relative}
-.sk.gacha-locked::after{content:'🎴 가챠 전용';position:absolute;inset:0;border-radius:inherit;background:rgba(15,5,30,0.72);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#c084fc;letter-spacing:1px;backdrop-filter:blur(1px)}
+.sk.gacha-locked::after{content:'🎴 에로맵 전용';position:absolute;inset:0;border-radius:inherit;background:rgba(15,5,30,0.72);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#c084fc;letter-spacing:1px;backdrop-filter:blur(1px)}
+.sk-info-btn{margin-top:6px;width:100%;padding:4px 0;background:rgba(76,201,240,0.12);border:1px solid rgba(76,201,240,0.3);border-radius:8px;color:#4cc9f0;font-size:10px;font-weight:700;cursor:pointer;pointer-events:all}
+.sk-info-btn:active{background:rgba(76,201,240,0.25)}
+
+/* ═══════════════════════ EROMAP ═══════════════════════ */
+#eromap-ov{display:none;position:fixed;inset:0;z-index:9800;flex-direction:column;pointer-events:all;background:#06061a;overflow:hidden}
+#eromap-ov.on{display:flex}
+#eromap-topbar{position:absolute;top:0;left:0;right:0;height:52px;z-index:10;background:linear-gradient(180deg,rgba(0,0,0,.75) 0%,transparent 100%);display:flex;align-items:center;padding:0 14px;gap:10px;pointer-events:none}
+#eromap-exit{pointer-events:all;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:50px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+#eromap-title{font-size:15px;font-weight:900;color:#4cc9f0;text-shadow:0 0 14px rgba(76,201,240,.6);flex:1;text-align:center;letter-spacing:2px}
+#eromap-weather-txt{font-size:13px;color:rgba(255,255,255,.8);white-space:nowrap}
+#eromap-canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
+#eromap-bottom{position:absolute;bottom:0;left:0;right:0;padding:12px 16px 24px;background:linear-gradient(0deg,rgba(0,0,0,.7) 0%,transparent 100%);pointer-events:none;display:flex;justify-content:space-between;align-items:flex-end}
+#eromap-time{font-size:22px;font-weight:900;color:#fff;font-family:monospace;text-shadow:0 0 12px rgba(76,201,240,.5)}
+#eromap-gps{font-size:10px;color:rgba(200,220,255,.6);text-align:right}
+.eromap-collect-banner{position:absolute;top:64px;left:50%;transform:translateX(-50%) translateY(-30px);z-index:20;padding:10px 22px;border-radius:50px;font-size:14px;font-weight:700;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
+.ero-new{background:linear-gradient(135deg,#7209b7,#4cc9f0);color:#fff;box-shadow:0 0 24px rgba(76,201,240,.5)}
+.ero-coin{background:rgba(255,215,0,.2);border:1px solid rgba(255,215,0,.5);color:#FFD700}
+
+/* ── 스킨 상세 모달 ── */
+#skin-detail-modal{display:none;position:fixed;inset:0;z-index:9900;background:rgba(0,0,0,.75);align-items:center;justify-content:center;pointer-events:all;backdrop-filter:blur(6px)}
+.sdm-card{background:linear-gradient(155deg,rgba(8,8,30,.97),rgba(20,10,50,.97));border:1px solid rgba(100,100,255,.3);border-radius:22px;padding:32px 28px;width:82%;max-width:300px;text-align:center;position:relative}
+#sdm-close{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.1);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:15px;cursor:pointer}
+#sdm-emoji{font-size:56px;margin-bottom:8px}
+#sdm-name{color:#fff;font-size:20px;font-weight:900;margin-bottom:8px}
+#sdm-rarity{font-size:13px;font-weight:900;letter-spacing:2px;margin-bottom:12px}
+#sdm-date{color:rgba(180,190,255,.7);font-size:13px;margin-bottom:6px}
+.sdm-close-btn{margin-top:16px;width:100%;padding:12px;background:linear-gradient(135deg,#4361ee,#4cc9f0);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer}
 
 /* ── LEVEL SELECT ────────────────────────────────── */
 #level-select{
@@ -1056,6 +1083,7 @@ window._FB_CFG={
       <button class="btn" id="btn-plaza" style="display:none;background:linear-gradient(135deg,#1a4a1a,#2a7a2a);border:1px solid rgba(80,200,80,.4)">🏙️ 애로우 광장</button>
       <button class="btn btn-multi" id="btn-multi">⚡ 멀티플레이</button>
       <button class="btn btn-shop" id="btn-shop">🛒 상점</button>
+      <button class="btn" id="btn-eromap" style="background:linear-gradient(135deg,#0a9396,#4cc9f0);box-shadow:0 0 24px rgba(10,147,150,.45)">🗺️ 에로맵</button>
       <button class="btn btn-xs" id="btn-modes" style="background:linear-gradient(135deg,#1a1a4e,#2d2d80);border:1px solid rgba(100,100,255,.35);font-size:14px;padding:13px">🎮 게임 모드 &amp; 컨텐츠</button>
       <button class="btn btn-xs" id="btn-settings">⚙️ 설정</button>
       <div class="btn-friend-wrap" style="position:relative">
@@ -1692,6 +1720,33 @@ window._FB_CFG={
 
 
 </div>
+<!-- ═══════════════ EROMAP OVERLAY ═══════════════ -->
+<div id="eromap-ov">
+  <div id="eromap-topbar">
+    <button id="eromap-exit">← 뒤로</button>
+    <div id="eromap-title">🗺️ 에로맵</div>
+    <div id="eromap-weather-txt">☀️ 날씨 로딩...</div>
+  </div>
+  <canvas id="eromap-canvas"></canvas>
+  <div id="eromap-bottom">
+    <div id="eromap-time">00:00:00</div>
+    <div id="eromap-gps">📍 GPS 확인 중...</div>
+  </div>
+  <div id="eromap-collect-banner" class="eromap-collect-banner"></div>
+</div>
+
+<!-- ═══════════════ 스킨 상세 모달 ═══════════════ -->
+<div id="skin-detail-modal">
+  <div class="sdm-card">
+    <button id="sdm-close">✕</button>
+    <div id="sdm-emoji">💠</div>
+    <div id="sdm-name">기본</div>
+    <div id="sdm-rarity">일반</div>
+    <div id="sdm-date">📅 획득일: —</div>
+    <button class="sdm-close-btn" onclick="document.getElementById('skin-detail-modal').style.display='none'">닫기</button>
+  </div>
+</div>
+
 <!-- ★ PLAZA / STORY 요소: #ui 밖 — iOS position:fixed 중첩 버그 회피 ★ -->
 <!-- ═══════════════ PLAZA SCREEN ═══════════════ -->
 <div id="plaza-screen">
