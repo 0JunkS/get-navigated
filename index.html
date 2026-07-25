@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>3D Escape</title>
+<title>Get Navigated</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#06061a}
@@ -12,12 +12,12 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
 #ui{position:fixed;inset:0;pointer-events:none}
 
 /* ── MENU ────────────────────────────────────────── */
-#menu{position:absolute;inset:0;display:flex;flex-direction:column;pointer-events:none;transition:opacity .5s}
+#menu{position:absolute;inset:0;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y!important;pointer-events:none;transition:opacity .5s}
 #menu.hidden{opacity:0;pointer-events:none}#menu.hidden *{pointer-events:none!important}
-#menu-top{position:absolute;top:0;left:0;right:0;padding:52px 0 0;text-align:center;pointer-events:none}
+#menu-top{padding:52px 0 0;text-align:center;pointer-events:none;flex-shrink:0;margin-bottom:auto}
 #menu-top h1{color:#fff;font-size:32px;font-weight:900;letter-spacing:5px;text-shadow:0 0 32px rgba(76,201,240,0.7)}
 #menu-top .tag{color:rgba(170,170,220,0.7);font-size:12px;margin-top:6px;letter-spacing:2px}
-#menu-bottom{position:absolute;bottom:0;left:0;right:0;padding:0 28px 44px;display:flex;flex-direction:column;gap:10px;pointer-events:all}
+#menu-bottom{padding:0 28px 44px;display:flex;flex-direction:column;gap:10px;pointer-events:all;flex-shrink:0}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:15px 32px;border-radius:50px;font-size:15px;font-weight:700;cursor:pointer;border:none;outline:none;color:#fff;transition:transform .12s,opacity .12s;width:100%}
 .btn:active{transform:scale(0.96);opacity:0.85}
 .btn-primary{background:linear-gradient(135deg,#4361ee,#4cc9f0);box-shadow:0 0 28px rgba(67,97,238,0.5)}
@@ -263,9 +263,9 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
 .diff-ext{background:rgba(214,40,40,0.2);color:#ff6b6b}
 
 /* MINI GAME ARCADE + PAPER FLIGHT */
-#game-select{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:22px;pointer-events:all;background:radial-gradient(circle at 20% 18%,rgba(255,209,102,.22),transparent 28%),linear-gradient(155deg,rgba(7,24,38,.76),rgba(6,10,22,.94) 54%,rgba(16,37,43,.9));backdrop-filter:blur(10px)}
+#game-select{position:fixed;inset:0;z-index:80;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y!important;padding:22px;pointer-events:all;background:radial-gradient(circle at 20% 18%,rgba(255,209,102,.22),transparent 28%),linear-gradient(155deg,rgba(7,24,38,.76),rgba(6,10,22,.94) 54%,rgba(16,37,43,.9));backdrop-filter:blur(10px)}
 #game-select.on{display:flex}
-.hub-shell{width:min(920px,100%);color:#fff}
+.hub-shell{width:min(920px,100%);color:#fff;padding:22px 0}
 .hub-kicker{font-size:12px;font-weight:900;letter-spacing:3px;color:#ffd166;margin-bottom:8px;text-transform:uppercase}
 .hub-title{font-size:clamp(34px,7vw,74px);line-height:.92;font-weight:950;margin:0 0 22px;color:#f8fdff;text-shadow:0 16px 48px rgba(0,0,0,.35)}
 .game-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
@@ -1042,7 +1042,7 @@ window._FB_CFG={
   <!-- MENU -->
   <div id="menu">
     <div id="menu-top">
-      <h1>3D ESCAPE</h1>
+      <h1>GET NAVIGATED</h1>
       <div class="tag">PUZZLE GAME</div>
     </div>
     <div id="user-pill">
@@ -9178,7 +9178,7 @@ window.closePlaza=closePlaza;
     </div>
   </div>
   <!-- BGM -->
-  <audio id="plaza-bgm" src="plaza_bgm.mp3" loop preload="none"></audio>
+  <audio id="plaza-bgm" loop preload="none"></audio>
 </div>
 <div id="story-box">
   <div id="story-inner">
