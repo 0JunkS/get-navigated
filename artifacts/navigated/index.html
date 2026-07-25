@@ -12,7 +12,8 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
 #ui{position:fixed;inset:0;pointer-events:none}
 
 /* ── MENU ────────────────────────────────────────── */
-#menu{position:absolute;inset:0;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y!important;pointer-events:none;transition:opacity .5s}
+#menu{position:absolute;inset:0;display:flex;flex-direction:column;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y!important;pointer-events:none;transition:opacity .5s}
+#menu *{touch-action:pan-y!important}
 #menu:not(.hidden){pointer-events:auto}
 #menu.hidden{opacity:0;pointer-events:none}#menu.hidden *{pointer-events:none!important}
 #menu-top{padding:52px 0 0;text-align:center;pointer-events:none;flex-shrink:0;margin-bottom:32px}
