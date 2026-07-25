@@ -13,8 +13,9 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
 
 /* ── MENU ────────────────────────────────────────── */
 #menu{position:absolute;inset:0;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y!important;pointer-events:none;transition:opacity .5s}
+#menu:not(.hidden){pointer-events:auto}
 #menu.hidden{opacity:0;pointer-events:none}#menu.hidden *{pointer-events:none!important}
-#menu-top{padding:52px 0 0;text-align:center;pointer-events:none;flex-shrink:0;margin-bottom:auto}
+#menu-top{padding:52px 0 0;text-align:center;pointer-events:none;flex-shrink:0;margin-bottom:32px}
 #menu-top h1{color:#fff;font-size:32px;font-weight:900;letter-spacing:5px;text-shadow:0 0 32px rgba(76,201,240,0.7)}
 #menu-top .tag{color:rgba(170,170,220,0.7);font-size:12px;margin-top:6px;letter-spacing:2px}
 #menu-bottom{padding:0 28px 44px;display:flex;flex-direction:column;gap:10px;pointer-events:all;flex-shrink:0}
