@@ -4009,10 +4009,18 @@ function _closeSettings(){
   _settings.vibration=document.getElementById('set-vibration').checked;
   _saveSettings();
   if(rankState.placed)_upsertLeaderboard(_settings.nickname,rankState.points);
+  // 설정창 닫을 때 반드시 포커스 해제 → 키보드가 게임 중에 올라오는 현상 방지
+  if(document.activeElement&&document.activeElement!==document.body){
+    document.activeElement.blur();
+  }
   document.getElementById('settings-ov').classList.remove('on');
 }
 document.getElementById('settings-close').addEventListener('click',_closeSettings);
-document.getElementById('settings-ov').addEventListener('click',function(e){if(e.target===this)_closeSettings();});
+document.getElementById('settings-ov').addEventListener('click',function(e){
+  // stopPropagation: 설정창 닫을 때 터치가 캔버스까지 전달되는 문제 방지
+  e.stopPropagation();
+  if(e.target===this)_closeSettings();
+});
 
 // ── 닉네임 모달 (새로 만든 버전) ────────────────────────────────────────────
 window._nickCallback=null;
@@ -8838,6 +8846,7 @@ document.getElementById('sdm-close')?.addEventListener('click',()=>{document.get
 // 퍼즐 제출 이벤트
 
 
-// 초기 세로 방향 잠금
-try{_lockPortrait();}catch(e){}
+// 초기 세로 방향 잠금 제거: 게임 시작 시 무조건 portrait 고정하면 기기 회전이 안 되는 문제가 있어 제거
+// (에로맵 열기/닫기에서만 lock/unlock 처리)
+
 
