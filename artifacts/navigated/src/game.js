@@ -2875,15 +2875,21 @@ function initAuth(){
 // ══════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════
-loadSave();
-applyMap(activeMap);
-updateCoins();
-document.getElementById('btn-cont').style.display=progress>0?'flex':'none';
-document.getElementById('level-select').style.display='none';
-showUI('menu');
-initDemo();
-loop();
-initAuth();
+// initAuth()를 가장 먼저 실행합니다. 아래의 다른 초기화 함수 중 하나라도
+// 예외를 던지면 스크립트 실행이 그 지점에서 멈춰서, 뒤에 있던 initAuth()가
+// 아예 호출되지 못하고 로그인/게스트 버튼에 클릭 이벤트가 등록되지 않는
+// 문제가 있었습니다(= 로그인 화면 터치가 먹통이 되는 원인). 로그인 버튼은
+// 항상 동작해야 하므로 제일 먼저 초기화하고, 나머지는 각각 try/catch로
+// 감싸서 하나가 실패해도 전체 흐름이 멈추지 않도록 합니다.
+try{ initAuth(); }catch(e){ console.error('[Init] initAuth failed:', e); }
+try{ loadSave(); }catch(e){ console.error('[Init] loadSave failed:', e); }
+try{ applyMap(activeMap); }catch(e){ console.error('[Init] applyMap failed:', e); }
+try{ updateCoins(); }catch(e){ console.error('[Init] updateCoins failed:', e); }
+try{ document.getElementById('btn-cont').style.display=progress>0?'flex':'none'; }catch(e){ console.error('[Init] btn-cont failed:', e); }
+try{ document.getElementById('level-select').style.display='none'; }catch(e){ console.error('[Init] level-select failed:', e); }
+try{ showUI('menu'); }catch(e){ console.error('[Init] showUI failed:', e); }
+try{ initDemo(); }catch(e){ console.error('[Init] initDemo failed:', e); }
+try{ loop(); }catch(e){ console.error('[Init] loop failed:', e); }
 
 // ══════════════════════════════════════════════════
 // ACHIEVEMENT SYSTEM
