@@ -489,6 +489,12 @@ function buildArrow(col,sk,grp,tex){
   const finF=new THREE.Mesh(finGeo,finMat);finF.position.set(0,HH*0.1,HR*0.6);finF.rotation.x=-Math.PI*0.5;
   const finB=new THREE.Mesh(finGeo,finMat);finB.position.set(0,HH*0.1,-HR*0.6);finB.rotation.x=Math.PI*0.5;
 
+  // 투명 히트박스 — 시각적으로 안 보이지만 레이캐스팅 범위를 10배 확장해 터치 인식 향상
+  const hitMat=new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false});
+  const hitMesh=new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.13,0.72,6),hitMat);
+  hitMesh.position.y=(-BL*0.5+HH*0.25);
+  grp.add(hitMesh); // arrowId는 부모(root) 체인으로 hitTest에서 탐색됨
+
   grp.add(body,bottomCap,collar,head,tip,finL,finR,finF,finB);
   return[body,bottomCap,collar,head,tip,finL,finR,finF,finB];
 }
@@ -992,6 +998,10 @@ function spawnArrows(lvl,skinId){
     const parts=sk.shape==='car'?buildCar(col,sk,inner):sk.shape==='rocket'?buildRocket(col,sk,inner):sk.shape==='star'?buildStar(col,sk,inner):sk.shape==='sword'?buildSword(col,sk,inner):sk.shape==='mushroom'?buildMushroom(col,sk,inner):sk.shape==='crystal2'?buildCrystal2(col,sk,inner):sk.shape==='flame'?buildFlame(col,sk,inner):sk.shape==='ice'?buildIce(col,sk,inner):sk.shape==='thunder'?buildThunder(col,sk,inner):sk.shape==='dragon'?buildDragon(col,sk,inner):sk.shape==='rainbow'?buildRainbow(col,sk,inner):sk.shape==='ghost'?buildGhost(col,sk,inner):sk.shape==='lava'?buildLava(col,sk,inner):sk.shape==='cosmic'?buildCosmic(col,sk,inner):buildArrow(col,sk,inner,tex);
     const dv=DV[def.dir].clone();
     inner.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dv);
+    // 모든 스킨 공통 투명 히트박스 (inner에 추가 → 방향 따라 회전)
+    {const hm=new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false});
+     const hg=new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.13,0.72,6),hm);
+     hg.position.y=0;inner.add(hg);}
     const ring=new THREE.Mesh(new THREE.TorusGeometry(0.27,0.028,8,32),new THREE.MeshStandardMaterial({color:'#fff',emissive:'#fff',emissiveIntensity:1.3,roughness:1,metalness:0}));
     ring.rotation.x=Math.PI/2;ring.visible=false;root.add(ring);
     const bp=new THREE.Vector3(def.pos[0]*GRID,def.pos[1]*GRID,def.pos[2]*GRID);
