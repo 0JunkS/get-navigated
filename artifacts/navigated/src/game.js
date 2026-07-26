@@ -227,14 +227,14 @@ const SKINS=[
   {id:'mushroom', name:'버섯',         desc:'귀여운 버섯 모양',         price:300, emoji:'🍄',pc:'p-cheap', shape:'mushroom',                      rarity:'common'},
   {id:'crystal2', name:'크리스탈 샤드',desc:'날카로운 크리스탈 파편',   price:700, emoji:'🔷',pc:'p-exp',   shape:'crystal2',                      rarity:'epic'},
   // ── 에로맵 & 신규 스킨 ──────────────────────────────────
-  {id:'flame',    name:'불꽃',         desc:'타오르는 불꽃 화살',       price:400, emoji:'🔥',pc:'p-exp',   shape:'flame',                         rarity:'rare'},
-  {id:'ice',      name:'얼음',         desc:'차가운 얼음 화살',         price:400, emoji:'❄️',pc:'p-exp',   shape:'ice',                           rarity:'rare'},
-  {id:'thunder',  name:'번개',         desc:'번쩍이는 번개 화살',       price:700, emoji:'⚡',pc:'p-exp',   shape:'thunder',                       rarity:'epic'},
-  {id:'dragon',   name:'드래곤',       desc:'전설의 드래곤 화살 · 에로맵 전용', price:0, emoji:'🐉',pc:'p-gacha', shape:'dragon', gacha:true,      rarity:'legendary'},
-  {id:'rainbow',  name:'무지개',       desc:'화려한 무지개 화살',       price:800, emoji:'🌈',pc:'p-exp',   shape:'rainbow',                       rarity:'epic'},
-  {id:'ghost',    name:'유령',         desc:'투명한 유령 화살',         price:450, emoji:'👻',pc:'p-exp',   shape:'ghost',                         rarity:'rare'},
-  {id:'lava',     name:'용암',         desc:'뜨거운 용암 화살',         price:900, emoji:'🌋',pc:'p-exp',   shape:'lava',                          rarity:'epic'},
-  {id:'cosmic',   name:'코스믹',       desc:'우주의 힘 · 에로맵 전용', price:0,   emoji:'🌟',pc:'p-gacha', shape:'cosmic', gacha:true,             rarity:'legendary'},
+  {id:'flame',    name:'불꽃',         desc:'타오르는 불꽃 화살',       price:400, emoji:'🔥',pc:'p-exp',   shape:'flame',   fc:'#FF4500',r:0.9,m:0,neon:true,  rarity:'rare'},
+  {id:'ice',      name:'얼음',         desc:'차가운 얼음 화살',         price:400, emoji:'❄️',pc:'p-exp',   shape:'ice',     fc:'#C8F4FF',r:0,m:0.1,tr:true,op:0.75,crystal:true, rarity:'rare'},
+  {id:'thunder',  name:'번개',         desc:'번쩍이는 번개 화살',       price:700, emoji:'⚡',pc:'p-exp',   shape:'thunder', fc:'#FFE600',r:1,m:0,neon:true,    rarity:'epic'},
+  {id:'dragon',   name:'드래곤',       desc:'전설의 드래곤 화살 · 에로맵 전용', price:0, emoji:'🐉',pc:'p-gacha', shape:'dragon', gacha:true, fc:'#1E6B3A',r:0.4,m:0.55, rarity:'legendary'},
+  {id:'rainbow',  name:'무지개',       desc:'화려한 무지개 화살',       price:800, emoji:'🌈',pc:'p-exp',   shape:'rainbow', fc:'#FF6EFF',r:0.9,m:0,neon:true,  rarity:'epic'},
+  {id:'ghost',    name:'유령',         desc:'투명한 유령 화살',         price:450, emoji:'👻',pc:'p-exp',   shape:'ghost',   fc:'#D8E4FF',r:0.3,m:0,tr:true,op:0.65, rarity:'rare'},
+  {id:'lava',     name:'용암',         desc:'뜨거운 용암 화살',         price:900, emoji:'🌋',pc:'p-exp',   shape:'lava',    fc:'#1A1A1A',r:0.95,m:0.1,          rarity:'epic'},
+  {id:'cosmic',   name:'코스믹',       desc:'우주의 힘 · 에로맵 전용', price:0,   emoji:'🌟',pc:'p-gacha', shape:'cosmic', gacha:true, fc:'#1010AA',r:0,m:0.2,tr:true,op:0.88,crystal:true, rarity:'legendary'},
 ];
 
 // ══════════════════════════════════════════════════
@@ -682,6 +682,303 @@ function buildCrystal2(col,sk,grp){
 // ARROW POOL
 // ══════════════════════════════════════════════════
 let arrows=[],arrowMap={};
+
+// ══════════════════════════════════════════════════
+// 테마 스킨 MESH 팩토리
+// ══════════════════════════════════════════════════
+
+// 🔥 불꽃 — 겹겹이 쌓인 반투명 불꽃 혀
+function buildFlame(col,sk,grp){
+  const fc='#FF4500';
+  const body=new THREE.Mesh(
+    new THREE.CylinderGeometry(BR*0.5,BR*0.9,BL*0.8,8),
+    new THREE.MeshStandardMaterial({color:'#FF6600',emissive:'#FF3300',emissiveIntensity:1.8,roughness:1,metalness:0,transparent:true,opacity:0.9})
+  );
+  body.position.y=-BL*0.4;grp.add(body);
+  const parts=[body];
+  // 불꽃 혀 (크기·각도 다른 원뿔 4개)
+  const tongues=[
+    {h:BL*1.1,r:HR*0.7,col:'#FF6600',em:'#FF4400',op:0.78,rx:0,    rz:0,     py:HH*0.3},
+    {h:BL*0.95,r:HR*0.55,col:'#FF8800',em:'#FF5500',op:0.6,rx:0.22,rz:0.15,  py:HH*0.25},
+    {h:BL*0.85,r:HR*0.45,col:'#FFAA00',em:'#FF8800',op:0.5,rx:-0.18,rz:-0.12,py:HH*0.2},
+    {h:BL*0.6, r:HR*0.28,col:'#FFD700',em:'#FFBB00',op:0.85,rx:0,  rz:0,     py:HH*0.7},
+  ];
+  tongues.forEach(t=>{
+    const m=new THREE.Mesh(
+      new THREE.ConeGeometry(t.r,t.h,7),
+      new THREE.MeshStandardMaterial({color:t.col,emissive:t.em,emissiveIntensity:2.2,roughness:1,metalness:0,transparent:true,opacity:t.op,side:THREE.DoubleSide})
+    );
+    m.position.y=t.py;m.rotation.x=t.rx;m.rotation.z=t.rz;
+    grp.add(m);parts.push(m);
+  });
+  // 뜨거운 코어 구
+  const core=new THREE.Mesh(
+    new THREE.SphereGeometry(BR*2.2,8,6),
+    new THREE.MeshStandardMaterial({color:'#FFFFFF',emissive:'#FF6600',emissiveIntensity:3,roughness:1,transparent:true,opacity:0.9})
+  );
+  core.position.y=HH*0.9;grp.add(core);parts.push(core);
+  return parts;
+}
+
+// ❄️ 얼음 — 고드름 + 크리스탈 파편
+function buildIce(col,sk,grp){
+  const ic='#C8F4FF',ie=0.6;
+  const iceMat=()=>new THREE.MeshStandardMaterial({
+    color:ic,emissive:'#88CCFF',emissiveIntensity:ie,
+    roughness:0,metalness:0.1,transparent:true,opacity:0.72,
+    envMap:_skinEnvMap,envMapIntensity:2,side:THREE.DoubleSide
+  });
+  // 메인 고드름 (긴 원뿔)
+  const icicle=new THREE.Mesh(new THREE.ConeGeometry(HR*0.6,BL*1.6,6),iceMat());
+  icicle.position.y=HH*0.35;grp.add(icicle);
+  // 주변 파편 3개
+  const frags=[{s:0.55,y:HH*0.1,x:-HR*0.8,rz:0.4},{s:0.45,y:-HH*0.1,x:HR*0.75,rz:-0.35},{s:0.38,y:HH*0.3,x:0,z:HR*0.7,rz:0.2}];
+  frags.forEach(f=>{
+    const geo=new THREE.OctahedronGeometry(HR*f.s,0);
+    geo.applyMatrix4(new THREE.Matrix4().makeScale(0.55,2.1,0.55));
+    const m=new THREE.Mesh(geo,iceMat());
+    m.position.set(f.x||0,f.y,f.z||0);m.rotation.z=f.rz||0;
+    grp.add(m);
+  });
+  // 서리 구
+  const frost=new THREE.Mesh(
+    new THREE.SphereGeometry(BR*2.4,8,6),
+    new THREE.MeshStandardMaterial({color:'#EEFAFF',emissive:'#AADDFF',emissiveIntensity:1.2,roughness:0,transparent:true,opacity:0.55,envMap:_skinEnvMap,envMapIntensity:1.5})
+  );
+  frost.position.y=-BL*0.65;grp.add(frost);
+  return[icicle,frost];
+}
+
+// ⚡ 번개 — 지그재그 볼트
+function buildThunder(col,sk,grp){
+  const bm=()=>new THREE.MeshStandardMaterial({color:'#FFE600',emissive:'#FFE600',emissiveIntensity:2.5,roughness:1,metalness:0});
+  const parts=[];
+  // 볼트 세그먼트 (5개, 지그재그)
+  const segs=[
+    {y:-BL*0.7,rx:0.38, rz:0.22, len:BL*0.42},
+    {y:-BL*0.28,rx:-0.32,rz:-0.18,len:BL*0.38},
+    {y:HH*0.05,rx:0.28, rz:0.14, len:BL*0.36},
+    {y:HH*0.42,rx:-0.22,rz:-0.10,len:BL*0.3},
+    {y:HH*0.72,rx:0.15, rz:0.08, len:BL*0.25},
+  ];
+  segs.forEach(s=>{
+    const m=new THREE.Mesh(
+      new THREE.CylinderGeometry(BR*2.2,BR*2.8,s.len,5),bm()
+    );
+    m.position.y=s.y;m.rotation.x=s.rx;m.rotation.z=s.rz;
+    grp.add(m);parts.push(m);
+  });
+  // 번쩍이는 팁
+  const tip=new THREE.Mesh(
+    new THREE.SphereGeometry(HR*0.45,8,6),
+    new THREE.MeshStandardMaterial({color:'#FFFFFF',emissive:'#FFE600',emissiveIntensity:4,roughness:1,transparent:true,opacity:0.95})
+  );
+  tip.position.y=HH*1.0;grp.add(tip);parts.push(tip);
+  // 전기 링 2개
+  [0.55,0.25].forEach((py,i)=>{
+    const ring=new THREE.Mesh(
+      new THREE.TorusGeometry(HR*(0.55-i*0.12),BR*1.5,5,16),
+      new THREE.MeshStandardMaterial({color:'#FFE600',emissive:'#FFE600',emissiveIntensity:3,roughness:1,metalness:0,transparent:true,opacity:0.7})
+    );
+    ring.position.y=HH*py;ring.rotation.x=Math.PI/2;
+    grp.add(ring);parts.push(ring);
+  });
+  return parts;
+}
+
+// 🐉 드래곤 — 뱀처럼 구불구불한 몸통 + 날개
+function buildDragon(col,sk,grp){
+  const parts=[];
+  const scaleM=()=>new THREE.MeshStandardMaterial({color:'#1E6B3A',emissive:'#0D3B1E',emissiveIntensity:0.4,roughness:0.4,metalness:0.55,envMap:_skinEnvMap,envMapIntensity:1.2});
+  const goldM=()=>new THREE.MeshStandardMaterial({color:'#FFD700',emissive:'#CC8800',emissiveIntensity:0.9,roughness:0.2,metalness:0.85,envMap:_skinEnvMap,envMapIntensity:2});
+  const redM=()=>new THREE.MeshStandardMaterial({color:'#CC0000',emissive:'#880000',emissiveIntensity:0.7,roughness:0.5,metalness:0.3});
+  // 몸통 세그먼트 (구체 5개 이어진 뱀)
+  const bodyPos=[
+    {y:-BL*0.68,r:BR*3.0},{y:-BL*0.35,r:BR*3.6},{y:HH*0.05,r:BR*3.2},
+    {y:HH*0.45,r:BR*2.5},{y:HH*0.82,r:BR*1.8}
+  ];
+  bodyPos.forEach(b=>{
+    const m=new THREE.Mesh(new THREE.SphereGeometry(b.r,10,8),scaleM());
+    m.position.y=b.y;grp.add(m);parts.push(m);
+  });
+  // 머리
+  const head=new THREE.Mesh(new THREE.SphereGeometry(HR*0.65,10,8),scaleM());
+  head.scale.y=1.4;head.position.y=HH*1.15;grp.add(head);parts.push(head);
+  // 뿔 2개
+  [-1,1].forEach(s=>{
+    const horn=new THREE.Mesh(new THREE.ConeGeometry(BR*1.4,HH*0.55,5),goldM());
+    horn.position.set(s*HR*0.38,HH*1.55,0);horn.rotation.z=s*0.4;
+    grp.add(horn);parts.push(horn);
+  });
+  // 날개 2개 (납작 원뿔)
+  [-1,1].forEach(s=>{
+    const wingGeo=new THREE.ConeGeometry(HR*1.1,HH*0.9,4);
+    wingGeo.applyMatrix4(new THREE.Matrix4().makeScale(1,0.35,1));
+    const wing=new THREE.Mesh(wingGeo,new THREE.MeshStandardMaterial({
+      color:'#0A4020',emissive:'#081808',emissiveIntensity:0.3,roughness:0.6,metalness:0.2,
+      transparent:true,opacity:0.82,side:THREE.DoubleSide
+    }));
+    wing.position.set(s*HR*1.2,HH*0.4,0);wing.rotation.z=s*1.1;
+    grp.add(wing);parts.push(wing);
+  });
+  // 황금 눈
+  [-1,1].forEach(s=>{
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(BR*1.2,6,4),
+      new THREE.MeshStandardMaterial({color:'#FFD700',emissive:'#FFAA00',emissiveIntensity:2.5,roughness:0}));
+    eye.position.set(s*HR*0.28,HH*1.22,HR*0.48);
+    grp.add(eye);parts.push(eye);
+  });
+  return parts;
+}
+
+// 🌈 무지개 — 7색 고리가 쌓인 아치
+function buildRainbow(col,sk,grp){
+  const RCOLS=['#FF0000','#FF7700','#FFEE00','#00CC44','#0088FF','#6600FF','#FF00CC'];
+  const parts=[];
+  // 중심 흰 기둥
+  const stem=new THREE.Mesh(
+    new THREE.CylinderGeometry(BR*0.9,BR*1.1,BL*1.1,8),
+    new THREE.MeshStandardMaterial({color:'#FFFFFF',emissive:'#FFFFFF',emissiveIntensity:0.8,roughness:1,metalness:0,transparent:true,opacity:0.7})
+  );
+  stem.position.y=-BL*0.28;grp.add(stem);parts.push(stem);
+  // 7색 링
+  RCOLS.forEach((c,i)=>{
+    const ring=new THREE.Mesh(
+      new THREE.TorusGeometry(HR*(0.38+i*0.11),BR*(2.0-i*0.15),5,20),
+      new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:2.0,roughness:1,metalness:0,transparent:true,opacity:0.78-i*0.04})
+    );
+    ring.position.y=HH*(0.7-i*0.18);ring.rotation.x=Math.PI/2;
+    grp.add(ring);parts.push(ring);
+  });
+  // 반짝이 팁
+  const tip=new THREE.Mesh(
+    new THREE.OctahedronGeometry(HR*0.55,0),
+    new THREE.MeshStandardMaterial({color:'#FFFFFF',emissive:'#FFFFFF',emissiveIntensity:3,roughness:0,transparent:true,opacity:0.9,envMap:_skinEnvMap,envMapIntensity:2})
+  );
+  tip.position.y=HH*1.1;grp.add(tip);parts.push(tip);
+  return parts;
+}
+
+// 👻 유령 — 반투명 둥근 머리 + 물결 치마
+function buildGhost(col,sk,grp){
+  const gm=()=>new THREE.MeshStandardMaterial({
+    color:'#D8E4FF',emissive:'#8899CC',emissiveIntensity:0.7,
+    roughness:0.3,metalness:0,transparent:true,opacity:0.62,side:THREE.DoubleSide
+  });
+  const parts=[];
+  // 치마 (아래 물결 구체들)
+  const skirtPos=[
+    {x:0,z:0,y:-BL*0.75,r:BR*4.5},
+    {x:-HR*0.6,z:0,y:-BL*0.52,r:BR*3.5},
+    {x:HR*0.6,z:0,y:-BL*0.52,r:BR*3.5},
+    {x:0,z:-HR*0.6,y:-BL*0.52,r:BR*3.2},
+    {x:0,z:HR*0.6,y:-BL*0.52,r:BR*3.2},
+  ];
+  skirtPos.forEach(p=>{
+    const m=new THREE.Mesh(new THREE.SphereGeometry(p.r,8,6),gm());
+    m.position.set(p.x,p.y,p.z);grp.add(m);parts.push(m);
+  });
+  // 몸통
+  const body=new THREE.Mesh(new THREE.SphereGeometry(HR*0.62,10,8),gm());
+  body.scale.y=1.6;body.position.y=HH*0.18;grp.add(body);parts.push(body);
+  // 머리
+  const head=new THREE.Mesh(new THREE.SphereGeometry(HR*0.52,10,8),gm());
+  head.position.y=HH*0.92;grp.add(head);parts.push(head);
+  // 눈 2개
+  [-1,1].forEach(s=>{
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(BR*1.8,6,4),
+      new THREE.MeshStandardMaterial({color:'#001133',emissive:'#002266',emissiveIntensity:1.5,roughness:0,transparent:true,opacity:0.88}));
+    eye.position.set(s*HR*0.2,HH*0.98,HR*0.42);grp.add(eye);parts.push(eye);
+  });
+  // 유령 글로우 헤일로
+  const halo=new THREE.Mesh(
+    new THREE.SphereGeometry(HR*0.68,8,6),
+    new THREE.MeshStandardMaterial({color:'#AABBFF',emissive:'#7788FF',emissiveIntensity:1.5,roughness:1,transparent:true,opacity:0.18})
+  );
+  halo.scale.set(1.6,1.6,1.6);halo.position.y=HH*0.92;grp.add(halo);parts.push(halo);
+  return parts;
+}
+
+// 🌋 용암 — 어두운 바위 + 글로잉 크랙
+function buildLava(col,sk,grp){
+  const rockM=()=>new THREE.MeshStandardMaterial({color:'#1A1A1A',emissive:'#000000',emissiveIntensity:0,roughness:0.98,metalness:0.08});
+  const glowM=()=>new THREE.MeshStandardMaterial({color:'#FF4500',emissive:'#FF3300',emissiveIntensity:2.8,roughness:1,metalness:0,transparent:true,opacity:0.88});
+  const parts=[];
+  // 바위 몸통 (이코사헤드론 - 울퉁불퉁)
+  const rock=new THREE.Mesh(new THREE.IcosahedronGeometry(HR*0.78,0),rockM());
+  rock.scale.y=2.2;rock.position.y=HH*0.12;grp.add(rock);parts.push(rock);
+  // 아래 무거운 베이스
+  const base=new THREE.Mesh(new THREE.CylinderGeometry(HR*0.65,HR*0.85,BL*0.5,6),rockM());
+  base.position.y=-BL*0.48;grp.add(base);parts.push(base);
+  // 균열 (얇은 박스 세그먼트)
+  const crackDefs=[
+    {px:0,pz:0,py:HH*0.2,rx:0.55,rz:0.3,w:BR*1.2,h:HH*0.7},
+    {px:HR*0.3,pz:0,py:HH*0.0,rx:-0.3,rz:0.6,w:BR*0.9,h:HH*0.55},
+    {px:-HR*0.25,pz:HR*0.2,py:HH*0.35,rx:0.2,rz:-0.45,w:BR*0.8,h:HH*0.45},
+  ];
+  crackDefs.forEach(c=>{
+    const m=new THREE.Mesh(new THREE.BoxGeometry(c.w,c.h,BR*0.6),glowM());
+    m.position.set(c.px,c.py,c.pz);m.rotation.x=c.rx;m.rotation.z=c.rz;
+    grp.add(m);parts.push(m);
+  });
+  // 녹아내리는 용암 팁
+  const tip=new THREE.Mesh(
+    new THREE.SphereGeometry(HR*0.42,8,6),
+    new THREE.MeshStandardMaterial({color:'#FF6600',emissive:'#FF4400',emissiveIntensity:3.5,roughness:1,transparent:true,opacity:0.95})
+  );
+  tip.position.y=HH*1.05;grp.add(tip);parts.push(tip);
+  // 용암 방울 (아래)
+  [[-HR*0.3,-BL*0.3],[HR*0.28,-BL*0.45],[0,-BL*0.18]].forEach(([x,y])=>{
+    const d=new THREE.Mesh(new THREE.SphereGeometry(BR*2.5,6,4),glowM());
+    d.position.set(x,y,0);grp.add(d);parts.push(d);
+  });
+  return parts;
+}
+
+// 🌟 코스믹 — 우주 에너지 코어 + 오비탈 링
+function buildCosmic(col,sk,grp){
+  const parts=[];
+  const deepM=()=>new THREE.MeshStandardMaterial({
+    color:'#080028',emissive:'#2020AA',emissiveIntensity:0.5,
+    roughness:0,metalness:0.2,transparent:true,opacity:0.88,
+    envMap:_skinEnvMap,envMapIntensity:1.6
+  });
+  const glowM=(c,ei=2)=>new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:ei,roughness:0,transparent:true,opacity:0.8,envMap:_skinEnvMap,envMapIntensity:2});
+  // 슬림 본체
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(BR*0.6,BR*0.9,BL*1.1,8),deepM());
+  body.position.y=-BL*0.35;grp.add(body);parts.push(body);
+  // 코어 에너지 구
+  const core=new THREE.Mesh(
+    new THREE.SphereGeometry(HR*0.48,10,8),
+    new THREE.MeshStandardMaterial({color:'#FFFFFF',emissive:'#8080FF',emissiveIntensity:3.5,roughness:0,transparent:true,opacity:0.95,envMap:_skinEnvMap,envMapIntensity:2.5})
+  );
+  core.position.y=HH*0.35;grp.add(core);parts.push(core);
+  // 오비탈 링 3개 (다른 각도)
+  const ringCols=['#4444FF','#AA44FF','#44AAFF'];
+  ringCols.forEach((rc,i)=>{
+    const ring=new THREE.Mesh(
+      new THREE.TorusGeometry(HR*(0.62+i*0.12),BR*1.4,5,24),
+      glowM(rc,1.8)
+    );
+    ring.position.y=HH*(0.35+i*0.04);
+    ring.rotation.x=(i===0?0:i===1?Math.PI/3:Math.PI*0.7);
+    ring.rotation.z=i*0.6;
+    grp.add(ring);parts.push(ring);
+  });
+  // 별 파편 (작은 팔면체들)
+  [[HR*0.7,HH*0.6,0],[- HR*0.65,HH*0.15,0],[0,HH*0.8,HR*0.5],[HR*0.35,-BL*0.2,HR*0.4]].forEach(([x,y,z])=>{
+    const star=new THREE.Mesh(new THREE.OctahedronGeometry(BR*2.2,0),
+      glowM(['#FFD700','#AAFFFF','#FF88FF','#AAFFAA'][Math.round(Math.random()*3)],2.5));
+    star.position.set(x,y,z);star.rotation.x=Math.random()*Math.PI;star.rotation.z=Math.random()*Math.PI;
+    grp.add(star);parts.push(star);
+  });
+  // 테일 파티클 (하단)
+  const tail=new THREE.Mesh(new THREE.ConeGeometry(HR*0.3,BL*0.4,6),
+    new THREE.MeshStandardMaterial({color:'#0000FF',emissive:'#4444FF',emissiveIntensity:2,roughness:1,transparent:true,opacity:0.6}));
+  tail.position.y=-BL*0.85;grp.add(tail);parts.push(tail);
+  return parts;
+}
+
 function spawnArrows(lvl,skinId){
   arrows.forEach(a=>scene.remove(a.root));
   arrows=[];arrowMap={};
@@ -692,7 +989,7 @@ function spawnArrows(lvl,skinId){
   lvl.forEach((def,i)=>{
     const col=cols[i%cols.length];
     const root=new THREE.Group(),inner=new THREE.Group();root.add(inner);
-    const parts=sk.shape==='car'?buildCar(col,sk,inner):sk.shape==='rocket'?buildRocket(col,sk,inner):sk.shape==='star'?buildStar(col,sk,inner):sk.shape==='sword'?buildSword(col,sk,inner):sk.shape==='mushroom'?buildMushroom(col,sk,inner):sk.shape==='crystal2'?buildCrystal2(col,sk,inner):buildArrow(col,sk,inner,tex);
+    const parts=sk.shape==='car'?buildCar(col,sk,inner):sk.shape==='rocket'?buildRocket(col,sk,inner):sk.shape==='star'?buildStar(col,sk,inner):sk.shape==='sword'?buildSword(col,sk,inner):sk.shape==='mushroom'?buildMushroom(col,sk,inner):sk.shape==='crystal2'?buildCrystal2(col,sk,inner):sk.shape==='flame'?buildFlame(col,sk,inner):sk.shape==='ice'?buildIce(col,sk,inner):sk.shape==='thunder'?buildThunder(col,sk,inner):sk.shape==='dragon'?buildDragon(col,sk,inner):sk.shape==='rainbow'?buildRainbow(col,sk,inner):sk.shape==='ghost'?buildGhost(col,sk,inner):sk.shape==='lava'?buildLava(col,sk,inner):sk.shape==='cosmic'?buildCosmic(col,sk,inner):buildArrow(col,sk,inner,tex);
     const dv=DV[def.dir].clone();
     inner.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dv);
     const ring=new THREE.Mesh(new THREE.TorusGeometry(0.27,0.028,8,32),new THREE.MeshStandardMaterial({color:'#fff',emissive:'#fff',emissiveIntensity:1.3,roughness:1,metalness:0}));
@@ -962,6 +1259,111 @@ function playComboNote(){
       mkO('sine',f*1.25,0.5,0.008,0.45);
       mkO('sine',f*1.5,0.4,0.007,0.38);
       mkO('sine',f*2,0.26,0.005,0.3);
+    } else if(sk==='flame'){
+      // 🔥 불꽃: 지글지글 불꽃 크랙 — 디튠 쏘톱 다발 + 팍! 음
+      const f=80+i*22;
+      [0,14,-14,28,-28,42].forEach(det=>{
+        const o=ctx.createOscillator(),g=ctx.createGain();
+        o.type='sawtooth';o.frequency.value=f;o.detune.value=det;
+        o.connect(g);g.connect(comp);
+        g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(0.14*_sv,now+0.008);
+        g.gain.exponentialRampToValueAtTime(0.0001,now+0.28);
+        o.start(now);o.stop(now+0.33);
+      });
+      // 팝 톡음
+      sweep('sine',f*5,f*0.8,0.5,0.08);
+      mkO('sine',f*8,0.3,0.001,0.05);
+    } else if(sk==='ice'){
+      // ❄️ 얼음: 유리처럼 맑고 높은 크리스탈 벨
+      const f=(cf*4.5)+i*28;
+      mkO('sine',f,0.85,0.001,0.55);
+      mkO('sine',f*2.002,0.38,0.001,0.38);  // 약간 디튠 배음
+      mkO('sine',f*4.01,0.18,0.001,0.22);
+      mkO('triangle',f*0.498,0.22,0.002,0.65); // 낮은 배음 은은하게
+      sweep('sine',f*6,f*12,0.12,0.07);      // 얼음 반짝 스윕
+    } else if(sk==='thunder'){
+      // ⚡ 번개: 날카로운 전기 지직 — 스퀘어 버스트 + 피치 드롭
+      const f=200+i*60;
+      mkO('square',f,0.6,0.001,0.07);
+      sweep('sawtooth',f*3,f*0.3,0.7,0.12);  // 전압 방전 스윕 다운
+      mkO('square',f*1.5,0.4,0.001,0.05);
+      // 지직 레이어
+      [0,7,-7,18,-18].forEach(det=>{
+        const o=ctx.createOscillator(),g2=ctx.createGain();
+        o.type='square';o.frequency.value=f*2;o.detune.value=det;
+        o.connect(g2);g2.connect(comp);
+        g2.gain.setValueAtTime(0.18*_sv,now);g2.gain.exponentialRampToValueAtTime(0.0001,now+0.09);
+        o.start(now);o.stop(now+0.14);
+      });
+    } else if(sk==='dragon'){
+      // 🐉 드래곤: 웅장한 포효 — 저음 드론 + 고음 하모닉
+      const f=55+i*12;
+      mkO('sawtooth',f,0.7,0.015,0.6);      // 저음 몸통
+      mkO('sawtooth',f*2,0.45,0.010,0.5);
+      mkO('triangle',f*3,0.32,0.008,0.42);
+      mkO('sine',f*5.1,0.22,0.005,0.35);    // 포효 배음
+      mkO('sine',f*8,0.14,0.003,0.25);
+      sweep('sawtooth',f*0.5,f*1.8,0.4,0.22); // 포효 상승 글리산도
+    } else if(sk==='rainbow'){
+      // 🌈 무지개: 경쾌한 목금 아르페지오 — 5음계 튕기기
+      const penta=[1,1.2,1.5,1.8,2.0,2.4];
+      const f=cf*2.2;
+      penta.forEach((ratio,idx)=>{
+        const t2=now+idx*0.04;
+        const o=ctx.createOscillator(),g2=ctx.createGain();
+        o.type='triangle';o.frequency.value=f*ratio;
+        o.connect(g2);g2.connect(comp);
+        g2.gain.setValueAtTime(0,t2);g2.gain.linearRampToValueAtTime(0.42*_sv,t2+0.005);
+        g2.gain.exponentialRampToValueAtTime(0.0001,t2+0.28);
+        o.start(t2);o.stop(t2+0.33);
+      });
+      mkO('sine',f*3,0.2,0.001,0.15); // 반짝임
+    } else if(sk==='ghost'){
+      // 👻 유령: 섬뜩한 사인 진동 — 느린 비브라토 + 공허한 울림
+      const f=cf*0.8+i*10;
+      const lfo=ctx.createOscillator();const lfoG=ctx.createGain();
+      lfo.frequency.value=4.5+i*0.3;lfoG.gain.value=f*0.06;
+      lfo.connect(lfoG);
+      const o=ctx.createOscillator(),gv=ctx.createGain();
+      o.type='sine';o.frequency.value=f;
+      lfoG.connect(o.frequency);
+      o.connect(gv);gv.connect(comp);
+      gv.gain.setValueAtTime(0,now);gv.gain.linearRampToValueAtTime(0.5*_sv,now+0.06);
+      gv.gain.setValueAtTime(0.5*_sv,now+0.28);gv.gain.exponentialRampToValueAtTime(0.0001,now+0.7);
+      o.start(now);o.stop(now+0.75);lfo.start(now);lfo.stop(now+0.75);
+      mkO('sine',f*1.5,0.18,0.04,0.55);
+      mkO('triangle',f*2.01,0.10,0.02,0.45);
+    } else if(sk==='lava'){
+      // 🌋 용암: 묵직한 저음 럼블 + 돌 부서지는 소리
+      const f=45+i*10;
+      mkO('sawtooth',f,0.75,0.02,0.5);      // 저음 진동
+      mkO('sawtooth',f*2,0.42,0.015,0.4);
+      // 돌 크런치: 디튠 쏘톱 빽빽히
+      [0,20,-20,40,-40,60,-60].forEach(det=>{
+        const o=ctx.createOscillator(),g2=ctx.createGain();
+        o.type='sawtooth';o.frequency.value=f*0.75;o.detune.value=det;
+        o.connect(g2);g2.connect(comp);
+        g2.gain.setValueAtTime(0.1*_sv,now);g2.gain.exponentialRampToValueAtTime(0.0001,now+0.35);
+        o.start(now);o.stop(now+0.4);
+      });
+      sweep('sawtooth',f*3,f*0.6,0.35,0.18); // 용암 글리산도 다운
+    } else if(sk==='cosmic'){
+      // 🌟 코스믹: 에테르 사인 스윕 — 우주적 깊이 + 스타필드 반짝
+      const f=cf*1.5+i*18;
+      sweep('sine',f*0.5,f*3,0.55,0.4);      // 코스믹 상승 스윕
+      mkO('sine',f,0.4,0.01,0.5);
+      mkO('sine',f*1.618,0.28,0.008,0.42);   // 황금비 배음
+      mkO('sine',f*2.618,0.18,0.005,0.32);
+      // 별 반짝임 고주파
+      [8,10,13].forEach((mult,idx)=>{
+        const t2=now+idx*0.06;
+        const o=ctx.createOscillator(),g2=ctx.createGain();
+        o.type='sine';o.frequency.value=f*mult;
+        o.connect(g2);g2.connect(comp);
+        g2.gain.setValueAtTime(0,t2);g2.gain.linearRampToValueAtTime(0.15*_sv,t2+0.003);
+        g2.gain.exponentialRampToValueAtTime(0.0001,t2+0.15);
+        o.start(t2);o.stop(t2+0.2);
+      });
     } else {
       // 기본 (default + 나머지): 마림바/벨 — 원본과 동일
       const freq=cf*2;
