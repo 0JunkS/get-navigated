@@ -1517,11 +1517,9 @@ function showUI(which){
     document.getElementById('menu').classList.remove('hidden');
     document.getElementById('coin-pill').style.display='flex';
     if(upill&&upill.dataset.loggedIn==='1')upill.style.display='flex';
-    canvas.style.pointerEvents='none';
   }else if(which==='hud'){
     document.getElementById('hud').style.display='block';
     document.getElementById('exit-btn').style.display='flex';
-    canvas.style.pointerEvents='auto';
   }else if(which==='win'){
     document.getElementById('win-ov').style.display='flex';
   }else if(which==='over'){
@@ -8393,7 +8391,6 @@ function startEroPuzzleGame(arrow){
 
   // 게임 페이즈 설정
   phase='ero-puzzle';
-  canvas.style.pointerEvents='auto';
   selId=null;lastId=null;opening=false;
 
   // 에로 퍼즐 HUD 표시
@@ -8442,8 +8439,6 @@ function endEroPuzzle(success){
   phase='menu';
   controls.autoRotate=true;controls.autoRotateSpeed=1.3;
   initDemo();
-  canvas.style.pointerEvents='none';
-
   // 에로맵 재오픈
   EROMAP.open=false;
   setTimeout(()=>{
