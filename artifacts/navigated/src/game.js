@@ -8326,7 +8326,7 @@ function _createArrowMarker(arrow,sk,visible=true){
 
   function _tap(e){
     if(e.type==='touchend')e.preventDefault();
-    openEroPuzzle(arrow);
+    collectEroArrow(arrow);
   }
   el.addEventListener('click',_tap);
   el.addEventListener('touchend',_tap,{passive:false});
