@@ -8133,12 +8133,14 @@ function openEroMap(){
 function _initMapLibre(){
   if(typeof maplibregl==='undefined'){setTimeout(()=>_initMapLibre(),300);return;}
   if(EROMAP.map){EROMAP.map.resize();return;}
-  const lng=EROMAP.lon||126.9780,lat=EROMAP.lat||37.5665;
+  const hasGPS=EROMAP.lat!==null;
+  const lng=hasGPS?EROMAP.lon:127.0,lat=hasGPS?EROMAP.lat:36.5;
+  const initZoom=hasGPS?18.5:7,initPitch=hasGPS?78:0;
   const map=new maplibregl.Map({
     container:'eromap-map',
     style:'https://tiles.openfreemap.org/styles/liberty',
     center:[lng,lat],
-    zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),antialias:true
+    zoom:initZoom,pitch:initPitch,bearing:(EROMAP.heading||0),antialias:true
   });
   // AR모드: 사용자가 지도를 수동으로 회전 못하게 (나침반이 제어)
   map.dragRotate.disable();

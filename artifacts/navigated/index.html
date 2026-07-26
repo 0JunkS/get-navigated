@@ -227,7 +227,9 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 #multi-screen{
   position:absolute;inset:0;display:none;flex-direction:column;
   background:rgba(4,4,18,0.98);pointer-events:all;z-index:30;
-  align-items:center;justify-content:center;
+  align-items:center;justify-content:flex-start;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:24px 0 48px;
 }
 #multi-screen.on{display:flex}
 .multi-mode-card{max-width:380px;background:linear-gradient(160deg,rgba(11,16,44,.97),rgba(19,8,40,.97));overflow:hidden}
