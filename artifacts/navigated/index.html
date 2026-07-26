@@ -6,14 +6,25 @@
 <title>NAVIGATED</title>
 <style>
 /* ── 터치 이슈 글로벌 수정 ── */
-button,a,input,select,textarea,[role="button"]{touch-action:manipulation!important;-webkit-tap-highlight-color:transparent;cursor:pointer}
-input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-button,a,input,select,textarea,[role="button"]{touch-action:manipulation;pointer-events:auto;cursor:pointer}
 html,body{width:100%;height:100%;overflow:hidden;background:#06061a}
-body{font-family:'Inter','Apple SD Gothic Neo','Noto Sans KR',sans-serif;user-select:none;touch-action:none}
-canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!important;touch-action:none}
+body{font-family:'Inter','Apple SD Gothic Neo','Noto Sans KR',sans-serif;user-select:none;touch-action:pan-x pan-y}
+/* Three.js 메인 캔버스만 touch-action:none (id="c") */
+canvas#c{display:block;position:fixed;inset:0;width:100%!important;height:100%!important;touch-action:none}
+/* 기타 캔버스는 touch-action 유지 */
+canvas:not(#c){touch-action:manipulation}
+/* 모든 버튼/링크 전역 터치 수정 */
+button,a,input,select,textarea,[role="button"]{
+  touch-action:manipulation!important;
+  -webkit-tap-highlight-color:transparent;
+  cursor:pointer;
+  pointer-events:auto;
+  -webkit-user-select:none;
+  user-select:none;
+}
+/* iOS 최소 44px 터치 타겟 */
+button{min-height:44px;min-width:44px;}
+input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 #ui{position:fixed;inset:0;pointer-events:none}
 
 /* ── MENU ────────────────────────────────────────── */
@@ -105,18 +116,35 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
 #eromap-title{font-size:15px;font-weight:900;color:#4cc9f0;text-shadow:0 0 14px rgba(76,201,240,.6);flex:1;text-align:center;letter-spacing:2px}
 #eromap-weather-txt{font-size:13px;color:rgba(255,255,255,.8);white-space:nowrap}
 #eromap-map{position:absolute;inset:0;width:100%;height:100%}
-/* 마커 CSS */
-.ero-player-marker{position:relative;width:48px;height:48px;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.ero-pm-ring{position:absolute;width:48px;height:48px;border-radius:50%;border:3px solid rgba(76,201,240,.7);animation:eroPmPulse 1.8s ease-out infinite}
-.ero-pm-dot{font-size:22px;z-index:1;filter:drop-shadow(0 0 8px rgba(76,201,240,.9))}
+/* 마커 CSS - 아래 AR 스타일 참고 */
 @keyframes eroPmPulse{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.8);opacity:0}}
-.ero-arrow-marker{position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.ero-am-glow{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,var(--rc,.5) 0%,transparent 70%);animation:eroGlow 2s ease-in-out infinite;pointer-events:none}
-.ero-am-emoji{font-size:24px;z-index:1;filter:drop-shadow(0 0 6px var(--rc,#fff));animation:eroFloat 2.4s ease-in-out infinite}
-@keyframes eroGlow{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:.9;transform:scale(1.2)}}
-@keyframes eroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+/* AR 게임 스타일 화살표 마커 */
+.ero-arrow-marker{position:relative;width:90px;height:100px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;filter:drop-shadow(0 6px 18px rgba(0,0,0,.7))}
+.ero-am-glow{position:absolute;top:4px;left:50%;transform:translateX(-50%);width:74px;height:74px;border-radius:50%;background:radial-gradient(circle,var(--rc,rgba(76,201,240,.6)) 0%,transparent 70%);animation:eroGlow 1.8s ease-in-out infinite;pointer-events:none}
+.ero-am-shadow{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:44px;height:8px;border-radius:50%;background:rgba(0,0,0,.5);filter:blur(4px);pointer-events:none}
+/* 이모지 기본 표시 (3D 렌더 전) */
+.ero-am-emoji{width:72px;height:72px;font-size:38px;z-index:1;display:flex;align-items:center;justify-content:center;animation:eroFloat 2.4s ease-in-out infinite;position:relative}
+/* 3D 모델 이미지 (렌더 완료 후) */
+.ero-am-3d-img{width:72px;height:72px;object-fit:contain;animation:eroFloat 2.4s ease-in-out infinite;filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));}
+/* 거리 표시 배지 */
+.ero-am-dist{position:absolute;bottom:0;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.75);border:1px solid var(--rc,rgba(76,201,240,.5));color:#fff;font-size:11px;font-weight:900;border-radius:50px;padding:2px 8px;white-space:nowrap;z-index:2;pointer-events:none;backdrop-filter:blur(4px)}
+/* 스킨명 표시 배지 */
+.ero-am-name{position:absolute;top:-20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:var(--rc,#4cc9f0);font-size:10px;font-weight:700;border-radius:50px;padding:2px 8px;white-space:nowrap;z-index:2;pointer-events:none;text-shadow:0 0 8px var(--rc,#4cc9f0);border:1px solid var(--rc,rgba(76,201,240,.3))}
+@keyframes eroGlow{0%,100%{opacity:.5;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.25)}}
+@keyframes eroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .ero-am-collected{animation:eroCollect .4s ease-out forwards!important}
 @keyframes eroCollect{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(2.5) translateY(-20px)}}
+/* 나침반 UI */
+#eromap-compass{position:absolute;top:60px;right:14px;width:52px;height:52px;z-index:15;pointer-events:none}
+#eromap-compass-bg{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.2);backdrop-filter:blur(8px)}
+#eromap-compass-needle{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;transition:transform 0.12s ease-out}
+#eromap-compass-needle::before{content:'N';position:absolute;top:5px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:900;color:#ff4444;text-shadow:0 0 6px #ff4444}
+#eromap-compass-needle::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-100%);width:3px;height:16px;background:linear-gradient(180deg,#ff4444 0%,transparent 100%);border-radius:2px}
+#eromap-heading-txt{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#4cc9f0;font-size:11px;font-weight:900;border-radius:50px;padding:4px 12px;white-space:nowrap;z-index:15;pointer-events:none;border:1px solid rgba(76,201,240,.3);letter-spacing:1px;backdrop-filter:blur(8px)}
+/* 플레이어 마커 방향 표시 */
+.ero-player-marker{position:relative;width:52px;height:52px;display:flex;align-items:center;justify-content:center;pointer-events:none;transform-origin:50% 50%}
+.ero-pm-ring{position:absolute;width:52px;height:52px;border-radius:50%;border:3px solid rgba(76,201,240,.7);animation:eroPmPulse 1.8s ease-out infinite}
+.ero-pm-dot{font-size:22px;z-index:1;filter:drop-shadow(0 0 10px rgba(76,201,240,.9));position:relative}
 #eromap-bottom{position:absolute;bottom:0;left:0;right:0;padding:12px 16px 24px;background:linear-gradient(0deg,rgba(0,0,0,.7) 0%,transparent 100%);pointer-events:auto;display:flex;justify-content:space-between;align-items:flex-end}
 #eromap-time{font-size:22px;font-weight:900;color:#fff;font-family:monospace;text-shadow:0 0 12px rgba(76,201,240,.5)}
 #eromap-gps{font-size:10px;color:rgba(200,220,255,.6);text-align:right}
@@ -1755,11 +1783,18 @@ window._FB_CFG={
 <!-- ═══════════════ EROMAP OVERLAY ═══════════════ -->
 <div id="eromap-ov">
   <div id="eromap-topbar">
-    <button id="eromap-exit">← 뒤로</button>
+    <button id="eromap-exit" style="min-width:60px;min-height:44px;font-size:14px;font-weight:900;padding:0 16px;">← 뒤로</button>
     <div id="eromap-title">🗺️ 에로맵</div>
     <div id="eromap-weather-txt">☀️ 날씨 로딩...</div>
   </div>
   <div id="eromap-map"></div>
+  <!-- 나침반 UI -->
+  <div id="eromap-compass" aria-hidden="true">
+    <div id="eromap-compass-bg"></div>
+    <div id="eromap-compass-needle"></div>
+  </div>
+  <!-- 방위각 표시 -->
+  <div id="eromap-heading-txt">0° N</div>
   <div id="eromap-bottom">
     <div id="eromap-time">00:00:00</div>
     <div id="eromap-gps">📍 GPS 확인 중...</div>

@@ -8083,8 +8083,11 @@ function _initMapLibre(){
     container:'eromap-map',
     style:'https://tiles.openfreemap.org/styles/liberty',
     center:[lng,lat],
-    zoom:16.5,pitch:58,bearing:-12,antialias:true
+    zoom:18.5,pitch:78,bearing:-(EROMAP.heading||0),antialias:true
   });
+  // AR모드: 사용자가 지도를 수동으로 회전 못하게 (나침반이 제어)
+  map.dragRotate.disable();
+  map.touchZoomRotate.disableRotation();
   EROMAP.map=map;
   map.on('load',()=>{
     // 지형 (AWS Terrain Tiles - 무료·무키)
@@ -8158,7 +8161,7 @@ function eroSimulate(){
   EROMAP.lat=37.5665;EROMAP.lon=126.9780;
   document.getElementById('eromap-gps').textContent='📍 시뮬레이션 모드 (서울)';
   if(EROMAP.map&&EROMAP.map.loaded()){
-    EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:16.5,pitch:58,duration:1000});
+    EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:-(EROMAP.heading||0),duration:1000});
     _addOrMovePlayerMarker();spawnEroArrows();
   }
 }
@@ -8167,7 +8170,7 @@ function eroGPSInit(pos){
   EROMAP.lat=pos.coords.latitude;EROMAP.lon=pos.coords.longitude;
   document.getElementById('eromap-gps').textContent=`📍 ${EROMAP.lat.toFixed(4)}°N, ${EROMAP.lon.toFixed(4)}°E`;
   if(EROMAP.map&&EROMAP.map.loaded()){
-    EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:16.5,pitch:58,duration:1200});
+    EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:-(EROMAP.heading||0),duration:1200});
     _addOrMovePlayerMarker();spawnEroArrows();
   }
   setTimeout(()=>_updateArrowVisibility(),500);
@@ -8176,7 +8179,7 @@ function eroGPSInit(pos){
 function eroGPSUpdate(pos){
   EROMAP.lat=pos.coords.latitude;EROMAP.lon=pos.coords.longitude;
   document.getElementById('eromap-gps').textContent=`📍 ${EROMAP.lat.toFixed(4)}°N, ${EROMAP.lon.toFixed(4)}°E`;
-  if(EROMAP.map){EROMAP.map.panTo([EROMAP.lon,EROMAP.lat],{duration:700});_addOrMovePlayerMarker();}
+  if(EROMAP.map){EROMAP.map.panTo([EROMAP.lon,EROMAP.lat],{duration:500});_addOrMovePlayerMarker();}
   _updateArrowVisibility();
   checkEroCollection();
 }
@@ -8191,6 +8194,86 @@ async function fetchEroWeather(){
     EROMAP.weather={code,temp,emoji:wi.emoji,name:wi.name};
     document.getElementById('eromap-weather-txt').textContent=`${wi.emoji} ${wi.name} ${temp}°C`;
   }catch{}
+}
+
+// ══════════════════════════════════════════════════
+// 에로맵 — 3D 모델 썸네일 렌더러 (솔로플레이 Three.js 모델 재사용)
+// ══════════════════════════════════════════════════
+const _arrowThumbCache={};
+
+function _renderArrowThumb(sk){
+  const cacheKey=sk.id;
+  if(_arrowThumbCache[cacheKey])return Promise.resolve(_arrowThumbCache[cacheKey]);
+  return new Promise(resolve=>{
+    try{
+      const SIZE=120;
+      const offCanvas=document.createElement('canvas');
+      offCanvas.width=SIZE;offCanvas.height=SIZE;
+      const offRenderer=new THREE.WebGLRenderer({canvas:offCanvas,antialias:true,alpha:true});
+      offRenderer.setSize(SIZE,SIZE);
+      offRenderer.setPixelRatio(1);
+      offRenderer.setClearColor(0x000000,0);
+      offRenderer.outputColorSpace=THREE.SRGBColorSpace;
+
+      const offScene=new THREE.Scene();
+      const offCamera=new THREE.PerspectiveCamera(38,1,0.01,100);
+
+      // 조명 설정
+      const aLight=new THREE.AmbientLight(0xffffff,0.65);
+      const dLight=new THREE.DirectionalLight(0xffffff,1.4);
+      dLight.position.set(1.5,3,2.5);
+      const fill=new THREE.DirectionalLight(0x8888ff,0.5);
+      fill.position.set(-2,-1,-1);
+      offScene.add(aLight,dLight,fill);
+
+      // 3D 모델 빌드 (솔로플레이와 동일한 함수 사용)
+      const col=typeof sk.c==='string'?sk.c:(sk.fc||'#4cc9f0');
+      const grp=new THREE.Group();
+      offScene.add(grp);
+      if(sk.shape==='car')buildCar(col,sk,grp);
+      else if(sk.shape==='rocket')buildRocket(col,sk,grp);
+      else if(sk.shape==='star')buildStar(col,sk,grp);
+      else if(sk.shape==='sword')buildSword(col,sk,grp);
+      else if(sk.shape==='mushroom')buildMushroom(col,sk,grp);
+      else if(sk.shape==='crystal2')buildCrystal2(col,sk,grp);
+      else if(sk.shape==='flame')buildFlame(col,sk,grp);
+      else if(sk.shape==='ice')buildIce(col,sk,grp);
+      else if(sk.shape==='thunder')buildThunder(col,sk,grp);
+      else if(sk.shape==='dragon')buildDragon(col,sk,grp);
+      else if(sk.shape==='rainbow')buildRainbow(col,sk,grp);
+      else if(sk.shape==='ghost')buildGhost(col,sk,grp);
+      else if(sk.shape==='lava')buildLava(col,sk,grp);
+      else if(sk.shape==='cosmic')buildCosmic(col,sk,grp);
+      else buildArrow(col,sk,grp,null);
+
+      // 바운딩 박스 기반으로 카메라 배치
+      const box=new THREE.Box3().setFromObject(grp);
+      const center=new THREE.Vector3();box.getCenter(center);
+      const sizeVec=new THREE.Vector3();box.getSize(sizeVec);
+      const maxDim=Math.max(sizeVec.x,sizeVec.y,sizeVec.z);
+      const dist=maxDim*2.1;
+      offCamera.position.set(center.x+dist*0.4,center.y+dist*0.5,center.z+dist*0.95);
+      offCamera.lookAt(center);
+
+      offRenderer.render(offScene,offCamera);
+      const dataURL=offCanvas.toDataURL('image/png');
+      _arrowThumbCache[cacheKey]=dataURL;
+
+      // 메모리 정리
+      offScene.traverse(obj=>{
+        if(obj.geometry)obj.geometry.dispose();
+        if(obj.material){
+          if(Array.isArray(obj.material))obj.material.forEach(m=>m.dispose());
+          else obj.material.dispose();
+        }
+      });
+      offRenderer.dispose();
+      resolve(dataURL);
+    }catch(err){
+      // 렌더 실패 시 이모지 fallback
+      resolve(null);
+    }
+  });
 }
 
 function spawnEroArrows(){
@@ -8217,11 +8300,48 @@ function _createArrowMarker(arrow,sk,visible=true){
   const el=document.createElement('div');
   el.className='ero-arrow-marker';
   el.style.setProperty('--rc',rc);
-  el.innerHTML=`<div class=ero-am-glow></div><div class=ero-am-emoji>${sk.emoji}</div>`;
-  el.addEventListener('click',()=>openEroPuzzle(arrow));
-  el.addEventListener('touchend',(e)=>{e.preventDefault();openEroPuzzle(arrow);},{passive:false});
+  // 초기엔 이모지로 표시, 3D 렌더가 완료되면 교체
+  el.innerHTML=`<div class=ero-am-glow></div><div class=ero-am-shadow></div><div class=ero-am-emoji>${sk.emoji}</div>`;
+
+  // 3D 모델 렌더링 비동기 적용 (솔로플레이 Three.js 모델)
+  _renderArrowThumb(sk).then(dataURL=>{
+    if(!dataURL||!el.isConnected)return;
+    const emojiEl=el.querySelector('.ero-am-emoji');
+    if(emojiEl){
+      emojiEl.innerHTML=`<img class="ero-am-3d-img" src="${dataURL}" alt="${sk.name}">`;
+    }
+  });
+
+  // 거리 표시 레이블
+  const distLabel=document.createElement('div');
+  distLabel.className='ero-am-dist';
+  distLabel.textContent='';
+  el.appendChild(distLabel);
+
+  // 스킨명 표시
+  const nameLabel=document.createElement('div');
+  nameLabel.className='ero-am-name';
+  nameLabel.textContent=sk.name;
+  el.appendChild(nameLabel);
+
+  function _tap(e){
+    if(e.type==='touchend')e.preventDefault();
+    openEroPuzzle(arrow);
+  }
+  el.addEventListener('click',_tap);
+  el.addEventListener('touchend',_tap,{passive:false});
   if(!visible)el.style.display='none';
-  return new maplibregl.Marker({element:el,anchor:'center'})
+
+  // 마커 거리 주기적 업데이트
+  arrow._distInterval=setInterval(()=>{
+    if(!EROMAP.lat||!el.isConnected){clearInterval(arrow._distInterval);return;}
+    const dlat=(arrow.lat-EROMAP.lat)*111000;
+    const dlon=(arrow.lon-EROMAP.lon)*111000*Math.cos(EROMAP.lat*Math.PI/180);
+    const dist=Math.round(Math.sqrt(dlat*dlat+dlon*dlon));
+    distLabel.textContent=dist<1000?`${dist}m`:`${(dist/1000).toFixed(1)}km`;
+  },1500);
+
+  return new maplibregl.Marker({element:el,anchor:'bottom'})
     .setLngLat([arrow.lon,arrow.lat]).addTo(EROMAP.map);
 }
 
@@ -8239,6 +8359,7 @@ function checkEroCollection(){
 function collectEroArrow(a){
   if(a.collected)return;
   a.collected=true;
+  if(a._distInterval){clearInterval(a._distInterval);a._distInterval=null;}
   playEroCollectSound();
   if(a.marker){
     a.marker.getElement().classList.add('ero-am-collected');
@@ -8257,6 +8378,7 @@ function collectEroArrow(a){
 
 function respawnEroArrow(a){
   a.collected=false;
+  if(a._distInterval){clearInterval(a._distInterval);a._distInterval=null;}
   if(a.marker){a.marker.remove();a.marker=null;}
   const angle=Math.random()*Math.PI*2,dist=10+Math.random()*50;
   if(EROMAP.lat===null)return;
@@ -8314,7 +8436,8 @@ function _updateArrowVisibility(){
   });
 }
 
-// 나침반 방향 핸들러 (에로맵 지도 시점 회전)
+// 나침반 방향 핸들러 (에로맵 지도 시점 회전) — EMA 스무딩 적용
+let _eroSmoothHeading=null;
 function _eroOrientationHandler(e){
   let heading=null;
   if(typeof e.webkitCompassHeading==='number'){
@@ -8327,9 +8450,33 @@ function _eroOrientationHandler(e){
     heading=(360-e.alpha)%360;
   }
   if(heading===null)return;
-  EROMAP.heading=heading;
+  // EMA 스무딩: 급격한 방향 변화를 방지하고 안정적으로 유지
+  if(_eroSmoothHeading===null){
+    _eroSmoothHeading=heading;
+  }else{
+    // 각도 차이를 -180~180 범위로 정규화
+    let diff=((heading-_eroSmoothHeading+540)%360)-180;
+    _eroSmoothHeading=(_eroSmoothHeading+diff*0.18+360)%360;
+  }
+  EROMAP.heading=_eroSmoothHeading;
   if(EROMAP.map){
-    EROMAP.map.setBearing(-heading);
+    // jumpTo로 즉각 반영 (애니메이션 지연 없이)
+    EROMAP.map.jumpTo({bearing:-_eroSmoothHeading});
+  }
+  // 플레이어 마커 방향 표시
+  if(EROMAP.playerMarker){
+    const pmEl=EROMAP.playerMarker.getElement();
+    if(pmEl)pmEl.style.transform=`rotate(${_eroSmoothHeading}deg)`;
+  }
+  // 나침반 UI 업데이트
+  const compassNeedle=document.getElementById('eromap-compass-needle');
+  if(compassNeedle)compassNeedle.style.transform=`rotate(${_eroSmoothHeading}deg)`;
+  // 방위 텍스트
+  const headingEl=document.getElementById('eromap-heading-txt');
+  if(headingEl){
+    const dirs=['N','NE','E','SE','S','SW','W','NW'];
+    const dir=dirs[Math.round(_eroSmoothHeading/45)%8];
+    headingEl.textContent=`${Math.round(_eroSmoothHeading)}° ${dir}`;
   }
 }
 
