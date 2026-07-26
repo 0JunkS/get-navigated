@@ -8597,20 +8597,15 @@ function updateEroTime(){
 // 에로맵 — 나침반/방향 & 17m 가시성 시스템
 // ══════════════════════════════════════════════════
 
-// 화살표 가시성 업데이트 (17m 이내만 표시)
+// 화살표 가시성 업데이트 — 한 번 뜨면 사라지지 않음 (수집되지 않은 것은 항상 표시)
 function _updateArrowVisibility(){
-  if(!EROMAP.arrows.length||EROMAP.lat===null)return;
-  const R=EROMAP.COLLECT_R;
+  if(!EROMAP.arrows.length)return;
   EROMAP.arrows.forEach(a=>{
     if(a.collected||!a.marker)return;
-    const dlat=(a.lat-EROMAP.lat)*111000;
-    const dlon=(a.lon-EROMAP.lon)*111000*Math.cos(EROMAP.lat*Math.PI/180);
-    const dist=Math.sqrt(dlat*dlat+dlon*dlon);
-    const shouldShow=dist<=R;
-    if(shouldShow!==a.visible){
-      a.visible=shouldShow;
+    if(!a.visible){
+      a.visible=true;
       const el=a.marker.getElement();
-      if(el)el.style.display=shouldShow?'flex':'none';
+      if(el)el.style.display='flex';
     }
   });
 }
@@ -8696,8 +8691,17 @@ function startEroPuzzleGame(arrow){
   // 희귀도 → 레벨 인덱스 (솔로 플레이 동일 레벨 사용)
   const rarityLvl={common:0,rare:1,epic:2,legendary:3}[sk.rarity||'common']??0;
 
-  // 에로맵 오버레이 숨기기
+  // 에로맵 오버레이 숨기기 + 메뉴/코인/기타 UI 모두 숨겨 홈화면이 노출되지 않도록
   document.getElementById('eromap-ov').classList.remove('on');
+  document.getElementById('menu').classList.add('hidden');
+  document.getElementById('coin-pill').style.display='none';
+  document.getElementById('hud').style.display='none';
+  document.getElementById('win-ov').style.display='none';
+  document.getElementById('over-ov').style.display='none';
+  document.getElementById('exit-btn').style.display='none';
+  document.getElementById('shop').classList.remove('on');
+  const _upill=document.getElementById('user-pill');
+  if(_upill)_upill.style.display='none';
 
   // 미니 레벨 생성 및 화살표 스폰 (솔로 플레이와 동일한 genLevel 사용)
   const lv=genLevel(rarityLvl);
