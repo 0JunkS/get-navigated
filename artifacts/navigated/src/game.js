@@ -8631,8 +8631,8 @@ function _createArrowMarker(arrow,sk,visible=true){
 
   // pitchAlignment:'viewport' → 카메라를 향해 항상 수직으로 세워짐 (땅에 박히지 않음)
   // offset: 화면 Y축으로 위로 띄움 (양수=아래, 음수=위)
-  return new maplibregl.Marker({element:el,anchor:'center',pitchAlignment:'viewport',rotationAlignment:'viewport'})
-    .setLngLat([arrow.lon,arrow.lat]).addTo(EROMAP.map);
+  return new maplibregl.Marker({element:el,anchor:'center',pitchAlignment:'viewport',rotationAlignment:'viewport',offset:[0,-10]})
+    .setLngLat([arrow.lon,arrow.lat,15]).addTo(EROMAP.map);
 }
 
 function checkEroCollection(){
