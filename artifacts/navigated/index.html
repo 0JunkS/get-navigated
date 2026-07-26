@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>NAVIGATED</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:none}
-button,a,input,select,textarea,[role="button"]{touch-action:manipulation}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+button,a,input,select,textarea,[role="button"]{touch-action:manipulation;pointer-events:auto}
 html,body{width:100%;height:100%;overflow:hidden;background:#06061a}
 body{font-family:'Inter','Apple SD Gothic Neo','Noto Sans KR',sans-serif;user-select:none;touch-action:none}
-canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!important}
+canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!important;touch-action:none}
 #ui{position:fixed;inset:0;pointer-events:none}
 
 /* ── MENU ────────────────────────────────────────── */
@@ -461,7 +461,7 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
       // 버튼·링크 등 인터랙티브 요소는 touch-action:manipulation으로 처리하므로
       // preventDefault를 호출하지 않아야 click 이벤트가 정상 발화함 (iOS Safari)
       var t = e.target;
-      if(!t || !t.closest || !t.closest('button,a,input,select,textarea,[role="button"]')){
+      if(!t || !t.closest || !t.closest('button,a,input,select,textarea,label,[role="button"],.btn,.sk,.lv-card,.mode-choice,.diff-card,.friend-card,.bp-reward-cell,.game-card,.nf-ov,.overlay')){
         e.preventDefault();
       }
     }

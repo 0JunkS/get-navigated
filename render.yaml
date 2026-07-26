@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: get-navigated
+    env: node
+    plan: free
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && PORT=19477 BASE_PATH=/ pnpm --filter @workspace/navigated run build
+    startCommand: node server.mjs

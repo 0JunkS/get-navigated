@@ -3,11 +3,14 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "tsc --build",
-    "start": "node dist/index.js",
+    "build": "pnpm --filter @workspace/navigated run build",
+    "start": "node server.mjs",
     "typecheck": "tsc --noEmit"
   },
   "private": true,
+  "dependencies": {
+    "ws": "^8.18.3"
+  },
   "devDependencies": {
     "prettier": "^3.9.5",
     "typescript": "~5.9.3"

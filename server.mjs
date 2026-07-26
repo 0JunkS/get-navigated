@@ -9,8 +9,8 @@
 
 import { createServer } from "http";
 import { WebSocketServer, WebSocket } from "ws";
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
-import { join, dirname } from "path";
+import { createReadStream, readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from "fs";
+import { extname, join, dirname, normalize, relative } from "path";
 import { fileURLToPath } from "url";
 
 const PORT = Number(process.env.PORT ?? 10000);
@@ -19,6 +19,27 @@ const PORT = Number(process.env.PORT ?? 10000);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = join(__dirname, "data");
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
+
+const STATIC_DIRS = [
+  join(__dirname, "artifacts", "navigated", "dist", "public"),
+  join(__dirname, "artifacts", "navigated"),
+];
+const STATIC_ROOT = STATIC_DIRS.find(dir => existsSync(join(dir, "index.html"))) ?? null;
+const MIME_TYPES = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".mp3": "audio/mpeg",
+  ".wav": "audio/wav",
+  ".ico": "image/x-icon",
+  ".txt": "text/plain; charset=utf-8",
+};
 
 const LB_FILE    = join(DATA_DIR, "leaderboard.json");
 const HIST_FILE  = join(DATA_DIR, "msghistory.json");
@@ -34,6 +55,46 @@ function loadJSON(path, fallback) {
 
 function saveJSON(path, data) {
   try { writeFileSync(path, JSON.stringify(data), "utf8"); } catch {}
+}
+
+function tryServeStatic(url, res) {
+  if (!STATIC_ROOT) return false;
+
+  let pathname;
+  try {
+    pathname = decodeURIComponent(url.pathname);
+  } catch {
+    res.writeHead(400);
+    res.end("Bad request");
+    return true;
+  }
+
+  if (pathname === "/") pathname = "/index.html";
+  const requestedPath = normalize(join(STATIC_ROOT, pathname));
+  const rel = relative(STATIC_ROOT, requestedPath);
+  if (rel.startsWith("..") || rel.includes("..\\")) {
+    res.writeHead(403);
+    res.end("Forbidden");
+    return true;
+  }
+
+  let filePath = requestedPath;
+  if (!existsSync(filePath)) filePath = join(STATIC_ROOT, "index.html");
+
+  try {
+    const stat = statSync(filePath);
+    if (!stat.isFile()) return false;
+  } catch {
+    return false;
+  }
+
+  const ext = extname(filePath).toLowerCase();
+  res.writeHead(200, {
+    "Content-Type": MIME_TYPES[ext] ?? "application/octet-stream",
+    "Cache-Control": ext === ".html" ? "no-cache" : "public, max-age=31536000, immutable",
+  });
+  createReadStream(filePath).pipe(res);
+  return true;
 }
 
 // ── Known users (가입 이력이 있는 닉네임) ────────────────────────────────────
@@ -235,6 +296,8 @@ const httpServer = createServer((req, res) => {
     res.end(JSON.stringify({ ok: true, ts: Date.now() }));
     return;
   }
+
+  if (req.method === "GET" && tryServeStatic(url, res)) return;
 
   res.writeHead(200, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ status: "ok", rooms: rooms.size, users: users.size }));
