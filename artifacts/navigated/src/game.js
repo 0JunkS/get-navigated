@@ -8103,29 +8103,18 @@ function openEroMap(){
     }
   }
   if('geolocation' in navigator){
-    function _gpsError(err){
-      if(err&&err.code===1){
-        document.getElementById('eromap-gps').textContent='📍 위치 권한 거부됨 — 브라우저 설정에서 허용해주세요';
-        eroSimulate();
-      }else{
-        document.getElementById('eromap-gps').textContent='📍 GPS 재시도 중...';
-        navigator.geolocation.getCurrentPosition(
-          pos=>eroGPSInit(pos),
-          ()=>eroSimulate(),
-          {enableHighAccuracy:false,timeout:15000,maximumAge:60000}
-        );
-      }
+    _startEroGPS();
+    // Permissions API로 권한 상태 변화 감시 (Safari 16+, Chrome 지원)
+    if(navigator.permissions){
+      navigator.permissions.query({name:'geolocation'}).then(status=>{
+        status.onchange=function(){
+          if(this.state==='granted'){
+            _hideGPSRetry();
+            _startEroGPS();
+          }
+        };
+      }).catch(()=>{});
     }
-    navigator.geolocation.getCurrentPosition(
-      pos=>eroGPSInit(pos),
-      err=>_gpsError(err),
-      {enableHighAccuracy:true,timeout:10000,maximumAge:0}
-    );
-    EROMAP.watchId=navigator.geolocation.watchPosition(
-      pos=>eroGPSUpdate(pos),
-      ()=>{},
-      {enableHighAccuracy:true,maximumAge:2000,timeout:10000}
-    );
   }else{eroSimulate();}
   setTimeout(()=>fetchEroWeather(),600);
 }
@@ -8381,6 +8370,65 @@ function closeEroMap(){
   controls.autoRotate=true;controls.autoRotateSpeed=1.3;
   showUI('menu');
   initDemo();
+}
+
+// ── GPS 권한/재시도 헬퍼 ──────────────────────────────────
+function _isIOS(){return/iP(hone|od|ad)/.test(navigator.userAgent);}
+function _isMac(){return/Macintosh/.test(navigator.userAgent)&&'ontouchend' in document;}
+
+function _showGPSRetry(guideText){
+  const btn=document.getElementById('eromap-gps-retry');
+  const guide=document.getElementById('eromap-gps-guide');
+  if(btn)btn.style.display='block';
+  if(guide&&guideText){guide.textContent=guideText;guide.style.display='block';}
+}
+function _hideGPSRetry(){
+  const btn=document.getElementById('eromap-gps-retry');
+  const guide=document.getElementById('eromap-gps-guide');
+  if(btn)btn.style.display='none';
+  if(guide){guide.textContent='';guide.style.display='none';}
+}
+
+function _startEroGPS(){
+  if(!('geolocation' in navigator)){eroSimulate();return;}
+  function _gpsError(err){
+    if(err&&err.code===1){
+      // 권한 거부
+      document.getElementById('eromap-gps').textContent='📍 위치 권한 거부됨';
+      const guide=(_isIOS()||_isMac())
+        ? '설정 > 개인 정보 보호 > 위치 서비스\n> Safari > "앱을 사용하는 동안"'
+        : '브라우저 주소창 자물쇠 아이콘 >\n위치 > 허용 후 새로고침';
+      _showGPSRetry(guide);
+      eroSimulate();
+    }else{
+      document.getElementById('eromap-gps').textContent='📍 GPS 재시도 중...';
+      navigator.geolocation.getCurrentPosition(
+        pos=>{_hideGPSRetry();eroGPSInit(pos);},
+        ()=>eroSimulate(),
+        {enableHighAccuracy:false,timeout:15000,maximumAge:60000}
+      );
+    }
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos=>{_hideGPSRetry();eroGPSInit(pos);},
+    err=>_gpsError(err),
+    {enableHighAccuracy:true,timeout:10000,maximumAge:0}
+  );
+  if(EROMAP.watchId==null){
+    EROMAP.watchId=navigator.geolocation.watchPosition(
+      pos=>eroGPSUpdate(pos),
+      ()=>{},
+      {enableHighAccuracy:true,maximumAge:2000,timeout:10000}
+    );
+  }
+}
+
+function eroRetryGPS(){
+  _hideGPSRetry();
+  document.getElementById('eromap-gps').textContent='📍 GPS 확인 중...';
+  // watchPosition 재시작
+  if(EROMAP.watchId!=null){navigator.geolocation.clearWatch(EROMAP.watchId);EROMAP.watchId=null;}
+  _startEroGPS();
 }
 
 function eroSimulate(){
