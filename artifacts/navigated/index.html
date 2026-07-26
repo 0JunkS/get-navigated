@@ -14,7 +14,7 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
 
 /* ── MENU ────────────────────────────────────────── */
 #menu{position:absolute;inset:0;display:flex;flex-direction:column;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y!important;pointer-events:none;transition:opacity .5s}
-#menu *{touch-action:pan-y!important}
+#menu button,#menu a,#menu [role="button"],#menu input,#menu label,#menu select{touch-action:manipulation!important}
 #menu:not(.hidden){pointer-events:auto}
 #menu.hidden{opacity:0;pointer-events:none}#menu.hidden *{pointer-events:none!important}
 #menu-top{padding:52px 0 0;text-align:center;pointer-events:none;flex-shrink:0;margin-bottom:32px}
@@ -457,14 +457,7 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
   var _lastTap = 0;
   document.addEventListener('touchend', function(e){
     var now = Date.now();
-    if(now - _lastTap < 300){
-      // 버튼·링크 등 인터랙티브 요소는 touch-action:manipulation으로 처리하므로
-      // preventDefault를 호출하지 않아야 click 이벤트가 정상 발화함 (iOS Safari)
-      var t = e.target;
-      if(!t || !t.closest || !t.closest('button,a,input,select,textarea,label,[role="button"],.btn,.sk,.lv-card,.mode-choice,.diff-card,.friend-card,.bp-reward-cell,.game-card,.nf-ov,.overlay')){
-        e.preventDefault();
-      }
-    }
+    if(now - _lastTap < 300){ e.preventDefault(); }
     _lastTap = now;
   }, {passive: false});
   // Block gesturestart / gesturechange (iOS Safari pinch)
