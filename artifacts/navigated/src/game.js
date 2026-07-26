@@ -1644,6 +1644,8 @@ function endGame(won){
   const stars=lives>=maxLiv?3:lives>0?2:1;
   const prev=clearedLevels[lvIdx]||0;
   if(stars>prev)clearedLevels[lvIdx]=stars;
+  // 클리어 시 다음 레벨 해금 (레벨 선택 화면에서 바로 눌릴 수 있게)
+  if(lvIdx+1>progress){progress=lvIdx+1;doSave();}
   const r=reward(lvIdx,lives,maxLiv);coins+=r;doSave();updateCoins();
   if(typeof _addBPXP==='function'){var _bpDm2={easy:0.7,normal:1,hard:1.5,extreme:2}[typeof _currentDiff!=='undefined'?_currentDiff:'normal']||1;var _bpXp=Math.round(120*_bpDm2);setTimeout(function(){_addBPXP(_bpXp);popup('+'+_bpXp+' BP XP',innerWidth/2,innerHeight*.42,'#7b2ff7');},500);}
   popup(`+${r} 💰`,innerWidth/2,innerHeight*.45);
