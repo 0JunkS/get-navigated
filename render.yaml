@@ -3,5 +3,10 @@ services:
     name: get-navigated
     env: node
     plan: free
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && PORT=19477 BASE_PATH=/ pnpm --filter @workspace/navigated run build
+    buildCommand: bash render-build.sh
     startCommand: node server.mjs
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
