@@ -8085,18 +8085,35 @@ function openEroMap(){
     setTimeout(()=>_initMapLibre(),80);
   }else{
     EROMAP.map.resize();
-    if(EROMAP.lat!==null){_addOrMovePlayerMarker();if(!EROMAP.arrows.length)spawnEroArrows();}
+    if(EROMAP.lat!==null){
+      EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),duration:800});
+      _addOrMovePlayerMarker();
+      if(!EROMAP.arrows.length)spawnEroArrows();
+    }
   }
   if('geolocation' in navigator){
+    function _gpsError(err){
+      if(err&&err.code===1){
+        document.getElementById('eromap-gps').textContent='📍 위치 권한 거부됨 — 브라우저 설정에서 허용해주세요';
+        eroSimulate();
+      }else{
+        document.getElementById('eromap-gps').textContent='📍 GPS 재시도 중...';
+        navigator.geolocation.getCurrentPosition(
+          pos=>eroGPSInit(pos),
+          ()=>eroSimulate(),
+          {enableHighAccuracy:false,timeout:15000,maximumAge:60000}
+        );
+      }
+    }
     navigator.geolocation.getCurrentPosition(
       pos=>eroGPSInit(pos),
-      ()=>eroSimulate(),
-      {enableHighAccuracy:true,timeout:8000,maximumAge:0}
+      err=>_gpsError(err),
+      {enableHighAccuracy:true,timeout:10000,maximumAge:0}
     );
     EROMAP.watchId=navigator.geolocation.watchPosition(
       pos=>eroGPSUpdate(pos),
       ()=>{},
-      {enableHighAccuracy:true,maximumAge:2000,timeout:8000}
+      {enableHighAccuracy:true,maximumAge:2000,timeout:10000}
     );
   }else{eroSimulate();}
   setTimeout(()=>fetchEroWeather(),600);
@@ -8110,7 +8127,7 @@ function _initMapLibre(){
     container:'eromap-map',
     style:'https://tiles.openfreemap.org/styles/liberty',
     center:[lng,lat],
-    zoom:18.5,pitch:78,bearing:-(EROMAP.heading||0),antialias:true
+    zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),antialias:true
   });
   // AR모드: 사용자가 지도를 수동으로 회전 못하게 (나침반이 제어)
   map.dragRotate.disable();
@@ -8129,8 +8146,12 @@ function _initMapLibre(){
     _addBuildingLayer(map);
     // 하늘
     try{map.setSky({'sky-color':'#4fc3f7','sky-horizon-blend':0.5,'horizon-color':'#fde8ff','horizon-fog-blend':0.3,'atmosphere-blend':0.5});}catch(e){}
-    // 플레이어·화살
-    if(EROMAP.lat!==null){_addOrMovePlayerMarker();if(!EROMAP.arrows.length)spawnEroArrows();}
+    // 플레이어·화살 — GPS가 지도보다 먼저 도착했을 경우 실제 위치로 이동
+    if(EROMAP.lat!==null){
+      map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),duration:1200});
+      _addOrMovePlayerMarker();
+      if(!EROMAP.arrows.length)spawnEroArrows();
+    }
   });
   map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'top-right');
   // 지형이 변할 때마다 플레이어 마커 고도 업데이트 (땅 위에 항상 붙게)
@@ -8353,7 +8374,7 @@ function eroSimulate(){
   EROMAP.lat=37.5665;EROMAP.lon=126.9780;
   document.getElementById('eromap-gps').textContent='📍 시뮬레이션 모드 (서울)';
   if(EROMAP.map&&EROMAP.map.loaded()){
-    EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:-(EROMAP.heading||0),duration:1000});
+    EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),duration:1000});
     _addOrMovePlayerMarker();spawnEroArrows();
   }
 }
@@ -8362,7 +8383,7 @@ function eroGPSInit(pos){
   EROMAP.lat=pos.coords.latitude;EROMAP.lon=pos.coords.longitude;
   document.getElementById('eromap-gps').textContent=`📍 ${EROMAP.lat.toFixed(4)}°N, ${EROMAP.lon.toFixed(4)}°E`;
   if(EROMAP.map&&EROMAP.map.loaded()){
-    EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:-(EROMAP.heading||0),duration:1200});
+    EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),duration:1200});
     _addOrMovePlayerMarker();spawnEroArrows();
   }
   setTimeout(()=>{_updateArrowVisibility();_updateBuildingTransparency();},600);
@@ -8381,7 +8402,7 @@ function eroGPSUpdate(pos){
   }
   if(EROMAP.map){
     // 플레이어 항상 화면 중앙 유지
-    EROMAP.map.easeTo({center:[EROMAP.lon,EROMAP.lat],bearing:-(EROMAP.heading||0),duration:600});
+    EROMAP.map.easeTo({center:[EROMAP.lon,EROMAP.lat],bearing:(EROMAP.heading||0),duration:600});
     _addOrMovePlayerMarker();
   }
   _updateArrowVisibility();
@@ -8664,7 +8685,7 @@ function _eroOrientationHandler(e){
   EROMAP.heading=_eroSmoothHeading;
   if(EROMAP.map){
     // 플레이어를 항상 화면 중앙에 유지하면서 방향 회전
-    const jumpOpts={bearing:-_eroSmoothHeading};
+    const jumpOpts={bearing:_eroSmoothHeading};
     if(EROMAP.lat!==null)jumpOpts.center=[EROMAP.lon,EROMAP.lat];
     EROMAP.map.jumpTo(jumpOpts);
   }
