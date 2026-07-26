@@ -8009,7 +8009,12 @@ const EROMAP={
   weather:{code:0,temp:20,emoji:'☀️',name:'맑음'},
   COLLECT_R:17,
   omtSrc:null,
-  nearBuildingIds:new Set()
+  nearBuildingIds:new Set(),
+  isMoving:false,
+  _moveTimer:null,
+  _playerStopAnim:null,
+  _playerRenderer:null,
+  _playerScene:null
 };
 
 const WMAP={
@@ -8172,6 +8177,113 @@ function _updateBuildingTransparency(){
   }catch(e){}
 }
 
+// ── 3D 플레이어 마커 — 솔로플레이 모델 그대로 사용 ───────────────
+function _buildPlayerModel3D(sk,grp){
+  const col=typeof sk.c==='string'?sk.c:(sk.fc||'#4cc9f0');
+  if(sk.shape==='car')buildCar(col,sk,grp);
+  else if(sk.shape==='rocket')buildRocket(col,sk,grp);
+  else if(sk.shape==='star')buildStar(col,sk,grp);
+  else if(sk.shape==='sword')buildSword(col,sk,grp);
+  else if(sk.shape==='mushroom')buildMushroom(col,sk,grp);
+  else if(sk.shape==='crystal2')buildCrystal2(col,sk,grp);
+  else if(sk.shape==='flame')buildFlame(col,sk,grp);
+  else if(sk.shape==='ice')buildIce(col,sk,grp);
+  else if(sk.shape==='thunder')buildThunder(col,sk,grp);
+  else if(sk.shape==='dragon')buildDragon(col,sk,grp);
+  else if(sk.shape==='rainbow')buildRainbow(col,sk,grp);
+  else if(sk.shape==='ghost')buildGhost(col,sk,grp);
+  else if(sk.shape==='lava')buildLava(col,sk,grp);
+  else if(sk.shape==='cosmic')buildCosmic(col,sk,grp);
+  else buildArrow(col,sk,grp,null);
+}
+
+function _destroyPlayerMarker3D(){
+  if(EROMAP._playerStopAnim){EROMAP._playerStopAnim();EROMAP._playerStopAnim=null;}
+  if(EROMAP._playerRenderer){EROMAP._playerRenderer.dispose();EROMAP._playerRenderer=null;}
+  if(EROMAP._playerScene){
+    EROMAP._playerScene.traverse(obj=>{
+      if(obj.geometry)obj.geometry.dispose();
+      if(obj.material){if(Array.isArray(obj.material))obj.material.forEach(m=>m.dispose());else obj.material.dispose();}
+    });
+    EROMAP._playerScene=null;
+  }
+}
+
+function _initPlayerMarker3D(){
+  _destroyPlayerMarker3D();
+  const SIZE=80;
+  const sk=skinDef(activeSkin);
+
+  const container=document.createElement('div');
+  container.className='ero-player-marker ero-pm-3d';
+
+  // 펄스 링
+  const ring=document.createElement('div');ring.className='ero-pm-ring';
+  // 바닥 그림자
+  const shadow=document.createElement('div');shadow.className='ero-pm-shadow3d';
+  // Three.js 캔버스
+  const canvas=document.createElement('canvas');
+  canvas.width=SIZE;canvas.height=SIZE;
+  canvas.className='ero-pm-canvas';
+
+  container.appendChild(ring);
+  container.appendChild(canvas);
+  container.appendChild(shadow);
+
+  try{
+    const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+    renderer.setSize(SIZE,SIZE);renderer.setPixelRatio(1);
+    renderer.setClearColor(0x000000,0);
+    renderer.outputColorSpace=THREE.SRGBColorSpace;
+
+    const pScene=new THREE.Scene();
+    const pCam=new THREE.PerspectiveCamera(35,1,0.01,100);
+
+    pScene.add(new THREE.AmbientLight(0xffffff,0.7));
+    const dl=new THREE.DirectionalLight(0xffffff,1.5);dl.position.set(1.5,3,2.5);pScene.add(dl);
+    const fill=new THREE.DirectionalLight(0x8888ff,0.5);fill.position.set(-2,-1,-1);pScene.add(fill);
+
+    const grp=new THREE.Group();pScene.add(grp);
+    _buildPlayerModel3D(sk,grp);
+
+    // 바운딩박스 기반 카메라
+    const box=new THREE.Box3().setFromObject(grp);
+    const cen=new THREE.Vector3();box.getCenter(cen);
+    const sizeVec=new THREE.Vector3();box.getSize(sizeVec);
+    const maxDim=Math.max(sizeVec.x,sizeVec.y,sizeVec.z);
+    const dist=maxDim*2.1;
+    pCam.position.set(cen.x+dist*0.4,cen.y+dist*0.5,cen.z+dist*0.95);
+    pCam.lookAt(cen);
+
+    let t=0,running=true;
+    function pmAnimate(){
+      if(!running)return;
+      requestAnimationFrame(pmAnimate);
+      t+=0.035;
+      if(EROMAP.isMoving){
+        // 뛰는 애니메이션: 위아래 바운싱 + 빠른 회전
+        grp.position.y=cen.y+Math.abs(Math.sin(t*3.5))*0.14;
+        grp.rotation.y=t*1.4;
+      }else{
+        // 대기: 부드럽게 부유 + 느린 회전
+        grp.position.y=cen.y+Math.sin(t*0.9)*0.05;
+        grp.rotation.y=t*0.28;
+      }
+      renderer.render(pScene,pCam);
+    }
+    pmAnimate();
+
+    EROMAP._playerStopAnim=()=>{running=false;};
+    EROMAP._playerRenderer=renderer;
+    EROMAP._playerScene=pScene;
+  }catch(e){
+    // WebGL 실패 시 이모지 폴백
+    const dot=document.createElement('div');dot.className='ero-pm-dot';dot.textContent='🏹';
+    container.appendChild(dot);
+  }
+  return container;
+}
+
 function _addOrMovePlayerMarker(){
   if(!EROMAP.map||EROMAP.lat===null)return;
   const alt=_getTerrainAlt(EROMAP.lon,EROMAP.lat);
@@ -8179,9 +8291,7 @@ function _addOrMovePlayerMarker(){
     EROMAP.playerMarker.setLngLat([EROMAP.lon,EROMAP.lat,alt]);
     return;
   }
-  const el=document.createElement('div');
-  el.className='ero-player-marker';
-  el.innerHTML='<div class=ero-pm-ring></div><div class=ero-pm-dot>🏹</div>';
+  const el=_initPlayerMarker3D();
   // pitchAlignment:'map' 으로 지형 표면에 고정, anchor:'bottom'으로 마커 하단이 땅에 닿게
   EROMAP.playerMarker=new maplibregl.Marker({element:el,anchor:'bottom',pitchAlignment:'map',rotationAlignment:'viewport'})
     .setLngLat([EROMAP.lon,EROMAP.lat,alt]).addTo(EROMAP.map);
@@ -8198,6 +8308,12 @@ function closeEroMap(){
     window.removeEventListener('deviceorientation',EROMAP.orientationHandler);
     EROMAP.orientationHandler=null;
   }
+  // 이동 타이머 정리
+  if(EROMAP._moveTimer){clearTimeout(EROMAP._moveTimer);EROMAP._moveTimer=null;}
+  EROMAP.isMoving=false;
+  // 3D 플레이어 마커 정리 및 지도에서 제거
+  _destroyPlayerMarker3D();
+  if(EROMAP.playerMarker){EROMAP.playerMarker.remove();EROMAP.playerMarker=null;}
   // 세로 방향 잠금 복원
   _lockPortrait();
   // 퍼즐 닫기
@@ -8224,9 +8340,21 @@ function eroGPSInit(pos){
 }
 
 function eroGPSUpdate(pos){
+  const prevLat=EROMAP.lat,prevLon=EROMAP.lon;
   EROMAP.lat=pos.coords.latitude;EROMAP.lon=pos.coords.longitude;
   document.getElementById('eromap-gps').textContent=`📍 ${EROMAP.lat.toFixed(4)}°N, ${EROMAP.lon.toFixed(4)}°E`;
-  if(EROMAP.map){EROMAP.map.panTo([EROMAP.lon,EROMAP.lat],{duration:500});_addOrMovePlayerMarker();}
+  // 이동 감지 — 3초간 GPS 변화 있으면 isMoving=true
+  const moved=prevLat!==null&&(Math.abs(EROMAP.lat-prevLat)>0.000003||Math.abs(EROMAP.lon-prevLon)>0.000003);
+  if(moved){
+    EROMAP.isMoving=true;
+    if(EROMAP._moveTimer)clearTimeout(EROMAP._moveTimer);
+    EROMAP._moveTimer=setTimeout(()=>{EROMAP.isMoving=false;},3000);
+  }
+  if(EROMAP.map){
+    // 플레이어 항상 화면 중앙 유지
+    EROMAP.map.easeTo({center:[EROMAP.lon,EROMAP.lat],bearing:-(EROMAP.heading||0),duration:600});
+    _addOrMovePlayerMarker();
+  }
   _updateArrowVisibility();
   _updateBuildingTransparency();
   // 자동수집 제거 — 탭해야만 퍼즐 열고 수집 가능
@@ -8511,13 +8639,10 @@ function _eroOrientationHandler(e){
   }
   EROMAP.heading=_eroSmoothHeading;
   if(EROMAP.map){
-    // jumpTo로 즉각 반영 (애니메이션 지연 없이)
-    EROMAP.map.jumpTo({bearing:-_eroSmoothHeading});
-  }
-  // 플레이어 마커 방향 표시
-  if(EROMAP.playerMarker){
-    const pmEl=EROMAP.playerMarker.getElement();
-    if(pmEl)pmEl.style.transform=`rotate(${_eroSmoothHeading}deg)`;
+    // 플레이어를 항상 화면 중앙에 유지하면서 방향 회전
+    const jumpOpts={bearing:-_eroSmoothHeading};
+    if(EROMAP.lat!==null)jumpOpts.center=[EROMAP.lon,EROMAP.lat];
+    EROMAP.map.jumpTo(jumpOpts);
   }
   // 나침반 UI 업데이트
   const compassNeedle=document.getElementById('eromap-compass-needle');
