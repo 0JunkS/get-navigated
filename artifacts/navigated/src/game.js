@@ -8319,10 +8319,14 @@ function closeEroMap(){
   if(EROMAP.playerMarker){EROMAP.playerMarker.remove();EROMAP.playerMarker=null;}
   // 세로 방향 잠금 복원
   _lockPortrait();
-  // 퍼즐 닫기
-  closeEroPuzzle();
+  // 퍼즐 상태만 직접 정리 (endEroPuzzle 경유 금지 — openEroMap 재호출 루프 방지)
+  if(_eroPuzzleTimer){clearInterval(_eroPuzzleTimer);_eroPuzzleTimer=null;}
+  const _ph=document.getElementById('ero-puzzle-hud');
+  if(_ph)_ph.style.display='none';
+  _eroPuzzleArrow=null;
   // 홈화면(메뉴)으로 복귀
   phase='menu';
+  controls.autoRotate=true;controls.autoRotateSpeed=1.3;
   showUI('menu');
   initDemo();
 }
