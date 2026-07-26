@@ -8140,14 +8140,7 @@ function _initMapLibre(){
   map.touchZoomRotate.disableRotation();
   EROMAP.map=map;
   map.on('load',()=>{
-    // 지형 (AWS Terrain Tiles - 무료·무키)
-    map.addSource('ero-dem',{
-      type:'raster-dem',
-      tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
-      encoding:'terrarium',tileSize:256,maxzoom:15,
-      attribution:'Terrain © Mapzen/Amazon'
-    });
-    map.setTerrain({source:'ero-dem',exaggeration:1.3});
+    // 지형 평지 — DEM 제거, 땅은 평평하게 유지 / 건물 3D는 살림
     // 3D 건물
     _addBuildingLayer(map);
     // 하늘
@@ -8192,10 +8185,9 @@ function _addBuildingLayer(map){
   }catch(e){}
 }
 
-// ── 지형 고도 쿼리 ─────────────────────────────────────
+// ── 지형 고도 쿼리 — DEM 제거로 항상 평지(0) 반환 ──────
 function _getTerrainAlt(lng,lat){
-  if(!EROMAP.map)return 0;
-  try{return EROMAP.map.queryTerrainElevation({lng,lat})||0;}catch(e){return 0;}
+  return 0;
 }
 
 // ── 근처 건물 투명화 (플레이어 주변 건물을 feature-state로 반투명) ──
