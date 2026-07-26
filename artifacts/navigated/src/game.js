@@ -1518,6 +1518,8 @@ function showUI(which){
   document.getElementById('multi-lobby-card').style.display='none';
   document.getElementById('game-select').classList.remove('on');
   document.getElementById('flight-game').classList.remove('on');
+  // Reset #ui pointer-events to CSS default (none) for normal game states
+  document.getElementById('ui').style.pointerEvents='';
   // Always hide user-pill; show only on menu if logged in
   const upill=document.getElementById('user-pill');
   if(upill)upill.style.display='none';
@@ -1539,23 +1541,32 @@ function showUI(which){
   }else if(which==='multi-mode'){
     document.getElementById('multi-screen').classList.add('on');
     document.getElementById('multi-mode-card').style.display='block';
+    // iOS: #ui has pointer-events:none in CSS; override so child buttons receive touch events
+    document.getElementById('ui').style.pointerEvents='auto';
   }else if(which==='rank-mode-select'){
     document.getElementById('multi-screen').classList.add('on');
     document.getElementById('rank-mode-select-card').style.display='block';
+    document.getElementById('ui').style.pointerEvents='auto';
   }else if(which==='rank-lobby'){
     document.getElementById('multi-screen').classList.add('on');
     document.getElementById('rank-lobby-card').style.display='block';
+    document.getElementById('ui').style.pointerEvents='auto';
   }else if(which==='blast-rank-lobby'){
     document.getElementById('multi-screen').classList.add('on');
     document.getElementById('blast-rank-lobby-card').style.display='block';
+    document.getElementById('ui').style.pointerEvents='auto';
   }else if(which==='multi-entry'){
     document.getElementById('multi-screen').classList.add('on');
     document.getElementById('multi-entry-card').style.display='block';
+    document.getElementById('ui').style.pointerEvents='auto';
   }else if(which==='multi-lobby'){
     document.getElementById('multi-screen').classList.add('on');
     document.getElementById('multi-lobby-card').style.display='block';
+    document.getElementById('ui').style.pointerEvents='auto';
   }else if(which==='multi-result'){
     document.getElementById('multi-result').classList.add('on');
+    // iOS: ensure buttons in multi-result receive touch events
+    document.getElementById('ui').style.pointerEvents='auto';
     // Star Drop 버튼 표시 (딜레이로 결과 먼저 보여주기)
     setTimeout(function(){var b=document.getElementById('btn-crosis-gacha');if(b)b.style.display='';},400);
   }else if(which==='flight'){
@@ -8757,6 +8768,9 @@ function startEroPuzzleGame(arrow){
   const lv=genLevel(rarityLvl);
   escaped=0;
   spawnArrows(lv,activeSkin);
+  // 화살표 메시 하단이 Y=0(시각적 바닥) 아래로 내려가지 않도록 위로 올림
+  // 화살표 지오메트리 하단이 루트 기준 약 -0.32이므로 GRID(0.65)만큼 올리면 항상 땅 위에 위치
+  arrows.forEach(a=>{a.bp.y+=GRID;a.root.position.y=a.bp.y;});
 
   // 카메라 위치 조정
   const sp=Math.sqrt(lv.length)*GRID;
