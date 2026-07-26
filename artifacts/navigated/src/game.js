@@ -8124,12 +8124,16 @@ function _initMapLibre(){
   if(EROMAP.map){EROMAP.map.resize();return;}
   const hasGPS=EROMAP.lat!==null;
   const lng=hasGPS?EROMAP.lon:127.0,lat=hasGPS?EROMAP.lat:36.5;
-  const initZoom=hasGPS?18.5:7,initPitch=hasGPS?78:0;
+  // Safari에서도 항상 동일한 초기 줌 유지 (GPS 유무 무관)
+  const initZoom=18.5,initPitch=78;
+  // ±1.2배 줌만 허용: MapLibre zoom은 log2 스케일이므로 log2(1.2)≈0.26 레벨 차이
+  const zoomDelta=Math.log2(1.2);
   const map=new maplibregl.Map({
     container:'eromap-map',
     style:'https://tiles.openfreemap.org/styles/liberty',
     center:[lng,lat],
-    zoom:initZoom,pitch:initPitch,bearing:(EROMAP.heading||0),antialias:true
+    zoom:initZoom,pitch:initPitch,bearing:(EROMAP.heading||0),antialias:true,
+    minZoom:initZoom-zoomDelta,maxZoom:initZoom+zoomDelta
   });
   // AR모드: 사용자가 지도를 수동으로 회전 못하게 (나침반이 제어)
   map.dragRotate.disable();
