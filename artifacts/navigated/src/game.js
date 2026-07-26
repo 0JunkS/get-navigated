@@ -8007,7 +8007,9 @@ const EROMAP={
   lat:null,lon:null,
   arrows:[],
   weather:{code:0,temp:20,emoji:'☀️',name:'맑음'},
-  COLLECT_R:17
+  COLLECT_R:17,
+  omtSrc:null,
+  nearBuildingIds:new Set()
 };
 
 const WMAP={
@@ -8106,6 +8108,13 @@ function _initMapLibre(){
     if(EROMAP.lat!==null){_addOrMovePlayerMarker();if(!EROMAP.arrows.length)spawnEroArrows();}
   });
   map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'top-right');
+  // 지형이 변할 때마다 플레이어 마커 고도 업데이트 (땅 위에 항상 붙게)
+  map.on('render',()=>{
+    if(EROMAP.playerMarker&&EROMAP.lat!==null){
+      const alt=_getTerrainAlt(EROMAP.lon,EROMAP.lat);
+      EROMAP.playerMarker.setLngLat([EROMAP.lon,EROMAP.lat,alt]);
+    }
+  });
 }
 
 function _addBuildingLayer(map){
@@ -8114,6 +8123,7 @@ function _addBuildingLayer(map){
     const sources=Object.keys(style.sources||{});
     const omtSrc=sources.find(s=>s==='openmaptiles'||s.includes('maptiler')||s==='v3')||sources[sources.length-1];
     if(!omtSrc)return;
+    EROMAP.omtSrc=omtSrc;
     if(map.getLayer('ero-bld'))map.removeLayer('ero-bld');
     map.addLayer({
       id:'ero-bld',type:'fill-extrusion',source:omtSrc,'source-layer':'building',minzoom:14,
@@ -8122,7 +8132,7 @@ function _addBuildingLayer(map){
           0,'#1a2540',20,'#223060',60,'#2b3d7c',120,'#364e98',200,'#4a62b8'],
         'fill-extrusion-height':['coalesce',['get','render_height'],['get','height'],10],
         'fill-extrusion-base':['coalesce',['get','render_min_height'],['get','min_height'],0],
-        'fill-extrusion-opacity':0.85,
+        'fill-extrusion-opacity':['case',['boolean',['feature-state','nearPlayer'],false],0.15,0.85],
         'fill-extrusion-ambient-occlusion-intensity':0.45,
         'fill-extrusion-ambient-occlusion-radius':3
       }
@@ -8130,14 +8140,51 @@ function _addBuildingLayer(map){
   }catch(e){}
 }
 
+// ── 지형 고도 쿼리 ─────────────────────────────────────
+function _getTerrainAlt(lng,lat){
+  if(!EROMAP.map)return 0;
+  try{return EROMAP.map.queryTerrainElevation({lng,lat})||0;}catch(e){return 0;}
+}
+
+// ── 근처 건물 투명화 (플레이어 주변 건물을 feature-state로 반투명) ──
+function _updateBuildingTransparency(){
+  const map=EROMAP.map;
+  if(!map||EROMAP.lat===null||!EROMAP.omtSrc)return;
+  try{
+    // 이전에 투명하게 설정된 건물 원상복구
+    for(const id of EROMAP.nearBuildingIds){
+      map.setFeatureState({source:EROMAP.omtSrc,sourceLayer:'building',id},{nearPlayer:false});
+    }
+    EROMAP.nearBuildingIds=new Set();
+    // 플레이어 스크린 좌표
+    const pt=map.project([EROMAP.lon,EROMAP.lat]);
+    const r=90; // 픽셀 반경
+    const feats=map.queryRenderedFeatures(
+      [[pt.x-r,pt.y-r],[pt.x+r,pt.y+r]],
+      {layers:['ero-bld']}
+    );
+    for(const f of feats){
+      if(f.id!=null){
+        map.setFeatureState({source:f.source,sourceLayer:f.sourceLayer,id:f.id},{nearPlayer:true});
+        EROMAP.nearBuildingIds.add(f.id);
+      }
+    }
+  }catch(e){}
+}
+
 function _addOrMovePlayerMarker(){
   if(!EROMAP.map||EROMAP.lat===null)return;
-  if(EROMAP.playerMarker){EROMAP.playerMarker.setLngLat([EROMAP.lon,EROMAP.lat]);return;}
+  const alt=_getTerrainAlt(EROMAP.lon,EROMAP.lat);
+  if(EROMAP.playerMarker){
+    EROMAP.playerMarker.setLngLat([EROMAP.lon,EROMAP.lat,alt]);
+    return;
+  }
   const el=document.createElement('div');
   el.className='ero-player-marker';
   el.innerHTML='<div class=ero-pm-ring></div><div class=ero-pm-dot>🏹</div>';
-  EROMAP.playerMarker=new maplibregl.Marker({element:el,anchor:'center'})
-    .setLngLat([EROMAP.lon,EROMAP.lat]).addTo(EROMAP.map);
+  // pitchAlignment:'map' 으로 지형 표면에 고정, anchor:'bottom'으로 마커 하단이 땅에 닿게
+  EROMAP.playerMarker=new maplibregl.Marker({element:el,anchor:'bottom',pitchAlignment:'map',rotationAlignment:'viewport'})
+    .setLngLat([EROMAP.lon,EROMAP.lat,alt]).addTo(EROMAP.map);
 }
 
 function closeEroMap(){
@@ -8173,7 +8220,7 @@ function eroGPSInit(pos){
     EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:-(EROMAP.heading||0),duration:1200});
     _addOrMovePlayerMarker();spawnEroArrows();
   }
-  setTimeout(()=>_updateArrowVisibility(),500);
+  setTimeout(()=>{_updateArrowVisibility();_updateBuildingTransparency();},600);
 }
 
 function eroGPSUpdate(pos){
@@ -8181,6 +8228,7 @@ function eroGPSUpdate(pos){
   document.getElementById('eromap-gps').textContent=`📍 ${EROMAP.lat.toFixed(4)}°N, ${EROMAP.lon.toFixed(4)}°E`;
   if(EROMAP.map){EROMAP.map.panTo([EROMAP.lon,EROMAP.lat],{duration:500});_addOrMovePlayerMarker();}
   _updateArrowVisibility();
+  _updateBuildingTransparency();
   // 자동수집 제거 — 탭해야만 퍼즐 열고 수집 가능
   // checkEroCollection();
 }
