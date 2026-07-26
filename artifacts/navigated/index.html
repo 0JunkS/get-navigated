@@ -660,7 +660,9 @@ window._FB_CFG={
 /* ── 설정창 ── */
 #settings-ov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
 #settings-ov.on{opacity:1;pointer-events:all}
-.settings-card{background:linear-gradient(160deg,#0d0d2e,#1a1a4e);border:1px solid rgba(100,100,255,.3);border-radius:20px;padding:24px 20px;width:min(360px,92vw);max-height:85vh;overflow-y:auto}
+/* 설정창 닫혀 있을 때 내부 요소가 pointer-events:auto!important로 터치를 가로채는 문제 방지 */
+#settings-ov:not(.on) *{pointer-events:none!important}
+.settings-card{background:linear-gradient(160deg,#0d0d2e,#1a1a4e);border:1px solid rgba(100,100,255,.3);border-radius:20px;padding:24px 20px 20px;width:min(360px,92vw);max-height:85vh;overflow-y:auto}
 .settings-card h2{color:#fff;font-size:16px;font-weight:700;margin:0 0 20px;text-align:center}
 .settings-group{margin-bottom:18px}
 .settings-label{color:rgba(180,180,255,.8);font-size:12px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between}
@@ -676,7 +678,7 @@ window._FB_CFG={
 .settings-toggle input:checked+.settings-toggle-track{background:#5555ff}
 .settings-toggle-track::after{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
 .settings-toggle input:checked+.settings-toggle-track::after{transform:translateX(20px)}
-.settings-close-btn{width:100%;padding:12px;background:linear-gradient(135deg,#333399,#1a1a6e);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
+.settings-close-btn{width:100%;padding:12px;background:linear-gradient(135deg,#333399,#1a1a6e);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;position:sticky;bottom:0;z-index:1}
 /* ── 설정 버튼 ── */
 #btn-settings{background:linear-gradient(135deg,#1a1a3e,#222260);border:1px solid rgba(100,100,255,.35);font-size:14px;padding:13px}
 
