@@ -33,7 +33,7 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Build
-        run: PORT=19477 BASE_PATH=/ pnpm --filter @workspace/navigated run build
+        run: PORT=19477 BASE_PATH=/get-navigated/ pnpm --filter @workspace/navigated run build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
