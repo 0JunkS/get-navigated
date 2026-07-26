@@ -1513,9 +1513,11 @@ function showUI(which){
     document.getElementById('menu').classList.remove('hidden');
     document.getElementById('coin-pill').style.display='flex';
     if(upill&&upill.dataset.loggedIn==='1')upill.style.display='flex';
+    canvas.style.pointerEvents='none';
   }else if(which==='hud'){
     document.getElementById('hud').style.display='block';
     document.getElementById('exit-btn').style.display='flex';
+    canvas.style.pointerEvents='auto';
   }else if(which==='win'){
     document.getElementById('win-ov').style.display='flex';
   }else if(which==='over'){
@@ -8003,7 +8005,7 @@ const EROMAP={
   lat:null,lon:null,
   arrows:[],
   weather:{code:0,temp:20,emoji:'☀️',name:'맑음'},
-  COLLECT_R:40
+  COLLECT_R:17
 };
 
 const WMAP={
@@ -8030,6 +8032,26 @@ function openEroMap(){
   document.getElementById('eromap-ov').classList.add('on');
   EROMAP.timeInterval=setInterval(updateEroTime,1000);
   updateEroTime();
+  // 화면 방향 잠금 해제 (에로맵에서는 자유롭게)
+  _unlockOrientation();
+  // 나침반/자이로 연동
+  function _addOrientationListener(){
+    EROMAP.orientationHandler=_eroOrientationHandler;
+    if(typeof DeviceOrientationEvent!=='undefined'&&
+       typeof DeviceOrientationEvent.requestPermission==='function'){
+      // iOS 13+ 권한 요청
+      DeviceOrientationEvent.requestPermission().then(state=>{
+        if(state==='granted'){
+          window.addEventListener('deviceorientationabsolute',_eroOrientationHandler,{passive:true});
+          window.addEventListener('deviceorientation',_eroOrientationHandler,{passive:true});
+        }
+      }).catch(()=>{});
+    }else{
+      window.addEventListener('deviceorientationabsolute',_eroOrientationHandler,{passive:true});
+      window.addEventListener('deviceorientation',_eroOrientationHandler,{passive:true});
+    }
+  }
+  _addOrientationListener();
   if(!EROMAP.map){
     setTimeout(()=>_initMapLibre(),80);
   }else{
@@ -8118,6 +8140,16 @@ function closeEroMap(){
   document.getElementById('eromap-ov').classList.remove('on');
   if(EROMAP.watchId!=null){navigator.geolocation.clearWatch(EROMAP.watchId);EROMAP.watchId=null;}
   if(EROMAP.timeInterval){clearInterval(EROMAP.timeInterval);EROMAP.timeInterval=null;}
+  // 나침반 핸들러 제거
+  if(EROMAP.orientationHandler){
+    window.removeEventListener('deviceorientationabsolute',EROMAP.orientationHandler);
+    window.removeEventListener('deviceorientation',EROMAP.orientationHandler);
+    EROMAP.orientationHandler=null;
+  }
+  // 세로 방향 잠금 복원
+  _lockPortrait();
+  // 퍼즐 닫기
+  closeEroPuzzle();
 }
 
 function eroSimulate(){
@@ -8136,12 +8168,14 @@ function eroGPSInit(pos){
     EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:16.5,pitch:58,duration:1200});
     _addOrMovePlayerMarker();spawnEroArrows();
   }
+  setTimeout(()=>_updateArrowVisibility(),500);
 }
 
 function eroGPSUpdate(pos){
   EROMAP.lat=pos.coords.latitude;EROMAP.lon=pos.coords.longitude;
   document.getElementById('eromap-gps').textContent=`📍 ${EROMAP.lat.toFixed(4)}°N, ${EROMAP.lon.toFixed(4)}°E`;
   if(EROMAP.map){EROMAP.map.panTo([EROMAP.lon,EROMAP.lat],{duration:700});_addOrMovePlayerMarker();}
+  _updateArrowVisibility();
   checkEroCollection();
 }
 
@@ -8164,26 +8198,27 @@ function spawnEroArrows(){
   const eroSkins=SKINS.filter(s=>s.gacha);
   const pool=SKINS.filter(s=>!s.gacha);
   for(let i=0;i<10;i++){
-    const angle=Math.random()*Math.PI*2,dist=25+Math.random()*130;
+    const angle=Math.random()*Math.PI*2,dist=8+Math.random()*60;
     const dlat=dist*Math.cos(angle)/111000;
     const dlon=dist*Math.sin(angle)/(111000*Math.cos(EROMAP.lat*Math.PI/180));
     const skPool=(i<2&&eroSkins.length>0)?eroSkins:pool;
     const sk=skPool[Math.floor(Math.random()*skPool.length)];
-    const arrow={id:i,skinId:sk.id,lat:EROMAP.lat+dlat,lon:EROMAP.lon+dlon,collected:false,marker:null};
-    arrow.marker=_createArrowMarker(arrow,sk);
+    const arrow={id:i,skinId:sk.id,lat:EROMAP.lat+dlat,lon:EROMAP.lon+dlon,collected:false,marker:null,visible:false};
+    arrow.marker=_createArrowMarker(arrow,sk,false);
     EROMAP.arrows.push(arrow);
   }
 }
 
-function _createArrowMarker(arrow,sk){
+function _createArrowMarker(arrow,sk,visible=true){
   if(!EROMAP.map)return null;
   const rc={common:'#aaa',rare:'#4cc9f0',epic:'#a855f7',legendary:'#FFD700'}[sk.rarity||'common'];
   const el=document.createElement('div');
   el.className='ero-arrow-marker';
   el.style.setProperty('--rc',rc);
   el.innerHTML=`<div class=ero-am-glow></div><div class=ero-am-emoji>${sk.emoji}</div>`;
-  el.addEventListener('click',()=>collectEroArrow(arrow));
-  el.addEventListener('touchend',(e)=>{e.preventDefault();collectEroArrow(arrow);},{passive:false});
+  el.addEventListener('click',()=>openEroPuzzle(arrow));
+  el.addEventListener('touchend',(e)=>{e.preventDefault();openEroPuzzle(arrow);},{passive:false});
+  if(!visible)el.style.display='none';
   return new maplibregl.Marker({element:el,anchor:'center'})
     .setLngLat([arrow.lon,arrow.lat]).addTo(EROMAP.map);
 }
@@ -8202,6 +8237,7 @@ function checkEroCollection(){
 function collectEroArrow(a){
   if(a.collected)return;
   a.collected=true;
+  playEroCollectSound();
   if(a.marker){
     a.marker.getElement().classList.add('ero-am-collected');
     setTimeout(()=>{if(a.marker){a.marker.remove();a.marker=null;}},400);
@@ -8220,7 +8256,7 @@ function collectEroArrow(a){
 function respawnEroArrow(a){
   a.collected=false;
   if(a.marker){a.marker.remove();a.marker=null;}
-  const angle=Math.random()*Math.PI*2,dist=30+Math.random()*90;
+  const angle=Math.random()*Math.PI*2,dist=10+Math.random()*50;
   if(EROMAP.lat===null)return;
   const dlat=dist*Math.cos(angle)/111000;
   const dlon=dist*Math.sin(angle)/(111000*Math.cos(EROMAP.lat*Math.PI/180));
@@ -8229,7 +8265,8 @@ function respawnEroArrow(a){
   const pool=notOwned.length>0?notOwned:SKINS.filter(s=>!s.gacha);
   a.skinId=pool[Math.floor(Math.random()*pool.length)].id;
   const sk=SKINS.find(s=>s.id===a.skinId)||SKINS[0];
-  a.marker=_createArrowMarker(a,sk);
+  a.visible=false;
+  a.marker=_createArrowMarker(a,sk,false);
 }
 
 let eroBannerTimer=null;
@@ -8251,8 +8288,203 @@ function updateEroTime(){
   if(el)el.textContent=`${h}:${m}:${s}`;
 }
 
+
+
+// ══════════════════════════════════════════════════
+// 에로맵 — 나침반/방향 & 17m 가시성 시스템
+// ══════════════════════════════════════════════════
+
+// 화살표 가시성 업데이트 (17m 이내만 표시)
+function _updateArrowVisibility(){
+  if(!EROMAP.arrows.length||EROMAP.lat===null)return;
+  const R=EROMAP.COLLECT_R;
+  EROMAP.arrows.forEach(a=>{
+    if(a.collected||!a.marker)return;
+    const dlat=(a.lat-EROMAP.lat)*111000;
+    const dlon=(a.lon-EROMAP.lon)*111000*Math.cos(EROMAP.lat*Math.PI/180);
+    const dist=Math.sqrt(dlat*dlat+dlon*dlon);
+    const shouldShow=dist<=R;
+    if(shouldShow!==a.visible){
+      a.visible=shouldShow;
+      const el=a.marker.getElement();
+      if(el)el.style.display=shouldShow?'flex':'none';
+    }
+  });
+}
+
+// 나침반 방향 핸들러 (에로맵 지도 시점 회전)
+function _eroOrientationHandler(e){
+  let heading=null;
+  if(typeof e.webkitCompassHeading==='number'){
+    // iOS — webkitCompassHeading is true magnetic heading (0=North)
+    heading=e.webkitCompassHeading;
+  }else if(e.absolute&&typeof e.alpha==='number'){
+    // Android absolute — alpha=0 means North facing
+    heading=(360-e.alpha)%360;
+  }else if(typeof e.alpha==='number'){
+    heading=(360-e.alpha)%360;
+  }
+  if(heading===null)return;
+  EROMAP.heading=heading;
+  if(EROMAP.map){
+    EROMAP.map.setBearing(-heading);
+  }
+}
+
+// 화면 방향 잠금/해제
+function _lockPortrait(){
+  try{
+    const p=screen.orientation.lock('portrait');
+    if(p&&p.catch)p.catch(()=>{});
+  }catch(e){}
+}
+function _unlockOrientation(){
+  try{screen.orientation.unlock();}catch(e){}
+}
+
+// ══════════════════════════════════════════════════
+// 에로맵 — 퍼즐 시스템 (15초, 희귀도별 난이도)
+// ══════════════════════════════════════════════════
+let _eroPuzzleTimer=null;
+let _eroPuzzleArrow=null;
+let _eroPuzzleAnswer=null;
+
+function _generatePuzzle(rarity){
+  const r=()=>Math.floor(Math.random()*9)+1;
+  const r2=()=>Math.floor(Math.random()*40)+10;
+  const r3=()=>Math.floor(Math.random()*8)+2;
+  if(rarity==='legendary'){
+    // 복잡한 연산: (a×b)-(c+d)
+    const a=r3(),b=r3(),c=r(),d=r();
+    const ans=(a*b)-(c+d);
+    if(ans<=0||ans>99){return _generatePuzzle(rarity);}
+    return{q:`(${a} × ${b}) - (${c} + ${d}) = ?`,ans};
+  }else if(rarity==='epic'){
+    // 혼합: a×b+c
+    const a=r3(),b=r3(),c=r();
+    const ans=a*b+c;
+    return{q:`${a} × ${b} + ${c} = ?`,ans};
+  }else if(rarity==='rare'){
+    // 두 자리 덧셈/뺄셈
+    const a=r2(),b=r2();
+    const sub=Math.random()>0.5&&a>b;
+    const ans=sub?a-b:a+b;
+    return{q:sub?`${a} - ${b} = ?`:`${a} + ${b} = ?`,ans};
+  }else{
+    // 일반: 한 자리 덧셈
+    const a=r(),b=r();
+    return{q:`${a} + ${b} = ?`,ans:a+b};
+  }
+}
+
+function openEroPuzzle(arrow){
+  if(arrow.collected)return;
+  // 17m 이내인지 다시 확인
+  if(EROMAP.lat!==null){
+    const dlat=(arrow.lat-EROMAP.lat)*111000;
+    const dlon=(arrow.lon-EROMAP.lon)*111000*Math.cos(EROMAP.lat*Math.PI/180);
+    const dist=Math.sqrt(dlat*dlat+dlon*dlon);
+    if(dist>EROMAP.COLLECT_R){
+      showEroCollectBanner('❗ 더 가까이 가야 해요! (17m 이내)','coin');
+      return;
+    }
+  }
+  _eroPuzzleArrow=arrow;
+  const sk=SKINS.find(s=>s.id===arrow.skinId)||SKINS[0];
+  const puzzle=_generatePuzzle(sk.rarity||'common');
+  _eroPuzzleAnswer=puzzle.ans;
+
+  const modal=document.getElementById('ero-puzzle-modal');
+  document.getElementById('ero-puzzle-emoji').textContent=sk.emoji;
+  document.getElementById('ero-puzzle-name').textContent=sk.name;
+  const rarityMap={common:'일반',rare:'✦ 희귀',epic:'✦✦ 에픽',legendary:'✦✦✦ 전설'};
+  const rarityColorMap={common:'#aaa',rare:'#4cc9f0',epic:'#a855f7',legendary:'#FFD700'};
+  const rEl=document.getElementById('ero-puzzle-rarity');
+  rEl.textContent=rarityMap[sk.rarity||'common'];
+  rEl.style.color=rarityColorMap[sk.rarity||'common']||'#aaa';
+  document.getElementById('ero-puzzle-question').textContent=puzzle.q;
+  document.getElementById('ero-puzzle-input').value='';
+  document.getElementById('ero-puzzle-feedback').textContent='';
+  modal.style.display='flex';
+  document.getElementById('ero-puzzle-input').focus();
+
+  let timeLeft=15;
+  document.getElementById('ero-puzzle-timer').textContent=timeLeft;
+  if(_eroPuzzleTimer)clearInterval(_eroPuzzleTimer);
+  _eroPuzzleTimer=setInterval(()=>{
+    timeLeft--;
+    const el=document.getElementById('ero-puzzle-timer');
+    if(el)el.textContent=timeLeft;
+    if(timeLeft<=3&&el)el.style.color='#ff4444';
+    if(timeLeft<=0){
+      clearInterval(_eroPuzzleTimer);_eroPuzzleTimer=null;
+      closeEroPuzzle();
+      showEroCollectBanner('⏰ 시간 초과! 다시 도전하세요','coin');
+    }
+  },1000);
+}
+
+function submitEroPuzzle(){
+  const val=parseInt(document.getElementById('ero-puzzle-input').value.trim());
+  if(isNaN(val)){document.getElementById('ero-puzzle-feedback').textContent='숫자를 입력하세요';return;}
+  if(val===_eroPuzzleAnswer){
+    clearInterval(_eroPuzzleTimer);_eroPuzzleTimer=null;
+    closeEroPuzzle();
+    if(_eroPuzzleArrow)collectEroArrow(_eroPuzzleArrow);
+    _eroPuzzleArrow=null;
+  }else{
+    document.getElementById('ero-puzzle-feedback').textContent='❌ 틀렸어요! 다시 시도해보세요';
+    document.getElementById('ero-puzzle-input').value='';
+    document.getElementById('ero-puzzle-input').focus();
+  }
+}
+
+function closeEroPuzzle(){
+  document.getElementById('ero-puzzle-modal').style.display='none';
+  if(_eroPuzzleTimer){clearInterval(_eroPuzzleTimer);_eroPuzzleTimer=null;}
+  document.getElementById('ero-puzzle-timer').style.color='#4cc9f0';
+}
+
+// ══════════════════════════════════════════════════
+// 에로맵 — 수집 효과음
+// ══════════════════════════════════════════════════
+function playEroCollectSound(){
+  try{
+    const ctx=_getSfxCtx();
+    const now=ctx.currentTime;
+    const comp=ctx.createDynamicsCompressor();
+    comp.threshold.value=-6;comp.knee.value=10;comp.ratio.value=4;
+    comp.connect(ctx.destination);
+    // 반짝이는 collect 사운드: 상승하는 3음
+    [[523,0,0.05],[659,0.08,0.05],[784,0.16,0.08],[1047,0.25,0.12]].forEach(([freq,delay,dur])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.type='sine';o.frequency.value=freq;
+      o.connect(g);g.connect(comp);
+      g.gain.setValueAtTime(0,now+delay);
+      g.gain.linearRampToValueAtTime(0.22,now+delay+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,now+delay+dur+0.08);
+      o.start(now+delay);o.stop(now+delay+dur+0.12);
+    });
+    // 상위 shimmer
+    const o2=ctx.createOscillator(),g2=ctx.createGain();
+    o2.type='triangle';o2.frequency.setValueAtTime(1200,now+0.1);
+    o2.frequency.exponentialRampToValueAtTime(2400,now+0.45);
+    o2.connect(g2);g2.connect(comp);
+    g2.gain.setValueAtTime(0.07,now+0.1);g2.gain.exponentialRampToValueAtTime(0.0001,now+0.55);
+    o2.start(now+0.1);o2.stop(now+0.6);
+  }catch(e){}
+}
+
 // 에로맵 버튼 이벤트
 document.getElementById('btn-eromap')?.addEventListener('click',()=>{openEroMap();});
 document.getElementById('eromap-exit')?.addEventListener('click',()=>{closeEroMap();});
 document.getElementById('sdm-close')?.addEventListener('click',()=>{document.getElementById('skin-detail-modal').style.display='none';});
+
+// 퍼즐 제출 이벤트
+document.getElementById('ero-puzzle-submit')?.addEventListener('click',()=>submitEroPuzzle());
+document.getElementById('ero-puzzle-cancel')?.addEventListener('click',()=>{closeEroPuzzle();showEroCollectBanner('퍼즐 취소됨','coin');});
+document.getElementById('ero-puzzle-input')?.addEventListener('keydown',(e)=>{if(e.key==='Enter')submitEroPuzzle();});
+
+// 초기 세로 방향 잠금
+try{_lockPortrait();}catch(e){}
 

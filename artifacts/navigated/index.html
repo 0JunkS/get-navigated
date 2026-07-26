@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>NAVIGATED</title>
 <style>
+/* ── 터치 이슈 글로벌 수정 ── */
+button,a,input,select,textarea,[role="button"]{touch-action:manipulation!important;-webkit-tap-highlight-color:transparent;cursor:pointer}
+input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 button,a,input,select,textarea,[role="button"]{touch-action:manipulation;pointer-events:auto}
 html,body{width:100%;height:100%;overflow:hidden;background:#06061a}
@@ -998,6 +1002,27 @@ window._FB_CFG={
   opacity:0;transition:opacity .3s;z-index:12;white-space:nowrap;
 }
 #plz-inthint.show{opacity:1;}
+
+/* ═══════════════════════ 퍼즐 모달 ═══════════════════════ */
+#ero-puzzle-modal{display:none;position:fixed;inset:0;z-index:9950;align-items:center;justify-content:center;pointer-events:all;background:rgba(0,0,0,.82);backdrop-filter:blur(8px)}
+.ero-puzzle-card{background:linear-gradient(155deg,rgba(6,6,26,.98),rgba(16,8,48,.98));border:2px solid rgba(76,201,240,.35);border-radius:24px;padding:28px 24px 24px;width:88%;max-width:320px;text-align:center;position:relative;box-shadow:0 0 40px rgba(76,201,240,.2)}
+.ero-puzzle-timer-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ero-puzzle-timer-label{color:rgba(200,220,255,.55);font-size:12px;font-weight:700;letter-spacing:1px}
+#ero-puzzle-timer{font-size:26px;font-weight:900;color:#4cc9f0;font-family:monospace;text-shadow:0 0 12px rgba(76,201,240,.6);min-width:2ch;text-align:right;transition:color .3s}
+.ero-puzzle-arrow-info{margin-bottom:16px}
+#ero-puzzle-emoji{font-size:48px;display:block;margin-bottom:6px}
+#ero-puzzle-name{color:#fff;font-size:18px;font-weight:900}
+#ero-puzzle-rarity{font-size:11px;font-weight:900;letter-spacing:2px;margin-top:3px}
+.ero-puzzle-q-label{color:rgba(200,220,255,.5);font-size:11px;letter-spacing:2px;font-weight:700;margin-bottom:8px;margin-top:14px}
+#ero-puzzle-question{color:#fff;font-size:28px;font-weight:900;letter-spacing:1px;margin-bottom:14px;text-shadow:0 0 16px rgba(76,201,240,.4)}
+#ero-puzzle-input{width:100%;padding:13px;border-radius:12px;border:2px solid rgba(76,201,240,.4);background:rgba(255,255,255,.06);color:#fff;font-size:24px;font-weight:900;text-align:center;outline:none;margin-bottom:8px;font-family:monospace}
+#ero-puzzle-input:focus{border-color:rgba(76,201,240,.8);box-shadow:0 0 16px rgba(76,201,240,.25)}
+#ero-puzzle-feedback{color:#ff6b6b;font-size:12px;font-weight:700;min-height:16px;margin-bottom:10px}
+.ero-puzzle-btns{display:flex;gap:10px}
+#ero-puzzle-submit{flex:1;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#4361ee,#4cc9f0);color:#fff;font-size:15px;font-weight:900;cursor:pointer;transition:transform .1s,opacity .1s}
+#ero-puzzle-submit:active{transform:scale(0.96);opacity:.85}
+#ero-puzzle-cancel{padding:14px 18px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:rgba(255,255,255,.65);font-size:14px;font-weight:700;cursor:pointer}
+#ero-puzzle-cancel:active{opacity:.7}
 </style>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
@@ -1752,6 +1777,27 @@ window._FB_CFG={
 </div>
 
 <!-- ═══════════════ 스킨 상세 모달 ═══════════════ -->
+<div id="ero-puzzle-modal">
+  <div class="ero-puzzle-card">
+    <div class="ero-puzzle-timer-row">
+      <div class="ero-puzzle-timer-label">⏱ 남은 시간</div>
+      <div id="ero-puzzle-timer">15</div>
+    </div>
+    <div class="ero-puzzle-arrow-info">
+      <span id="ero-puzzle-emoji">🎯</span>
+      <div id="ero-puzzle-name">화살표</div>
+      <div id="ero-puzzle-rarity">일반</div>
+    </div>
+    <div class="ero-puzzle-q-label">🧩 퍼즐을 풀어 화살표를 잡아라!</div>
+    <div id="ero-puzzle-question">0 + 0 = ?</div>
+    <input id="ero-puzzle-input" type="number" pattern="[0-9]*" inputmode="numeric" placeholder="정답 입력" autocomplete="off"/>
+    <div id="ero-puzzle-feedback"></div>
+    <div class="ero-puzzle-btns">
+      <button id="ero-puzzle-submit">✔ 정답 제출</button>
+      <button id="ero-puzzle-cancel">취소</button>
+    </div>
+  </div>
+</div>
 <div id="skin-detail-modal">
   <div class="sdm-card">
     <button id="sdm-close">✕</button>
