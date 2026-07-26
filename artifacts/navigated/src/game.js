@@ -1072,7 +1072,7 @@ function hitTest(cx,cy){
 // SELECT & LAUNCH
 // ══════════════════════════════════════════════════
 function selectArrow(id){
-  if(phase!=='playing'&&phase!=='multi-playing')return;
+  if(phase!=='playing'&&phase!=='multi-playing'&&phase!=='ero-puzzle')return;
   if(opening){opening=false;}
   const e=arrowMap[id];if(!e||e.state!=='idle')return;
   resetIdle();
@@ -1081,9 +1081,9 @@ function selectArrow(id){
   if(dbl){launchArrow(id);return;}
   if(selId&&selId!==id){const p=arrowMap[selId];if(p)setGlow(p,false);}
   selId=id;setGlow(e,true);showPreview(e);
-  if(phase==='playing'){
+  if(phase==='playing'||phase==='ero-puzzle'){
     document.getElementById('launch-btn').style.display='inline-block';
-    const hb=document.getElementById('hint-bar');hb.style.opacity='1';setTimeout(()=>{hb.style.opacity='0';},2500);
+    if(phase==='playing'){const hb=document.getElementById('hint-bar');hb.style.opacity='1';setTimeout(()=>{hb.style.opacity='0';},2500);}
   }
 }
 // ── COMBO SOUND SYSTEM (스킨별 콤보 사운드) ───────────────────────────────────
@@ -1114,12 +1114,15 @@ let _comboIdx=0;
 let _sfxCtx=null;
 function _getSfxCtx(){
   if(!_sfxCtx){_sfxCtx=window._unlockedACtx||(new(window.AudioContext||window.webkitAudioContext)());window._unlockedACtx=_sfxCtx;}
-  if(_sfxCtx.state==='suspended')_sfxCtx.resume();
   return _sfxCtx;
 }
+// 앱 포그라운드 복귀 시 오디오 컨텍스트 자동 복구
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&_sfxCtx&&_sfxCtx.state==='suspended')_sfxCtx.resume();});
+window.addEventListener('focus',()=>{if(_sfxCtx&&_sfxCtx.state==='suspended')_sfxCtx.resume();});
 function playComboNote(){
   try{
     const ctx=_getSfxCtx();
+    if(ctx.state==='suspended'){ctx.resume().then(()=>playComboNote());return;}
     const _sv=typeof _settings!=='undefined'?Math.max(0.001,_settings.sfxVol):1;
     if(typeof _settings!=='undefined'&&_settings.sfxVol<=0)return;
     const now=ctx.currentTime;
@@ -1388,10 +1391,11 @@ function launchArrow(id){
     resetComboSound();
     if(phase==='playing'){lives--;shk=1.0;updateHUD();flashBlock();if(lives<=0)setTimeout(()=>endGame(false),700);}
     else if(phase==='multi-playing'){shk=0.6;flashBlock();multiBlockCount++;multiLives=Math.max(0,multiLives-1);updateMultiHUD();const pen=Math.min(2,multiBlockCount);popup('실수! ❤️×'+multiLives,innerWidth/2,innerHeight*.38,'#ff6b6b');if(multiLives<=0){setTimeout(()=>multiLiveOut(),600);}}
+    // ero-puzzle: 막혀도 목숨 없음, 그냥 돌아옴
   }else{
     e.state='moving';e.prog=0;
     playComboNote();
-    if(typeof achieveState!=='undefined'){
+    if(phase!=='ero-puzzle'&&typeof achieveState!=='undefined'){
       _achStat('totalArrows',1,true);
       _achStat('maxCombo',_comboIdx,false,true);
       _missionProg('arrows',1);
@@ -1419,7 +1423,7 @@ function tickArrow(a,dt){
   a.root.visible=true;
   if(a.state==='moving'){
     a.prog+=dt*SPEED;
-    if(a.prog>=1){a.prog=1;a.state='escaped';if(phase==='playing'){escaped++;updateHUD();checkWin();}else if(phase==='multi-playing'){escaped++;if(multiMode==='blast-rank'){_blastArrowEscaped(a);}else{updateMultiHUD();checkMultiWin();}}}
+    if(a.prog>=1){a.prog=1;a.state='escaped';if(phase==='playing'){escaped++;updateHUD();checkWin();}else if(phase==='ero-puzzle'){escaped++;_updateEroPuzzleProgress();checkEroPuzzleWin();}else if(phase==='multi-playing'){escaped++;if(multiMode==='blast-rank'){_blastArrowEscaped(a);}else{updateMultiHUD();checkMultiWin();}}}
     const t=a.prog,e=t<.5?2*t*t:-1+(4-2*t)*t;
     a.root.position.copy(a.bp.clone().addScaledVector(a.dv,e*ESCAPE));
   }else if(a.state==='returning'){
@@ -1654,7 +1658,7 @@ function popup(txt,cx,cy,col='#FFD700'){
 // ══════════════════════════════════════════════════
 function resetIdle(){
   idleT=0;
-  if(!hudOn&&(phase==='playing'||phase==='multi-playing')){hudOn=true;document.getElementById('hud').style.opacity='1';document.getElementById('tap-restore').style.opacity='0';controls.autoRotate=false;}
+  if(!hudOn&&(phase==='playing'||phase==='multi-playing'||phase==='ero-puzzle')){hudOn=true;if(phase!=='ero-puzzle'){document.getElementById('hud').style.opacity='1';document.getElementById('tap-restore').style.opacity='0';}controls.autoRotate=false;}
 }
 // Pulse arrows that are currently FREE (not blocked) to help the player
 let _hintT=0;
@@ -1681,7 +1685,7 @@ function tickFreeHint(dt){
 function tickIdle(dt){
   if(phase!=='playing'&&phase!=='multi-playing')return;
   idleT+=dt;
-  if(idleT>=5&&hudOn&&(typeof _settings==='undefined'||_settings.hudAutoHide)){hudOn=false;document.getElementById('hud').style.opacity='0';document.getElementById('tap-restore').style.opacity='1';controls.autoRotate=true;controls.autoRotateSpeed=0.5;}
+  if(idleT>=5&&hudOn&&phase!=='ero-puzzle'&&(typeof _settings==='undefined'||_settings.hudAutoHide)){hudOn=false;document.getElementById('hud').style.opacity='0';document.getElementById('tap-restore').style.opacity='1';controls.autoRotate=true;controls.autoRotateSpeed=0.5;}
 }
 
 // ══════════════════════════════════════════════════
@@ -2954,7 +2958,7 @@ loadFlightSave();
 // ══════════════════════════════════════════════════
 function onTap(cx,cy){
   resetIdle();
-  if(phase!=='playing'&&phase!=='multi-playing')return;
+  if(phase!=='playing'&&phase!=='multi-playing'&&phase!=='ero-puzzle')return;
   const id=hitTest(cx,cy);
   if(id)selectArrow(id);
 }
@@ -3100,7 +3104,7 @@ function loop(){
   const dt=Math.min(clk.getDelta(),0.05);
   if(shk>0){shk-=dt*3;const s=shk*0.07;camera.position.x+=(Math.random()-.5)*s;camera.position.y+=(Math.random()-.5)*s;}
   if(phase==='menu'||phase==='hub'){tickDemo(dt);}
-  else if(phase==='playing'||phase==='multi-playing'){
+  else if(phase==='playing'||phase==='multi-playing'||phase==='ero-puzzle'){
     if(opening){const el=Date.now()/1000-openT;let done=true;arrows.forEach(a=>{const t=(el-a.oDelay)/0.55;if(t<0){a.root.position.copy(a.oStart);done=false;}else if(t<1){const e=1-Math.pow(1-Math.min(t,1),3);a.root.position.lerpVectors(a.oStart,a.bp,e);done=false;}else{a.root.position.copy(a.bp);}});if(done)opening=false;}
     else{arrows.forEach(a=>tickArrow(a,dt));tickFreeHint(dt);}
     tickIdle(dt);
@@ -8343,43 +8347,15 @@ function _unlockOrientation(){
 }
 
 // ══════════════════════════════════════════════════
-// 에로맵 — 퍼즐 시스템 (15초, 희귀도별 난이도)
+// 에로맵 — 퍼즐 시스템 (솔로 플레이와 동일한 3D 퍼즐, 15초)
 // ══════════════════════════════════════════════════
 let _eroPuzzleTimer=null;
 let _eroPuzzleArrow=null;
-let _eroPuzzleAnswer=null;
-
-function _generatePuzzle(rarity){
-  const r=()=>Math.floor(Math.random()*9)+1;
-  const r2=()=>Math.floor(Math.random()*40)+10;
-  const r3=()=>Math.floor(Math.random()*8)+2;
-  if(rarity==='legendary'){
-    // 복잡한 연산: (a×b)-(c+d)
-    const a=r3(),b=r3(),c=r(),d=r();
-    const ans=(a*b)-(c+d);
-    if(ans<=0||ans>99){return _generatePuzzle(rarity);}
-    return{q:`(${a} × ${b}) - (${c} + ${d}) = ?`,ans};
-  }else if(rarity==='epic'){
-    // 혼합: a×b+c
-    const a=r3(),b=r3(),c=r();
-    const ans=a*b+c;
-    return{q:`${a} × ${b} + ${c} = ?`,ans};
-  }else if(rarity==='rare'){
-    // 두 자리 덧셈/뺄셈
-    const a=r2(),b=r2();
-    const sub=Math.random()>0.5&&a>b;
-    const ans=sub?a-b:a+b;
-    return{q:sub?`${a} - ${b} = ?`:`${a} + ${b} = ?`,ans};
-  }else{
-    // 일반: 한 자리 덧셈
-    const a=r(),b=r();
-    return{q:`${a} + ${b} = ?`,ans:a+b};
-  }
-}
+let _eroPuzzlePhaseWas='menu';
 
 function openEroPuzzle(arrow){
   if(arrow.collected)return;
-  // 17m 이내인지 다시 확인
+  // 17m 이내인지 확인
   if(EROMAP.lat!==null){
     const dlat=(arrow.lat-EROMAP.lat)*111000;
     const dlon=(arrow.lon-EROMAP.lon)*111000*Math.cos(EROMAP.lat*Math.PI/180);
@@ -8389,61 +8365,99 @@ function openEroPuzzle(arrow){
       return;
     }
   }
+  startEroPuzzleGame(arrow);
+}
+
+function startEroPuzzleGame(arrow){
   _eroPuzzleArrow=arrow;
+  _eroPuzzlePhaseWas=phase;
   const sk=SKINS.find(s=>s.id===arrow.skinId)||SKINS[0];
-  const puzzle=_generatePuzzle(sk.rarity||'common');
-  _eroPuzzleAnswer=puzzle.ans;
+  // 희귀도 → 레벨 인덱스 (솔로 플레이 동일 레벨 사용)
+  const rarityLvl={common:0,rare:1,epic:2,legendary:3}[sk.rarity||'common']??0;
 
-  const modal=document.getElementById('ero-puzzle-modal');
-  document.getElementById('ero-puzzle-emoji').textContent=sk.emoji;
-  document.getElementById('ero-puzzle-name').textContent=sk.name;
-  const rarityMap={common:'일반',rare:'✦ 희귀',epic:'✦✦ 에픽',legendary:'✦✦✦ 전설'};
-  const rarityColorMap={common:'#aaa',rare:'#4cc9f0',epic:'#a855f7',legendary:'#FFD700'};
-  const rEl=document.getElementById('ero-puzzle-rarity');
-  rEl.textContent=rarityMap[sk.rarity||'common'];
-  rEl.style.color=rarityColorMap[sk.rarity||'common']||'#aaa';
-  document.getElementById('ero-puzzle-question').textContent=puzzle.q;
-  document.getElementById('ero-puzzle-input').value='';
-  document.getElementById('ero-puzzle-feedback').textContent='';
-  modal.style.display='flex';
-  document.getElementById('ero-puzzle-input').focus();
+  // 에로맵 오버레이 숨기기
+  document.getElementById('eromap-ov').classList.remove('on');
 
+  // 미니 레벨 생성 및 화살표 스폰 (솔로 플레이와 동일한 genLevel 사용)
+  const lv=genLevel(rarityLvl);
+  escaped=0;
+  spawnArrows(lv,activeSkin);
+
+  // 카메라 위치 조정
+  const sp=Math.sqrt(lv.length)*GRID;
+  const cen=new THREE.Vector3();arrows.forEach(a=>cen.add(a.bp));cen.divideScalar(arrows.length);
+  const portrait=innerHeight>innerWidth*1.1;
+  camera.position.set(cen.x,cen.y+sp*.5,cen.z+(portrait?sp*2.5+5.5:sp*1.9+3.5));
+  controls.target.copy(cen);controls.update();
+  controls.autoRotate=false;
+
+  // 게임 페이즈 설정
+  phase='ero-puzzle';
+  canvas.style.pointerEvents='auto';
+  selId=null;lastId=null;opening=false;
+
+  // 에로 퍼즐 HUD 표시
+  const hudEl=document.getElementById('ero-puzzle-hud');
+  if(hudEl){
+    document.getElementById('ero-ph-skin').textContent=`${sk.emoji} ${sk.name}`;
+    document.getElementById('ero-ph-count').textContent=`0 / ${lv.length}`;
+    const timerEl=document.getElementById('ero-ph-timer');
+    if(timerEl){timerEl.textContent='15';timerEl.style.color='#4cc9f0';}
+    hudEl.style.display='flex';
+  }
+  document.getElementById('launch-btn').style.display='none';
+  startOpening();
+
+  // 15초 타이머 시작
   let timeLeft=15;
-  document.getElementById('ero-puzzle-timer').textContent=timeLeft;
   if(_eroPuzzleTimer)clearInterval(_eroPuzzleTimer);
   _eroPuzzleTimer=setInterval(()=>{
     timeLeft--;
-    const el=document.getElementById('ero-puzzle-timer');
-    if(el)el.textContent=timeLeft;
-    if(timeLeft<=3&&el)el.style.color='#ff4444';
-    if(timeLeft<=0){
-      clearInterval(_eroPuzzleTimer);_eroPuzzleTimer=null;
-      closeEroPuzzle();
-      showEroCollectBanner('⏰ 시간 초과! 다시 도전하세요','coin');
-    }
+    const timerEl=document.getElementById('ero-ph-timer');
+    if(timerEl){timerEl.textContent=timeLeft;if(timeLeft<=5)timerEl.style.color='#ff4444';}
+    if(timeLeft<=0){clearInterval(_eroPuzzleTimer);_eroPuzzleTimer=null;endEroPuzzle(false);}
   },1000);
 }
 
-function submitEroPuzzle(){
-  const val=parseInt(document.getElementById('ero-puzzle-input').value.trim());
-  if(isNaN(val)){document.getElementById('ero-puzzle-feedback').textContent='숫자를 입력하세요';return;}
-  if(val===_eroPuzzleAnswer){
-    clearInterval(_eroPuzzleTimer);_eroPuzzleTimer=null;
-    closeEroPuzzle();
-    if(_eroPuzzleArrow)collectEroArrow(_eroPuzzleArrow);
-    _eroPuzzleArrow=null;
-  }else{
-    document.getElementById('ero-puzzle-feedback').textContent='❌ 틀렸어요! 다시 시도해보세요';
-    document.getElementById('ero-puzzle-input').value='';
-    document.getElementById('ero-puzzle-input').focus();
+function _updateEroPuzzleProgress(){
+  const el=document.getElementById('ero-ph-count');
+  if(el)el.textContent=`${escaped} / ${arrows.length}`;
+}
+
+function checkEroPuzzleWin(){
+  if(arrows.every(a=>a.state==='escaped')){
+    if(_eroPuzzleTimer){clearInterval(_eroPuzzleTimer);_eroPuzzleTimer=null;}
+    endEroPuzzle(true);
   }
 }
 
-function closeEroPuzzle(){
-  document.getElementById('ero-puzzle-modal').style.display='none';
+function endEroPuzzle(success){
   if(_eroPuzzleTimer){clearInterval(_eroPuzzleTimer);_eroPuzzleTimer=null;}
-  document.getElementById('ero-puzzle-timer').style.color='#4cc9f0';
+  const hudEl=document.getElementById('ero-puzzle-hud');
+  if(hudEl)hudEl.style.display='none';
+  document.getElementById('launch-btn').style.display='none';
+  selId=null;
+
+  // 메뉴/데모 상태로 복원
+  phase='menu';
+  controls.autoRotate=true;controls.autoRotateSpeed=1.3;
+  initDemo();
+  canvas.style.pointerEvents='none';
+
+  // 에로맵 재오픈
+  EROMAP.open=false;
+  setTimeout(()=>{
+    openEroMap();
+    if(success){
+      setTimeout(()=>{if(_eroPuzzleArrow)collectEroArrow(_eroPuzzleArrow);_eroPuzzleArrow=null;},700);
+    }else{
+      showEroCollectBanner('⏰ 시간 초과! 다시 도전하세요','coin');
+      _eroPuzzleArrow=null;
+    }
+  },400);
 }
+
+function closeEroPuzzle(){endEroPuzzle(false);}
 
 // ══════════════════════════════════════════════════
 // 에로맵 — 수집 효과음
@@ -8481,9 +8495,7 @@ document.getElementById('eromap-exit')?.addEventListener('click',()=>{closeEroMa
 document.getElementById('sdm-close')?.addEventListener('click',()=>{document.getElementById('skin-detail-modal').style.display='none';});
 
 // 퍼즐 제출 이벤트
-document.getElementById('ero-puzzle-submit')?.addEventListener('click',()=>submitEroPuzzle());
-document.getElementById('ero-puzzle-cancel')?.addEventListener('click',()=>{closeEroPuzzle();showEroCollectBanner('퍼즐 취소됨','coin');});
-document.getElementById('ero-puzzle-input')?.addEventListener('keydown',(e)=>{if(e.key==='Enter')submitEroPuzzle();});
+
 
 // 초기 세로 방향 잠금
 try{_lockPortrait();}catch(e){}

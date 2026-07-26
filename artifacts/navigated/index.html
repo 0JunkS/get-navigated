@@ -1003,26 +1003,17 @@ window._FB_CFG={
 }
 #plz-inthint.show{opacity:1;}
 
-/* ═══════════════════════ 퍼즐 모달 ═══════════════════════ */
-#ero-puzzle-modal{display:none;position:fixed;inset:0;z-index:9950;align-items:center;justify-content:center;pointer-events:all;background:rgba(0,0,0,.82);backdrop-filter:blur(8px)}
-.ero-puzzle-card{background:linear-gradient(155deg,rgba(6,6,26,.98),rgba(16,8,48,.98));border:2px solid rgba(76,201,240,.35);border-radius:24px;padding:28px 24px 24px;width:88%;max-width:320px;text-align:center;position:relative;box-shadow:0 0 40px rgba(76,201,240,.2)}
-.ero-puzzle-timer-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.ero-puzzle-timer-label{color:rgba(200,220,255,.55);font-size:12px;font-weight:700;letter-spacing:1px}
-#ero-puzzle-timer{font-size:26px;font-weight:900;color:#4cc9f0;font-family:monospace;text-shadow:0 0 12px rgba(76,201,240,.6);min-width:2ch;text-align:right;transition:color .3s}
-.ero-puzzle-arrow-info{margin-bottom:16px}
-#ero-puzzle-emoji{font-size:48px;display:block;margin-bottom:6px}
-#ero-puzzle-name{color:#fff;font-size:18px;font-weight:900}
-#ero-puzzle-rarity{font-size:11px;font-weight:900;letter-spacing:2px;margin-top:3px}
-.ero-puzzle-q-label{color:rgba(200,220,255,.5);font-size:11px;letter-spacing:2px;font-weight:700;margin-bottom:8px;margin-top:14px}
-#ero-puzzle-question{color:#fff;font-size:28px;font-weight:900;letter-spacing:1px;margin-bottom:14px;text-shadow:0 0 16px rgba(76,201,240,.4)}
-#ero-puzzle-input{width:100%;padding:13px;border-radius:12px;border:2px solid rgba(76,201,240,.4);background:rgba(255,255,255,.06);color:#fff;font-size:24px;font-weight:900;text-align:center;outline:none;margin-bottom:8px;font-family:monospace}
-#ero-puzzle-input:focus{border-color:rgba(76,201,240,.8);box-shadow:0 0 16px rgba(76,201,240,.25)}
-#ero-puzzle-feedback{color:#ff6b6b;font-size:12px;font-weight:700;min-height:16px;margin-bottom:10px}
-.ero-puzzle-btns{display:flex;gap:10px}
-#ero-puzzle-submit{flex:1;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#4361ee,#4cc9f0);color:#fff;font-size:15px;font-weight:900;cursor:pointer;transition:transform .1s,opacity .1s}
-#ero-puzzle-submit:active{transform:scale(0.96);opacity:.85}
-#ero-puzzle-cancel{padding:14px 18px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:rgba(255,255,255,.65);font-size:14px;font-weight:700;cursor:pointer}
-#ero-puzzle-cancel:active{opacity:.7}
+/* ═══════════════════════ 에로 퍼즐 HUD ═══════════════════════ */
+#ero-puzzle-hud{display:none;position:fixed;top:0;left:0;right:0;z-index:9950;pointer-events:all;flex-direction:column;gap:0}
+#ero-ph-top{background:linear-gradient(180deg,rgba(0,0,26,.92) 0%,rgba(0,0,26,.7) 100%);padding:14px 18px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(76,201,240,.2)}
+#ero-ph-skin{color:#fff;font-size:14px;font-weight:900;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ero-ph-count{color:#4cc9f0;font-size:14px;font-weight:900;white-space:nowrap}
+#ero-ph-sep{color:rgba(255,255,255,.3);margin:0 4px}
+.ero-ph-timer-wrap{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.ero-ph-timer-label{color:rgba(200,220,255,.55);font-size:11px;font-weight:700}
+#ero-ph-timer{font-size:22px;font-weight:900;color:#4cc9f0;font-family:monospace;text-shadow:0 0 10px rgba(76,201,240,.6);min-width:2ch;text-align:right;transition:color .3s}
+#ero-ph-cancel{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:50px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+#ero-ph-banner{background:rgba(76,201,240,.12);border-bottom:1px solid rgba(76,201,240,.15);padding:7px 18px;text-align:center;color:rgba(200,230,255,.65);font-size:11px;font-weight:700;letter-spacing:1px}
 </style>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
@@ -1777,26 +1768,17 @@ window._FB_CFG={
 </div>
 
 <!-- ═══════════════ 스킨 상세 모달 ═══════════════ -->
-<div id="ero-puzzle-modal">
-  <div class="ero-puzzle-card">
-    <div class="ero-puzzle-timer-row">
-      <div class="ero-puzzle-timer-label">⏱ 남은 시간</div>
-      <div id="ero-puzzle-timer">15</div>
+<div id="ero-puzzle-hud">
+  <div id="ero-ph-top">
+    <div id="ero-ph-skin">🎯 화살표</div>
+    <div id="ero-ph-count">0 / 6</div>
+    <div class="ero-ph-timer-wrap">
+      <div class="ero-ph-timer-label">⏱</div>
+      <div id="ero-ph-timer">15</div>
     </div>
-    <div class="ero-puzzle-arrow-info">
-      <span id="ero-puzzle-emoji">🎯</span>
-      <div id="ero-puzzle-name">화살표</div>
-      <div id="ero-puzzle-rarity">일반</div>
-    </div>
-    <div class="ero-puzzle-q-label">🧩 퍼즐을 풀어 화살표를 잡아라!</div>
-    <div id="ero-puzzle-question">0 + 0 = ?</div>
-    <input id="ero-puzzle-input" type="number" pattern="[0-9]*" inputmode="numeric" placeholder="정답 입력" autocomplete="off"/>
-    <div id="ero-puzzle-feedback"></div>
-    <div class="ero-puzzle-btns">
-      <button id="ero-puzzle-submit">✔ 정답 제출</button>
-      <button id="ero-puzzle-cancel">취소</button>
-    </div>
+    <button id="ero-ph-cancel" onclick="endEroPuzzle(false)">포기</button>
   </div>
+  <div id="ero-ph-banner">🧩 화살표를 모두 탈출시켜 화살표를 획득하세요!</div>
 </div>
 <div id="skin-detail-modal">
   <div class="sdm-card">
