@@ -8039,6 +8039,8 @@ function openEroMap(){
   if(EROMAP.open)return;
   EROMAP.open=true;
   document.getElementById('eromap-ov').classList.add('on');
+  // 안드로이드/브라우저 뒤로가기 버튼 지원
+  history.pushState({eromap:true},'');
   EROMAP.timeInterval=setInterval(updateEroTime,1000);
   updateEroTime();
   // 화면 방향 잠금 해제 (에로맵에서는 자유롭게)
@@ -8298,6 +8300,7 @@ function _addOrMovePlayerMarker(){
 }
 
 function closeEroMap(){
+  if(!EROMAP.open)return;
   EROMAP.open=false;
   document.getElementById('eromap-ov').classList.remove('on');
   if(EROMAP.watchId!=null){navigator.geolocation.clearWatch(EROMAP.watchId);EROMAP.watchId=null;}
@@ -8318,6 +8321,10 @@ function closeEroMap(){
   _lockPortrait();
   // 퍼즐 닫기
   closeEroPuzzle();
+  // 홈화면(메뉴)으로 복귀
+  phase='menu';
+  showUI('menu');
+  initDemo();
 }
 
 function eroSimulate(){
@@ -8813,7 +8820,15 @@ function playEroCollectSound(){
 
 // 에로맵 버튼 이벤트
 document.getElementById('btn-eromap')?.addEventListener('click',()=>{openEroMap();});
-document.getElementById('eromap-exit')?.addEventListener('click',()=>{closeEroMap();});
+document.getElementById('eromap-exit')?.addEventListener('click',()=>{
+  // history에 pushState된 상태라면 뒤로가기로 처리 (popstate가 closeEroMap 호출)
+  // 아니면 직접 닫기
+  if(EROMAP.open){history.back();}
+});
+// 안드로이드 하드웨어 뒤로가기 / 브라우저 뒤로가기 버튼 처리
+window.addEventListener('popstate',()=>{
+  if(EROMAP.open)closeEroMap();
+});
 document.getElementById('sdm-close')?.addEventListener('click',()=>{document.getElementById('skin-detail-modal').style.display='none';});
 
 // 퍼즐 제출 이벤트
