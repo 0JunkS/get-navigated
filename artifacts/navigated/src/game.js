@@ -8341,7 +8341,9 @@ function _createArrowMarker(arrow,sk,visible=true){
     distLabel.textContent=dist<1000?`${dist}m`:`${(dist/1000).toFixed(1)}km`;
   },1500);
 
-  return new maplibregl.Marker({element:el,anchor:'bottom'})
+  // pitchAlignment:'viewport' → 카메라를 향해 항상 수직으로 세워짐 (땅에 박히지 않음)
+  // offset: 화면 Y축으로 위로 띄움 (양수=아래, 음수=위)
+  return new maplibregl.Marker({element:el,anchor:'bottom',pitchAlignment:'viewport',rotationAlignment:'viewport',offset:[0,-10]})
     .setLngLat([arrow.lon,arrow.lat]).addTo(EROMAP.map);
 }
 
