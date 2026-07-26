@@ -8336,7 +8336,7 @@ function _addOrMovePlayerMarker(){
   }
   const el=_initPlayerMarker3D();
   // pitchAlignment:'map' 으로 지형 표면에 고정, anchor:'bottom'으로 마커 하단이 땅에 닿게
-  EROMAP.playerMarker=new maplibregl.Marker({element:el,anchor:'bottom',pitchAlignment:'map',rotationAlignment:'viewport'})
+  EROMAP.playerMarker=new maplibregl.Marker({element:el,anchor:'center',pitchAlignment:'map',rotationAlignment:'viewport'})
     .setLngLat([EROMAP.lon,EROMAP.lat,alt]).addTo(EROMAP.map);
 }
 
@@ -8631,7 +8631,7 @@ function _createArrowMarker(arrow,sk,visible=true){
 
   // pitchAlignment:'viewport' → 카메라를 향해 항상 수직으로 세워짐 (땅에 박히지 않음)
   // offset: 화면 Y축으로 위로 띄움 (양수=아래, 음수=위)
-  return new maplibregl.Marker({element:el,anchor:'bottom',pitchAlignment:'viewport',rotationAlignment:'viewport',offset:[0,-10]})
+  return new maplibregl.Marker({element:el,anchor:'center',pitchAlignment:'viewport',rotationAlignment:'viewport'})
     .setLngLat([arrow.lon,arrow.lat]).addTo(EROMAP.map);
 }
 
