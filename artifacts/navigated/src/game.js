@@ -8181,7 +8181,8 @@ function eroGPSUpdate(pos){
   document.getElementById('eromap-gps').textContent=`📍 ${EROMAP.lat.toFixed(4)}°N, ${EROMAP.lon.toFixed(4)}°E`;
   if(EROMAP.map){EROMAP.map.panTo([EROMAP.lon,EROMAP.lat],{duration:500});_addOrMovePlayerMarker();}
   _updateArrowVisibility();
-  checkEroCollection();
+  // 자동수집 제거 — 탭해야만 퍼즐 열고 수집 가능
+  // checkEroCollection();
 }
 
 async function fetchEroWeather(){
@@ -8502,6 +8503,16 @@ let _eroPuzzlePhaseWas='menu';
 
 function openEroPuzzle(arrow){
   if(arrow.collected)return;
+  // 17m 이내인지 확인
+  if(EROMAP.lat!==null){
+    const dlat=(arrow.lat-EROMAP.lat)*111000;
+    const dlon=(arrow.lon-EROMAP.lon)*111000*Math.cos(EROMAP.lat*Math.PI/180);
+    const dist=Math.sqrt(dlat*dlat+dlon*dlon);
+    if(dist>EROMAP.COLLECT_R){
+      showEroCollectBanner('❗ 더 가까이 가야 해요! (17m 이내)','coin');
+      return;
+    }
+  }
   startEroPuzzleGame(arrow);
 }
 
