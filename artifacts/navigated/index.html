@@ -859,6 +859,14 @@ window._FB_CFG={
 }
 #story-tap.ready{animation:stBlink .6s step-end infinite;opacity:1;}
 @keyframes stBlink{0%,49%{opacity:1}50%,100%{opacity:0}}
+#story-skip{
+  position:absolute;top:8px;right:10px;
+  background:rgba(0,0,0,.18);border:1.5px solid rgba(0,0,0,.25);border-radius:6px;
+  color:#444;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  white-space:nowrap;letter-spacing:.03em;
+}
+#story-skip:active{background:rgba(0,0,0,.35);}
 /* 선택지: story-box 위에 고정 (오른쪽) */
 #story-choices{
   position:fixed;right:14px;bottom:115px;z-index:9600;
@@ -1903,6 +1911,7 @@ window._FB_CFG={
       <div id="story-text"></div>
       <div id="story-tap">▼</div>
     </div>
+    <button id="story-skip">건너뛰기</button>
   </div>
 </div>
 <div id="story-choices"></div>
