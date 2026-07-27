@@ -1059,6 +1059,7 @@ let phase='menu';
 let lvIdx=0,lives=5,maxLiv=5,selId=null;
 let escaped=0,shk=0;
 let opening=false,openT=0;
+let _playStartTime=null;
 let lastId=null,lastT=0;
 let idleT=0,hudOn=true;
 let demoIdx=0,demoT=0;
@@ -1468,7 +1469,7 @@ function loadLevel(i){
   if(typeof _clearBossRound==='function')_clearBossRound();
   lvIdx=i;const lv=getLevel(i);
   maxLiv=3;lives=maxLiv;
-  selId=null;lastId=null;escaped=0;phase='playing';
+  selId=null;lastId=null;escaped=0;phase='playing';_playStartTime=null;
   controls.autoRotate=false;
   spawnArrows(lv,activeSkin);
   const sp=Math.sqrt(lv.length)*GRID;
@@ -1477,6 +1478,7 @@ function loadLevel(i){
   camera.position.set(cen1.x,cen1.y+sp*.5,cen1.z+(portrait1?sp*2.5+5.5:sp*1.9+3.5));
   controls.target.copy(cen1);controls.update();
   idleT=0;hudOn=true;
+  const _htEl=document.getElementById('hud-timer');if(_htEl)_htEl.textContent='0.00s';
   showUI('hud');
   document.getElementById('multi-hud').classList.remove('on');
   document.getElementById('launch-btn').style.display='none';
@@ -1651,6 +1653,9 @@ function endGame(won){
   popup(`+${r} 💰`,innerWidth/2,innerHeight*.45);
   document.getElementById('w-stars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
   document.getElementById('w-coins').textContent=`+${r} 💰`;
+  const _wt=document.getElementById('w-time');
+  if(_wt){if(_playStartTime!==null){const _tf=((performance.now()-_playStartTime)/1000).toFixed(2);_wt.textContent=`⏱ ${_tf}초`;_wt.style.display='block';}else{_wt.style.display='none';}}
+  _playStartTime=null;
   document.getElementById('w-sub').textContent=`레벨 ${lvIdx+1} 클리어! 생명 ${lives}/${maxLiv} 남음`;
   const _si=lvIdx+1;
   if(_si%3===0){
@@ -3126,8 +3131,8 @@ function loop(){
   if(shk>0){shk-=dt*3;const s=shk*0.07;camera.position.x+=(Math.random()-.5)*s;camera.position.y+=(Math.random()-.5)*s;}
   if(phase==='menu'||phase==='hub'){tickDemo(dt);}
   else if(phase==='playing'||phase==='multi-playing'||phase==='ero-puzzle'){
-    if(opening){const el=Date.now()/1000-openT;let done=true;arrows.forEach(a=>{const t=(el-a.oDelay)/0.55;if(t<0){a.root.position.copy(a.oStart);done=false;}else if(t<1){const e=1-Math.pow(1-Math.min(t,1),3);a.root.position.lerpVectors(a.oStart,a.bp,e);done=false;}else{a.root.position.copy(a.bp);}});if(done)opening=false;}
-    else{arrows.forEach(a=>tickArrow(a,dt));tickFreeHint(dt);}
+    if(opening){const el=Date.now()/1000-openT;let done=true;arrows.forEach(a=>{const t=(el-a.oDelay)/0.55;if(t<0){a.root.position.copy(a.oStart);done=false;}else if(t<1){const e=1-Math.pow(1-Math.min(t,1),3);a.root.position.lerpVectors(a.oStart,a.bp,e);done=false;}else{a.root.position.copy(a.bp);}});if(done){opening=false;if(phase==='playing')_playStartTime=performance.now();}}
+    else{arrows.forEach(a=>tickArrow(a,dt));tickFreeHint(dt);if(phase==='playing'&&_playStartTime!==null){const _te=(performance.now()-_playStartTime)/1000;const _th=document.getElementById('hud-timer');if(_th)_th.textContent=_te.toFixed(2)+'s';}}
     tickIdle(dt);
   }else if(phase==='win'||phase==='over'||phase==='multi-result'||phase==='multi-done'){arrows.forEach(a=>tickArrow(a,dt*0.35));}
   tickFlight(dt);
@@ -3470,7 +3475,7 @@ document.getElementById('co-close').addEventListener('click',()=>document.getEle
 // SPECIAL STAGES
 // ══════════════════════════════════════════════════
 const SPECIAL_STAGES=[
-  {id:'timeatk',name:'⚡ 타임어택',icon:'⏱️',desc:'30초 안에 모든 화살표를 탈출!',reward:200,timeLimit:30},
+  {id:'timeatk',name:'⚡ 타임어택',icon:'⏱️',desc:'최대한 빠르게 모든 화살표를 탈출!',reward:200},
   {id:'nomiss',name:'🎯 퍼펙트',icon:'🎯',desc:'실수 없이 클리어하면 보상!',reward:250,noMiss:true},
   {id:'blind',name:'🌑 블라인드',icon:'🌑',desc:'막힌 화살표 표시 없이 도전!',reward:300,blind:true},
   {id:'speed',name:'🔥 스피드',icon:'🔥',desc:'더 빠른 화살표로 도전!',reward:220,speed:true},

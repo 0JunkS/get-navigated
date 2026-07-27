@@ -68,6 +68,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 #tap-restore{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.22);font-size:12px;pointer-events:none;white-space:nowrap}
 #pbar{position:absolute;top:0;left:0;right:0;height:3px}
 #pfill{height:3px;background:linear-gradient(90deg,#4361ee,#4cc9f0);width:0;transition:width .35s}
+#hud-timer{position:absolute;top:0;left:50%;transform:translateX(-50%);height:58px;display:flex;align-items:center;font-family:monospace;font-size:22px;font-weight:900;color:#4cc9f0;letter-spacing:1px;text-shadow:0 0 12px rgba(76,201,240,0.7);pointer-events:none;user-select:none}
 
 /* ── WIN / OVER ──────────────────────────────────── */
 .overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:all;background:rgba(0,0,0,0.35)}
@@ -1212,6 +1213,7 @@ window._FB_CFG={
   <!-- HUD -->
   <div id="hud">
     <div id="pbar"><div id="pfill"></div></div>
+    <div id="hud-timer">0.00s</div>
     <div id="hud-top">
       <div id="lives-txt"></div>
       <div id="level-txt"></div>
@@ -1231,6 +1233,7 @@ window._FB_CFG={
       <h2>레벨 클리어!</h2>
       <div class="r-stars" id="w-stars"></div>
       <div class="r-coins" id="w-coins"></div>
+      <div id="w-time" style="font-family:monospace;font-size:20px;font-weight:900;color:#4cc9f0;margin:6px 0 2px;text-shadow:0 0 10px rgba(76,201,240,0.6);display:none"></div>
       <p class="r-sub" id="w-sub"></p>
       <div class="r-row">
         <button class="btn btn-primary btn-sm" id="btn-next">다음 ▶</button>
