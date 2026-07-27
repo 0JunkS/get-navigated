@@ -3475,7 +3475,7 @@ document.getElementById('co-close').addEventListener('click',()=>document.getEle
 // SPECIAL STAGES
 // ══════════════════════════════════════════════════
 const SPECIAL_STAGES=[
-  {id:'timeatk',name:'⚡ 타임어택',icon:'⏱️',desc:'최대한 빠르게 모든 화살표를 탈출!',reward:200},
+  {id:'timeatk',name:'⚡ 타임어택',icon:'⏱️',desc:'30초 안에 모든 화살표를 탈출!',reward:200,timeLimit:30},
   {id:'nomiss',name:'🎯 퍼펙트',icon:'🎯',desc:'실수 없이 클리어하면 보상!',reward:250,noMiss:true},
   {id:'blind',name:'🌑 블라인드',icon:'🌑',desc:'막힌 화살표 표시 없이 도전!',reward:300,blind:true},
   {id:'speed',name:'🔥 스피드',icon:'🔥',desc:'더 빠른 화살표로 도전!',reward:220,speed:true},
