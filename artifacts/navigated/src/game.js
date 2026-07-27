@@ -8060,7 +8060,9 @@ const EROMAP={
   _moveTimer:null,
   _playerStopAnim:null,
   _playerRenderer:null,
-  _playerScene:null
+  _playerScene:null,
+  sessionCoins:0,
+  sessionCollected:0
 };
 
 const WMAP={
@@ -8084,11 +8086,16 @@ function getWInfo(code){
 function openEroMap(){
   if(EROMAP.open)return;
   EROMAP.open=true;
+  EROMAP.sessionCoins=0;
+  EROMAP.sessionCollected=0;
   document.getElementById('eromap-ov').classList.add('on');
   // 안드로이드/브라우저 뒤로가기 버튼 지원
   history.pushState({eromap:true},'');
   EROMAP.timeInterval=setInterval(updateEroTime,1000);
   updateEroTime();
+  _updateEroStats();
+  // 장식 오브 파티클 추가
+  setTimeout(()=>_addEroMapParticles(),300);
   // 화면 방향 잠금 해제 (에로맵에서는 자유롭게)
   _unlockOrientation();
   // 나침반/자이로 연동
@@ -8162,13 +8169,16 @@ function _initMapLibre(){
     _addBuildingLayer(map);
     // 땅 초록색으로 변경
     _setGreenLand(map);
-    // 하늘
-    try{map.setSky({'sky-color':'#4fc3f7','sky-horizon-blend':0.5,'horizon-color':'#fde8ff','horizon-fog-blend':0.3,'atmosphere-blend':0.5});}catch(e){}
+    // 도로 네온 색상
+    _setRoadColors(map);
+    // 하늘 (게임 분위기에 맞는 신비로운 톤)
+    try{map.setSky({'sky-color':'#0a1a3a','sky-horizon-blend':0.4,'horizon-color':'#1a3a6e','horizon-fog-blend':0.5,'atmosphere-blend':0.6});}catch(e){}
     // 플레이어·화살 — GPS가 지도보다 먼저 도착했을 경우 실제 위치로 이동
     if(EROMAP.lat!==null){
       map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),duration:1200});
       _addOrMovePlayerMarker();
       if(!EROMAP.arrows.length)spawnEroArrows();
+      _addCollectRadius(map);
     }
   });
   map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'top-right');
@@ -8179,6 +8189,125 @@ function _initMapLibre(){
       EROMAP.playerMarker.setLngLat([EROMAP.lon,EROMAP.lat,alt]);
     }
   });
+}
+
+// ── 수집 반경 GeoJSON 원 생성 ──────────────────────────────────────
+function _makeCircleGeoJSON(lat,lon,radiusM){
+  const pts=64,coords=[];
+  for(let i=0;i<pts;i++){
+    const ang=i/pts*Math.PI*2;
+    const dlat=radiusM*Math.cos(ang)/111000;
+    const dlon=radiusM*Math.sin(ang)/(111000*Math.cos(lat*Math.PI/180));
+    coords.push([lon+dlon,lat+dlat]);
+  }
+  coords.push(coords[0]);
+  return{type:'Feature',geometry:{type:'Polygon',coordinates:[coords]}};
+}
+function _addCollectRadius(map){
+  if(EROMAP.lat===null)return;
+  const geoj=_makeCircleGeoJSON(EROMAP.lat,EROMAP.lon,EROMAP.COLLECT_R);
+  const fc={type:'FeatureCollection',features:[geoj]};
+  if(map.getSource('ero-cr')){map.getSource('ero-cr').setData(fc);return;}
+  map.addSource('ero-cr',{type:'geojson',data:fc});
+  // 반경 채우기 (반투명 청록)
+  map.addLayer({id:'ero-cr-fill',type:'fill',source:'ero-cr',paint:{
+    'fill-color':'#4cc9f0','fill-opacity':0.07
+  }});
+  // 반경 테두리 (점선)
+  map.addLayer({id:'ero-cr-line',type:'line',source:'ero-cr',paint:{
+    'line-color':'#4cc9f0','line-width':2,'line-opacity':0.55,
+    'line-dasharray':[5,5]
+  }});
+}
+function _updateCollectRadius(){
+  const map=EROMAP.map;
+  if(!map||!map.loaded()||EROMAP.lat===null)return;
+  const geoj=_makeCircleGeoJSON(EROMAP.lat,EROMAP.lon,EROMAP.COLLECT_R);
+  const fc={type:'FeatureCollection',features:[geoj]};
+  const src=map.getSource('ero-cr');
+  if(src)src.setData(fc);
+  else _addCollectRadius(map);
+}
+
+// ── 도로 레이어 네온 색상 적용 ─────────────────────────────────────
+function _setRoadColors(map){
+  // Liberty 스타일 도로 레이어 이름 패턴 (try/catch로 오류 무시)
+  const layers=[
+    // 주요 간선도로 — 분홍/마젠타 계열
+    {id:'road_motorway',p:'line-color',v:'#cc3366'},
+    {id:'road_motorway_link',p:'line-color',v:'#cc3366'},
+    {id:'road_trunk',p:'line-color',v:'#cc3366'},
+    {id:'road_trunk_link',p:'line-color',v:'#cc3366'},
+    // 1·2차로 — 파란 계열
+    {id:'road_primary',p:'line-color',v:'#2a7fd4'},
+    {id:'road_primary_link',p:'line-color',v:'#2a7fd4'},
+    {id:'road_secondary',p:'line-color',v:'#1a5a8a'},
+    {id:'road_secondary_link',p:'line-color',v:'#1a5a8a'},
+    // 3차로 이하 — 어두운 파랑
+    {id:'road_tertiary',p:'line-color',v:'#12406a'},
+    {id:'road_tertiary_link',p:'line-color',v:'#12406a'},
+    {id:'road_minor',p:'line-color',v:'#0e2e52'},
+    {id:'road_minor_link',p:'line-color',v:'#0e2e52'},
+    // 서비스·보행로
+    {id:'road_service_track',p:'line-color',v:'#0a2040'},
+    {id:'road_path',p:'line-color',v:'#1a3060'},
+    {id:'road_pedestrian',p:'line-color',v:'#152840'},
+    // 보도 / 자전거
+    {id:'road_cycleway',p:'line-color',v:'#1a6040'},
+    {id:'road_footway',p:'line-color',v:'#152035'},
+    // 케이싱(외곽선) — 좀 더 어두운 버전
+    {id:'road_motorway_casing',p:'line-color',v:'#880033'},
+    {id:'road_primary_casing',p:'line-color',v:'#0a4a80'},
+  ];
+  layers.forEach(({id,p,v})=>{
+    try{if(map.getLayer(id))map.setPaintProperty(id,p,v);}catch(e){}
+  });
+  // 물(강·호수) — 게임 느낌 강조
+  const waterLayers=['water','waterway','waterway-label'];
+  waterLayers.forEach(id=>{
+    try{if(map.getLayer(id))map.setPaintProperty(id,'fill-color','#0d2a4a');}catch(e){}
+  });
+}
+
+// ── 장식 오브 파티클 (EROMAP 배경) ────────────────────────────────
+function _addEroMapParticles(){
+  const wrap=document.getElementById('eromap-orbs');
+  if(!wrap||wrap.dataset.init)return;
+  wrap.dataset.init='1';
+  const orbs=[
+    {size:120,x:'8%',y:'22%',color:'rgba(76,201,240,0.18)',od:'8s',odel:'0s',otx:'12px',oty:'-18px',otx2:'-8px',oty2:'10px'},
+    {size:80, x:'78%',y:'15%',color:'rgba(114,9,183,0.15)',od:'6.5s',odel:'1.2s',otx:'-10px',oty:'14px',otx2:'6px',oty2:'-8px'},
+    {size:160,x:'55%',y:'60%',color:'rgba(247,37,133,0.1)',od:'10s',odel:'2.4s',otx:'16px',oty:'-10px',otx2:'-12px',oty2:'14px'},
+    {size:60, x:'20%',y:'70%',color:'rgba(76,201,240,0.12)',od:'7s',odel:'0.8s',otx:'-8px',oty:'10px',otx2:'5px',oty2:'-6px'},
+    {size:100,x:'85%',y:'50%',color:'rgba(67,97,238,0.13)',od:'9s',odel:'3s',otx:'10px',oty:'-16px',otx2:'-7px',oty2:'12px'},
+  ];
+  orbs.forEach(o=>{
+    const el=document.createElement('div');
+    el.className='ero-map-orb';
+    el.style.cssText=`
+      width:${o.size}px;height:${o.size}px;
+      left:${o.x};top:${o.y};
+      background:radial-gradient(circle,${o.color} 0%,transparent 70%);
+      --od:${o.od};--odel:${o.odel};
+      --otx:${o.otx};--oty:${o.oty};--otx2:${o.otx2};--oty2:${o.oty2};
+      --oa:0.7;
+    `.replace(/\n\s+/g,' ');
+    wrap.appendChild(el);
+  });
+}
+
+// ── 에로맵 수집 통계 UI 업데이트 ──────────────────────────────────
+function _updateEroStats(){
+  const total=EROMAP.arrows.length||10;
+  const col=EROMAP.sessionCollected;
+  const el=document.getElementById('eromap-col-count');
+  const et=document.getElementById('eromap-col-total');
+  const ef=document.getElementById('eromap-collected-fill');
+  const ec=document.getElementById('eromap-session-coins');
+  if(el)el.textContent=col;
+  if(et)et.textContent=total;
+  if(ef)ef.style.width=(Math.min(col/total,1)*100)+'%';
+  if(ec)ec.textContent=`💰 +${EROMAP.sessionCoins}`;
 }
 
 // 땅(배경·잔디·공원 등) 초록색으로 일괄 변경
@@ -8475,6 +8604,7 @@ function eroSimulate(){
   if(EROMAP.map&&EROMAP.map.loaded()){
     EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),duration:1000});
     _addOrMovePlayerMarker();spawnEroArrows();
+    _updateCollectRadius();
   }
 }
 
@@ -8484,6 +8614,7 @@ function eroGPSInit(pos){
   if(EROMAP.map&&EROMAP.map.loaded()){
     EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),duration:1200});
     _addOrMovePlayerMarker();spawnEroArrows();
+    _updateCollectRadius();
   }
   setTimeout(()=>{_updateArrowVisibility();_updateBuildingTransparency();},600);
 }
@@ -8506,6 +8637,7 @@ function eroGPSUpdate(pos){
   }
   _updateArrowVisibility();
   _updateBuildingTransparency();
+  _updateCollectRadius();
   // 자동수집 제거 — 탭해야만 퍼즐 열고 수집 가능
   // checkEroCollection();
 }
@@ -8687,6 +8819,7 @@ function checkEroCollection(){
 function collectEroArrow(a){
   if(a.collected)return;
   a.collected=true;
+  EROMAP.sessionCollected++;
   if(a._distInterval){clearInterval(a._distInterval);a._distInterval=null;}
   playEroCollectSound();
   if(a.marker){
@@ -8699,8 +8832,9 @@ function collectEroArrow(a){
   if(wasNew){owned.add(sk.id);recordSkinDate(sk.id);doSave();showEroCollectBanner(`✨ 새 화살표 획득! ${sk.emoji} ${sk.name}`,'new');}
   else{
     const bonus=sk.rarity==='legendary'?200:sk.rarity==='epic'?80:sk.rarity==='rare'?40:20;
-    coins+=bonus;doSave();showEroCollectBanner(`${sk.emoji} 이미 보유! +${bonus} 💰`,'coin');
+    coins+=bonus;EROMAP.sessionCoins+=bonus;doSave();showEroCollectBanner(`${sk.emoji} 이미 보유! +${bonus} 💰`,'coin');
   }
+  _updateEroStats();
   setTimeout(()=>respawnEroArrow(a),30000);
 }
 
