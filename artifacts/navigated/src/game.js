@@ -1010,7 +1010,18 @@ function spawnArrows(lvl,skinId){
     root.userData.arrowId=aid;inner.userData.arrowId=aid;
     parts.forEach(p=>{p.userData.arrowId=aid;});
     scene.add(root);
-    const entry={id:aid,def:{...def,pos:[...def.pos],id:aid,col},root,inner,ring,parts,state:'idle',prog:0,bp:bp.clone(),dv,oDelay:i*0.055,oStart:new THREE.Vector3()};
+    // ── JUST SYSTEM: orbiting timing orb ──────────────────────────
+    const _jOrbMat=new THREE.MeshStandardMaterial({color:'#88ddff',emissive:'#88ddff',emissiveIntensity:1.2,roughness:0,metalness:0.4,transparent:true,opacity:0.92,depthWrite:false});
+    const justOrb=new THREE.Mesh(new THREE.OctahedronGeometry(0.065,0),_jOrbMat);
+    root.add(justOrb);
+    const _jRingMat=new THREE.MeshStandardMaterial({color:'#FFD700',emissive:'#FFD700',emissiveIntensity:0,transparent:true,opacity:0.75,roughness:1,metalness:0,depthWrite:false});
+    const justRing2=new THREE.Mesh(new THREE.TorusGeometry(0.31,0.022,6,32),_jRingMat);
+    justRing2.visible=false;root.add(justRing2);
+    const _jDv=dv.clone();
+    const _jRef=Math.abs(_jDv.y)>0.88?new THREE.Vector3(1,0,0):new THREE.Vector3(0,1,0);
+    const _jAx1=new THREE.Vector3().crossVectors(_jDv,_jRef).normalize();
+    const _jAx2=new THREE.Vector3().crossVectors(_jAx1,_jDv).normalize();
+    const entry={id:aid,def:{...def,pos:[...def.pos],id:aid,col},root,inner,ring,parts,state:'idle',prog:0,bp:bp.clone(),dv,oDelay:i*0.055,oStart:new THREE.Vector3(),justT:Math.random()*Math.PI*2,justSpd:0.55+Math.random()*0.8,justOrb,justRing2,justAx1:_jAx1,justAx2:_jAx2,inJustWindow:false};
     arrows.push(entry);arrowMap[aid]=entry;
   });
 }
@@ -1392,6 +1403,105 @@ function playComboNote(){
 function resetComboSound(){_comboIdx=0;}
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ══════════════════════════════════════════════════
+// HIT PARTICLES
+// ══════════════════════════════════════════════════
+let _hitParts=[];
+function _spawnHitParticles(pos,col,isPerfect){
+  const n=isPerfect?22:12;
+  for(let i=0;i<n;i++){
+    const sz=(isPerfect?0.065:0.05)*(0.5+Math.random()*0.9);
+    const mat=new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:isPerfect?4:2.5,roughness:0.1,metalness:0.5,transparent:true,opacity:1,depthWrite:false});
+    const m=new THREE.Mesh(new THREE.OctahedronGeometry(sz,0),mat);
+    m.position.copy(pos);
+    const spd=(isPerfect?5.5:3.2)*(0.55+Math.random()*0.9);
+    const phi=Math.random()*Math.PI*2,ct=Math.random()*2-1,st=Math.sqrt(1-ct*ct);
+    m.velocity=new THREE.Vector3(st*Math.cos(phi)*spd,Math.abs(ct)*spd*0.9+0.5,st*Math.sin(phi)*spd);
+    m.life=1;m.dur=0.45+Math.random()*0.5;
+    scene.add(m);_hitParts.push(m);
+  }
+  if(isPerfect){
+    // Gold radial burst
+    for(let i=0;i<10;i++){
+      const ang=i/10*Math.PI*2;
+      const mat2=new THREE.MeshStandardMaterial({color:'#FFD700',emissive:'#FFD700',emissiveIntensity:6,roughness:0,metalness:1,transparent:true,opacity:1,depthWrite:false});
+      const m2=new THREE.Mesh(new THREE.OctahedronGeometry(0.09,0),mat2);
+      m2.position.copy(pos);
+      const spd2=7.5*(0.7+Math.random()*0.5);
+      m2.velocity=new THREE.Vector3(Math.cos(ang)*spd2,2.5+Math.random()*2,Math.sin(ang)*spd2);
+      m2.life=1;m2.dur=0.75;
+      scene.add(m2);_hitParts.push(m2);
+    }
+  }
+}
+function _tickHitParticles(dt){
+  for(let i=_hitParts.length-1;i>=0;i--){
+    const m=_hitParts[i];
+    m.life-=dt/m.dur;
+    if(m.life<=0){scene.remove(m);if(m.geometry)m.geometry.dispose();if(m.material)m.material.dispose();_hitParts.splice(i,1);continue;}
+    m.velocity.y-=10*dt;
+    m.position.addScaledVector(m.velocity,dt);
+    m.material.opacity=Math.max(0,m.life*m.life);
+    m.material.emissiveIntensity*=0.96;
+    m.rotation.x+=dt*7;m.rotation.z+=dt*5;
+  }
+}
+
+// ══════════════════════════════════════════════════
+// HIT SOUND (타격음)
+// ══════════════════════════════════════════════════
+function _playHitSound(isPerfect){
+  try{
+    const ctx=_getSfxCtx();
+    if(ctx.state==='suspended'){ctx.resume();return;}
+    const sv=typeof _settings!=='undefined'?Math.max(0.001,_settings.sfxVol):1;
+    if(typeof _settings!=='undefined'&&_settings.sfxVol<=0)return;
+    const now=ctx.currentTime;
+    const cmp=ctx.createDynamicsCompressor();
+    cmp.threshold.value=-8;cmp.knee.value=6;cmp.ratio.value=4;cmp.attack.value=0.001;cmp.release.value=0.12;
+    cmp.connect(ctx.destination);
+    function mkH(type,freq,vol,atk,dec){
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.type=type;o.frequency.value=freq;
+      g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(vol*sv,now+atk);g.gain.exponentialRampToValueAtTime(0.001,now+atk+dec);
+      o.connect(g);g.connect(cmp);o.start(now);o.stop(now+atk+dec+0.02);
+    }
+    // Noise thump (묵직한 타격)
+    const bLen=Math.ceil(ctx.sampleRate*0.13);
+    const buf=ctx.createBuffer(1,bLen,ctx.sampleRate);
+    const dat=buf.getChannelData(0);
+    for(let j=0;j<bLen;j++)dat[j]=(Math.random()*2-1)*Math.exp(-j/(bLen*0.22));
+    const ns=ctx.createBufferSource(),nf=ctx.createBiquadFilter(),ng=ctx.createGain();
+    ns.buffer=buf;nf.type='bandpass';nf.frequency.value=isPerfect?240:160;nf.Q.value=2.2;
+    ng.gain.setValueAtTime(isPerfect?0.9*sv:0.65*sv,now);
+    ng.gain.exponentialRampToValueAtTime(0.001,now+0.12);
+    ns.connect(nf);nf.connect(ng);ng.connect(cmp);ns.start(now);
+    // Metallic ring (금속음)
+    mkH('sine',isPerfect?1046:784,isPerfect?0.62:0.38,0.001,0.3);
+    mkH('sine',isPerfect?1568:1174,isPerfect?0.34:0.2,0.001,0.22);
+    if(isPerfect){
+      // Perfect sparkle chord
+      mkH('sine',2093,0.28,0.002,0.42);
+      mkH('sine',3136,0.16,0.003,0.34);
+      mkH('triangle',523,0.45,0.001,0.6);
+    }
+  }catch(e){}
+}
+
+// ══════════════════════════════════════════════════
+// PERFECT FLASH (황금 화면 섬광)
+// ══════════════════════════════════════════════════
+function _flashPerfect(){
+  let el=document.getElementById('_just-flash');
+  if(!el){
+    el=document.createElement('div');el.id='_just-flash';
+    el.style.cssText='position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle,rgba(255,215,0,0.40) 0%,transparent 68%);opacity:0;z-index:9998;';
+    document.body.appendChild(el);
+  }
+  el.style.transition='none';el.style.opacity='1';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{el.style.transition='opacity 0.45s ease-out';el.style.opacity='0';}));
+}
+
 function launchArrow(id){
   const e=arrowMap[id||selId];if(!e||e.state!=='idle')return;
   clearPreview();setGlow(e,false);
@@ -1405,6 +1515,18 @@ function launchArrow(id){
     // ero-puzzle: 막혀도 목숨 없음, 그냥 돌아옴
   }else{
     e.state='moving';e.prog=0;
+    const _isPerf=!!e.inJustWindow;
+    _spawnHitParticles(e.bp,e.def.col,_isPerf);
+    _playHitSound(_isPerf);
+    if(_isPerf){
+      shk=0.45;
+      _flashPerfect();
+      popup('⚡ PERFECT!',innerWidth/2,innerHeight*0.38,'#FFD700');
+      if((phase==='playing'||phase==='multi-playing')&&typeof coins!=='undefined'){coins+=3;doSave();updateCoins();}
+      if(typeof _settings!=='undefined'&&_settings.vibration&&navigator.vibrate)navigator.vibrate([25,10,50]);
+    }else{
+      shk=0.12;
+    }
     playComboNote();
     if(phase!=='ero-puzzle'&&typeof achieveState!=='undefined'){
       _achStat('totalArrows',1,true);
@@ -1441,6 +1563,41 @@ function tickArrow(a,dt){
     a.prog-=dt*7;if(a.prog<=0){a.prog=0;a.state='idle';}
     a.root.position.copy(a.bp.clone().addScaledVector(a.dv,a.prog*ESCAPE));
   }else{a.root.position.lerp(a.bp,0.2);}
+  // ── JUST: animate orbiting orb ────────────────────────────────
+  if(a.justOrb){
+    if(a.state==='idle'){
+      a.justOrb.visible=true;
+      a.justT+=dt;
+      const _ang=a.justT*a.justSpd*Math.PI*2*0.42;
+      const _R=0.38;
+      a.justOrb.position.set(
+        a.justAx1.x*Math.cos(_ang)*_R+a.justAx2.x*Math.sin(_ang)*_R,
+        a.justAx1.y*Math.cos(_ang)*_R+a.justAx2.y*Math.sin(_ang)*_R,
+        a.justAx1.z*Math.cos(_ang)*_R+a.justAx2.z*Math.sin(_ang)*_R
+      );
+      // Just window: orb is facing the camera
+      const _camL=camera.position.clone().sub(a.root.position).normalize();
+      const _orbN=a.justOrb.position.clone().normalize();
+      const _dot=_orbN.dot(_camL);
+      const _inW=_dot>0.55;
+      a.inJustWindow=_inW;
+      const _jm=a.justOrb.material;
+      if(_inW){
+        _jm.color.set('#FFD700');_jm.emissive.set('#FFD700');
+        _jm.emissiveIntensity=2.8+Math.sin(a.justT*20)*1.0;
+        _jm.opacity=1.0;
+        if(a.justRing2){a.justRing2.visible=true;a.justRing2.material.emissiveIntensity=1.2+Math.sin(a.justT*14)*0.4;}
+      }else{
+        _jm.color.set('#88ddff');_jm.emissive.set('#88ddff');
+        _jm.emissiveIntensity=0.8;_jm.opacity=0.75;
+        if(a.justRing2){a.justRing2.visible=false;}
+      }
+      a.justOrb.scale.setScalar(_inW?(1.0+Math.sin(a.justT*20)*0.25):0.85);
+    }else{
+      a.justOrb.visible=false;a.inJustWindow=false;
+      if(a.justRing2)a.justRing2.visible=false;
+    }
+  }
 }
 
 // ══════════════════════════════════════════════════
@@ -3135,6 +3292,7 @@ function loop(){
     else{arrows.forEach(a=>tickArrow(a,dt));tickFreeHint(dt);if(phase==='playing'&&_playStartTime!==null){const _te=(performance.now()-_playStartTime)/1000;const _th=document.getElementById('hud-timer');if(_th)_th.textContent=_te.toFixed(2)+'s';}}
     tickIdle(dt);
   }else if(phase==='win'||phase==='over'||phase==='multi-result'||phase==='multi-done'){arrows.forEach(a=>tickArrow(a,dt*0.35));}
+  _tickHitParticles(dt);
   tickFlight(dt);
   renderFlight();
   controls.update();
