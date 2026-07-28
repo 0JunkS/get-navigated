@@ -54,6 +54,9 @@ function seededRand(seed){
 // CONSTANTS
 // ══════════════════════════════════════════════════
 const GRID=0.65,ESCAPE=14,SPEED=5.5;
+// ── JUST SYSTEM ──
+const SPIN_SPEED=Math.PI*1.3;   // rad/s — 0.65 revolutions/sec
+const JUST_WINDOW=0.30;          // ±0.30 rad (≈±17°) for PERFECT timing
 const BR=0.015,BL=0.30,HR=0.088,HH=0.21;
 const DIRS_ALL=['px','nx','py','ny','pz','nz'];
 const DEFAULT_COLORS=['#FF6B6B','#4ECDC4','#45B7D1','#96CEB4','#FFEAA7','#DDA0DD',
@@ -1010,7 +1013,7 @@ function spawnArrows(lvl,skinId){
     root.userData.arrowId=aid;inner.userData.arrowId=aid;
     parts.forEach(p=>{p.userData.arrowId=aid;});
     scene.add(root);
-    const entry={id:aid,def:{...def,pos:[...def.pos],id:aid,col},root,inner,ring,parts,state:'idle',prog:0,bp:bp.clone(),dv,oDelay:i*0.055,oStart:new THREE.Vector3()};
+    const entry={id:aid,def:{...def,pos:[...def.pos],id:aid,col},root,inner,ring,parts,state:'idle',prog:0,bp:bp.clone(),dv,oDelay:i*0.055,oStart:new THREE.Vector3(),spinAngle:Math.random()*Math.PI*2};
     arrows.push(entry);arrowMap[aid]=entry;
   });
 }
@@ -1086,11 +1089,12 @@ function selectArrow(id){
   if(opening){opening=false;}
   const e=arrowMap[id];if(!e||e.state!=='idle')return;
   resetIdle();
-  const now=Date.now(),dbl=(lastId===id&&now-lastT<360);
-  lastId=id;lastT=now;
-  if(dbl){launchArrow(id);return;}
+  // ── JUST system: if already selected → launch attempt ──
+  if(selId===id){launchArrow(id);return;}
+  // Deselect previous
   if(selId&&selId!==id){const p=arrowMap[selId];if(p)setGlow(p,false);}
-  selId=id;setGlow(e,true);showPreview(e);
+  selId=id;lastId=id;lastT=Date.now();
+  setGlow(e,true);showPreview(e);
   if(phase==='playing'||phase==='ero-puzzle'){
     document.getElementById('launch-btn').style.display='inline-block';
     if(phase==='playing'){const hb=document.getElementById('hint-bar');hb.style.opacity='1';setTimeout(()=>{hb.style.opacity='0';},2500);}
@@ -1396,7 +1400,20 @@ function launchArrow(id){
   clearPreview();setGlow(e,false);
   document.getElementById('launch-btn').style.display='none';
   selId=null;lastId=null;
+  // ── JUST system: check rotation timing ──
+  const justOK=_isJustPerfect(e);
+  if(!justOK){
+    // Wrong timing → miss
+    e.state='returning';e.prog=0.22;
+    resetComboSound();
+    if(phase==='playing'){lives--;shk=1.0;updateHUD();flashBlock();if(lives<=0)setTimeout(()=>endGame(false),700);}
+    else if(phase==='multi-playing'){shk=0.6;flashBlock();multiBlockCount++;multiLives=Math.max(0,multiLives-1);updateMultiHUD();popup('타이밍 실패! ❤️×'+multiLives,innerWidth/2,innerHeight*.38,'#ff6b6b');if(multiLives<=0){setTimeout(()=>multiLiveOut(),600);}}
+    // ero-puzzle: 타이밍 실패도 목숨 없음
+    popup('타이밍 실패!',innerWidth/2,innerHeight*.38,'#ff6b6b');
+    return;
+  }
   if(blocked(e)){
+    // Perfect timing but blocked → same collision judgment as before
     e.state='returning';e.prog=0.22;
     resetComboSound();
     if(phase==='playing'){lives--;shk=1.0;updateHUD();flashBlock();if(lives<=0)setTimeout(()=>endGame(false),700);}
@@ -1429,10 +1446,18 @@ function startOpening(){
 // ══════════════════════════════════════════════════
 // ARROW TICK
 // ══════════════════════════════════════════════════
+function _isJustPerfect(a){
+  const angle=((a.spinAngle||0)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+  const norm=angle>Math.PI?angle-Math.PI*2:angle;
+  return Math.abs(norm)<=JUST_WINDOW;
+}
+
 function tickArrow(a,dt){
   if(a.state==='escaped'){a.root.visible=false;return;}
   a.root.visible=true;
   if(a.state==='moving'){
+    // Stop spin while flying; reset rotation to show correct exit direction
+    a.root.rotation.y=0;
     a.prog+=dt*SPEED;
     if(a.prog>=1){a.prog=1;a.state='escaped';if(phase==='playing'){escaped++;updateHUD();checkWin();}else if(phase==='ero-puzzle'){escaped++;_updateEroPuzzleProgress();checkEroPuzzleWin();}else if(phase==='multi-playing'){escaped++;if(multiMode==='blast-rank'){_blastArrowEscaped(a);}else{updateMultiHUD();checkMultiWin();}}}
     const t=a.prog,e=t<.5?2*t*t:-1+(4-2*t)*t;
@@ -1440,7 +1465,15 @@ function tickArrow(a,dt){
   }else if(a.state==='returning'){
     a.prog-=dt*7;if(a.prog<=0){a.prog=0;a.state='idle';}
     a.root.position.copy(a.bp.clone().addScaledVector(a.dv,a.prog*ESCAPE));
-  }else{a.root.position.lerp(a.bp,0.2);}
+  }else{
+    a.root.position.lerp(a.bp,0.2);
+    // ── JUST system: continuously spin idle arrows ──
+    const spinning=(phase==='playing'||phase==='multi-playing'||phase==='ero-puzzle');
+    if(spinning){
+      a.spinAngle=(a.spinAngle||0)+SPIN_SPEED*dt;
+      a.root.rotation.y=a.spinAngle;
+    }
+  }
 }
 
 // ══════════════════════════════════════════════════
@@ -1468,7 +1501,7 @@ function tickDemo(dt){
 function loadLevel(i){
   if(typeof _clearBossRound==='function')_clearBossRound();
   lvIdx=i;const lv=getLevel(i);
-  maxLiv=3;lives=maxLiv;
+  maxLiv=4;lives=maxLiv;
   selId=null;lastId=null;escaped=0;phase='playing';
   controls.autoRotate=false;
   spawnArrows(lv,activeSkin);
@@ -1680,25 +1713,38 @@ function resetIdle(){
   idleT=0;
   if(!hudOn&&(phase==='playing'||phase==='multi-playing'||phase==='ero-puzzle')){hudOn=true;if(phase!=='ero-puzzle'){document.getElementById('hud').style.opacity='1';document.getElementById('tap-restore').style.opacity='0';}controls.autoRotate=false;}
 }
-// Pulse arrows that are currently FREE (not blocked) to help the player
+// Pulse arrows and show JUST window indicator
 let _hintT=0;
 function tickFreeHint(dt){
   _hintT+=dt;
-  const pulse=0.45+0.55*Math.sin(_hintT*2.8); // 0..1 oscillating
+  const pulse=0.45+0.55*Math.sin(_hintT*2.8);
   arrows.forEach(a=>{
     if(a.state!=='idle')return;
     const free=!blocked(a);
+    const inJust=_isJustPerfect(a);
     a.parts.forEach(p=>{
       if(!p.material||!p.material.emissive)return;
-      if(free){
-        // Gently pulse emissive brightness on free arrows
+      if(inJust&&free){
+        // PERFECT window: bright flash to signal timing
+        p.material.emissiveIntensity=2.2;
+      }else if(inJust){
+        // JUST window but blocked: amber flash
+        p.material.emissiveIntensity=1.2;
+      }else if(free){
+        // Free arrow: gentle pulse
         p.material.emissiveIntensity=0.15+pulse*0.55;
       }else{
-        // Dim blocked arrows so free ones stand out
+        // Blocked: dim
         p.material.emissiveIntensity=0.0;
       }
     });
-    // Ring is only used for selection, keep as is
+    // Flash ring when in JUST window (regardless of selection)
+    if(a.ring&&inJust){
+      a.ring.visible=true;
+      a.ring.material.emissiveIntensity=2.0+Math.sin(_hintT*18)*1.0;
+    }else if(a.ring&&a.id!==selId){
+      a.ring.visible=false;
+    }
   });
 }
 
@@ -3496,7 +3542,7 @@ window._startSpecial=function(id){
   specialMode=s;specialTimer=s.timeLimit||0;specialRunning=true;
   document.getElementById('special-ov').classList.remove('on');
   const lvl=Math.max(0,Math.min(progress||0,49));
-  lvIdx=lvl;lives=3;maxLiv=3;escaped=0;phase='playing';
+  lvIdx=lvl;lives=4;maxLiv=4;escaped=0;phase='playing';
   selId=null;lastId=null;controls.autoRotate=false;
   spawnArrows(getLevel(lvl),activeSkin);
   const cen=new THREE.Vector3();arrows.forEach(a=>cen.add(a.bp));cen.divideScalar(arrows.length);
@@ -3533,7 +3579,7 @@ window._startSpecial=function(id){
   specialMode=s;specialTimer=s.timeLimit||0;
   document.getElementById('special-ov').classList.remove('on');
   const lvl=Math.max(0,Math.min(progress||0,49));
-  lvIdx=lvl;lives=3;maxLiv=3;escaped=0;phase='playing';
+  lvIdx=lvl;lives=4;maxLiv=4;escaped=0;phase='playing';
   selId=null;lastId=null;controls.autoRotate=false;
   spawnArrows(getLevel(lvl),activeSkin);
   const cen=new THREE.Vector3();arrows.forEach(a=>cen.add(a.bp));cen.divideScalar(arrows.length);
@@ -3699,7 +3745,7 @@ function _renderDungeonPanel(){
 function _loadDungeonLevel(){
   if(!dungeonState)return;
   const li=dungeonState.rooms[dungeonState.room];
-  lvIdx=li;lives=dungeonState.lives;maxLiv=3;escaped=0;phase='playing';
+  lvIdx=li;lives=dungeonState.lives;maxLiv=4;escaped=0;phase='playing';
   selId=null;lastId=null;controls.autoRotate=false;
   spawnArrows(getLevel(li),activeSkin);
   const cen=new THREE.Vector3();arrows.forEach(a=>cen.add(a.bp));cen.divideScalar(arrows.length);
@@ -3728,7 +3774,7 @@ function dungeonOnWin(r){
 }
 document.getElementById('dungeon-start').addEventListener('click',()=>{
   document.getElementById('dungeon-ov').classList.remove('on');
-  dungeonState={rooms:Array.from({length:5},()=>Math.floor(Math.random()*40)),room:0,lives:3,coinsEarned:0};
+  dungeonState={rooms:Array.from({length:5},()=>Math.floor(Math.random()*40)),room:0,lives:4,coinsEarned:0};
   _renderDungeonPanel();_loadDungeonLevel();
 });
 _loadDungeonBest();
@@ -3748,7 +3794,7 @@ function _renderInfPanel(){
 function loadInfLevel(){
   if(!infState)return;
   const lvl=infState.level%999;
-  lvIdx=lvl;lives=3;maxLiv=3;escaped=0;phase='playing';
+  lvIdx=lvl;lives=4;maxLiv=4;escaped=0;phase='playing';
   selId=null;lastId=null;controls.autoRotate=false;
   spawnArrows(getLevel(lvl),activeSkin);
   const cen=new THREE.Vector3();arrows.forEach(a=>cen.add(a.bp));cen.divideScalar(arrows.length);
@@ -4169,7 +4215,7 @@ var DIFF_CONFIG={
   easy:  {speedMult:0.75,scoreMult:0.8, lives:6,label:'쉬움',  ico:'🌱'},
   normal:{speedMult:1.0, scoreMult:1.0, lives:5,label:'보통',  ico:'⚡'},
   hard:  {speedMult:1.3, scoreMult:1.5, lives:5,label:'어려움',ico:'🔥'},
-  extreme:{speedMult:1.6,scoreMult:2.0, lives:3,label:'극한',  ico:'💀'},
+  extreme:{speedMult:1.6,scoreMult:2.0, lives:4,label:'극한',  ico:'💀'},
 };
 var _pendingLevelIdx=null;
 window._diffSpeed=1.0;
@@ -6488,6 +6534,13 @@ function showStoryDialogue(stageIdx,callback){
         e.preventDefault();_storyTap();
       });
     }
+    // ── 건너뛰기 버튼: 스토리 즉시 종료 ──
+    const skipBtn=document.getElementById('story-skip');
+    if(skipBtn){
+      function _doSkip(ev){ev.preventDefault();ev.stopPropagation();clearInterval(_sTypTimer);_sTyping=false;_storyClose();}
+      skipBtn.addEventListener('click',_doSkip);
+      skipBtn.addEventListener('touchend',_doSkip,{passive:false});
+    }
   }
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_attachStory);}
   else{_attachStory();}
@@ -8166,11 +8219,10 @@ function _initMapLibre(){
     }
   });
   map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'top-right');
-  // 지형이 변할 때마다 플레이어 마커 고도 업데이트 (땅 위에 항상 붙게)
+  // 플레이어 마커 위치 동기화 (pitchAlignment:'viewport' 사용 — 땅 아래 박힘 방지)
   map.on('render',()=>{
     if(EROMAP.playerMarker&&EROMAP.lat!==null){
-      const alt=_getTerrainAlt(EROMAP.lon,EROMAP.lat);
-      EROMAP.playerMarker.setLngLat([EROMAP.lon,EROMAP.lat,alt]);
+      EROMAP.playerMarker.setLngLat([EROMAP.lon,EROMAP.lat]);
     }
   });
 }
@@ -8179,23 +8231,26 @@ function _addBuildingLayer(map){
   try{
     const style=map.getStyle();
     const sources=Object.keys(style.sources||{});
-    const omtSrc=sources.find(s=>s==='openmaptiles'||s.includes('maptiler')||s==='v3')||sources[sources.length-1];
-    if(!omtSrc)return;
+    // openfreemap liberty uses 'openmaptiles'; fallback to any vector source
+    const omtSrc=sources.find(s=>s==='openmaptiles')||
+      sources.find(s=>s.includes('maptiler')||s==='v3')||
+      sources.find(s=>{const src=style.sources[s];return src&&src.type==='vector';})||
+      sources[0]||null;
+    if(!omtSrc){console.warn('[EroMap] no vector source found for buildings');return;}
     EROMAP.omtSrc=omtSrc;
     if(map.getLayer('ero-bld'))map.removeLayer('ero-bld');
     map.addLayer({
       id:'ero-bld',type:'fill-extrusion',source:omtSrc,'source-layer':'building',minzoom:14,
       paint:{
-        'fill-extrusion-color':['interpolate',['linear'],['coalesce',['get','render_height'],['get','height'],0],
+        'fill-extrusion-color':['interpolate',['linear'],
+          ['coalesce',['get','render_height'],['get','height'],0],
           0,'#1a2540',20,'#223060',60,'#2b3d7c',120,'#364e98',200,'#4a62b8'],
         'fill-extrusion-height':['coalesce',['get','render_height'],['get','height'],10],
         'fill-extrusion-base':['coalesce',['get','render_min_height'],['get','min_height'],0],
-        'fill-extrusion-opacity':['case',['boolean',['feature-state','nearPlayer'],false],0.15,0.85],
-        'fill-extrusion-ambient-occlusion-intensity':0.45,
-        'fill-extrusion-ambient-occlusion-radius':3
+        'fill-extrusion-opacity':0.85
       }
     });
-  }catch(e){}
+  }catch(e){console.warn('[EroMap] building layer:',e);}
 }
 
 // ── 지형 고도 쿼리 ─────────────────────────────────────
@@ -8339,15 +8394,15 @@ function _initPlayerMarker3D(){
 
 function _addOrMovePlayerMarker(){
   if(!EROMAP.map||EROMAP.lat===null)return;
-  const alt=_getTerrainAlt(EROMAP.lon,EROMAP.lat);
   if(EROMAP.playerMarker){
-    EROMAP.playerMarker.setLngLat([EROMAP.lon,EROMAP.lat,alt]);
+    EROMAP.playerMarker.setLngLat([EROMAP.lon,EROMAP.lat]);
     return;
   }
   const el=_initPlayerMarker3D();
   // pitchAlignment:'map' 으로 지형 표면에 고정, anchor:'bottom'으로 마커 하단이 땅에 닿게
-  EROMAP.playerMarker=new maplibregl.Marker({element:el,anchor:'bottom',pitchAlignment:'map',rotationAlignment:'viewport'})
-    .setLngLat([EROMAP.lon,EROMAP.lat,alt]).addTo(EROMAP.map);
+  // pitchAlignment:'viewport' — 마커가 항상 카메라를 향해 세워짐, 지형 아래 박힘 방지
+  EROMAP.playerMarker=new maplibregl.Marker({element:el,anchor:'bottom',pitchAlignment:'viewport',rotationAlignment:'viewport'})
+    .setLngLat([EROMAP.lon,EROMAP.lat]).addTo(EROMAP.map);
 }
 
 function closeEroMap(){
@@ -8388,6 +8443,7 @@ function eroSimulate(){
   if(EROMAP.map&&EROMAP.map.loaded()){
     EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),duration:1000});
     _addOrMovePlayerMarker();spawnEroArrows();
+    setTimeout(()=>{_updateArrowVisibility();_updateBuildingTransparency();},800);
   }
 }
 
