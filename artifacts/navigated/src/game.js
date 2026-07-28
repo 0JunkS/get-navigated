@@ -1059,7 +1059,6 @@ let phase='menu';
 let lvIdx=0,lives=5,maxLiv=5,selId=null;
 let escaped=0,shk=0;
 let opening=false,openT=0;
-let _playStartTime=null;
 let lastId=null,lastT=0;
 let idleT=0,hudOn=true;
 let demoIdx=0,demoT=0;
@@ -1405,6 +1404,7 @@ function launchArrow(id){
     // ero-puzzle: 막혀도 목숨 없음, 그냥 돌아옴
   }else{
     e.state='moving';e.prog=0;
+    popup('PERFECT!',innerWidth/2,innerHeight*.38,'#FFD700');
     playComboNote();
     if(phase!=='ero-puzzle'&&typeof achieveState!=='undefined'){
       _achStat('totalArrows',1,true);
@@ -1469,7 +1469,7 @@ function loadLevel(i){
   if(typeof _clearBossRound==='function')_clearBossRound();
   lvIdx=i;const lv=getLevel(i);
   maxLiv=3;lives=maxLiv;
-  selId=null;lastId=null;escaped=0;phase='playing';_playStartTime=null;
+  selId=null;lastId=null;escaped=0;phase='playing';
   controls.autoRotate=false;
   spawnArrows(lv,activeSkin);
   const sp=Math.sqrt(lv.length)*GRID;
@@ -1478,7 +1478,6 @@ function loadLevel(i){
   camera.position.set(cen1.x,cen1.y+sp*.5,cen1.z+(portrait1?sp*2.5+5.5:sp*1.9+3.5));
   controls.target.copy(cen1);controls.update();
   idleT=0;hudOn=true;
-  const _htEl=document.getElementById('hud-timer');if(_htEl)_htEl.textContent='0.00s';
   showUI('hud');
   document.getElementById('multi-hud').classList.remove('on');
   document.getElementById('launch-btn').style.display='none';
@@ -1646,16 +1645,11 @@ function endGame(won){
   const stars=lives>=maxLiv?3:lives>0?2:1;
   const prev=clearedLevels[lvIdx]||0;
   if(stars>prev)clearedLevels[lvIdx]=stars;
-  // 클리어 시 다음 레벨 해금 (레벨 선택 화면에서 바로 눌릴 수 있게)
-  if(lvIdx+1>progress){progress=lvIdx+1;doSave();}
   const r=reward(lvIdx,lives,maxLiv);coins+=r;doSave();updateCoins();
   if(typeof _addBPXP==='function'){var _bpDm2={easy:0.7,normal:1,hard:1.5,extreme:2}[typeof _currentDiff!=='undefined'?_currentDiff:'normal']||1;var _bpXp=Math.round(120*_bpDm2);setTimeout(function(){_addBPXP(_bpXp);popup('+'+_bpXp+' BP XP',innerWidth/2,innerHeight*.42,'#7b2ff7');},500);}
   popup(`+${r} 💰`,innerWidth/2,innerHeight*.45);
   document.getElementById('w-stars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
   document.getElementById('w-coins').textContent=`+${r} 💰`;
-  const _wt=document.getElementById('w-time');
-  if(_wt){if(_playStartTime!==null){const _tf=((performance.now()-_playStartTime)/1000).toFixed(2);_wt.textContent=`⏱ ${_tf}초`;_wt.style.display='block';}else{_wt.style.display='none';}}
-  _playStartTime=null;
   document.getElementById('w-sub').textContent=`레벨 ${lvIdx+1} 클리어! 생명 ${lives}/${maxLiv} 남음`;
   const _si=lvIdx+1;
   if(_si%3===0){
@@ -3131,8 +3125,8 @@ function loop(){
   if(shk>0){shk-=dt*3;const s=shk*0.07;camera.position.x+=(Math.random()-.5)*s;camera.position.y+=(Math.random()-.5)*s;}
   if(phase==='menu'||phase==='hub'){tickDemo(dt);}
   else if(phase==='playing'||phase==='multi-playing'||phase==='ero-puzzle'){
-    if(opening){const el=Date.now()/1000-openT;let done=true;arrows.forEach(a=>{const t=(el-a.oDelay)/0.55;if(t<0){a.root.position.copy(a.oStart);done=false;}else if(t<1){const e=1-Math.pow(1-Math.min(t,1),3);a.root.position.lerpVectors(a.oStart,a.bp,e);done=false;}else{a.root.position.copy(a.bp);}});if(done){opening=false;if(phase==='playing')_playStartTime=performance.now();}}
-    else{arrows.forEach(a=>tickArrow(a,dt));tickFreeHint(dt);if(phase==='playing'&&_playStartTime!==null){const _te=(performance.now()-_playStartTime)/1000;const _th=document.getElementById('hud-timer');if(_th)_th.textContent=_te.toFixed(2)+'s';}}
+    if(opening){const el=Date.now()/1000-openT;let done=true;arrows.forEach(a=>{const t=(el-a.oDelay)/0.55;if(t<0){a.root.position.copy(a.oStart);done=false;}else if(t<1){const e=1-Math.pow(1-Math.min(t,1),3);a.root.position.lerpVectors(a.oStart,a.bp,e);done=false;}else{a.root.position.copy(a.bp);}});if(done)opening=false;}
+    else{arrows.forEach(a=>tickArrow(a,dt));tickFreeHint(dt);}
     tickIdle(dt);
   }else if(phase==='win'||phase==='over'||phase==='multi-result'||phase==='multi-done'){arrows.forEach(a=>tickArrow(a,dt*0.35));}
   tickFlight(dt);
@@ -6363,18 +6357,11 @@ function _storyAllDone(){
 
 function _storyCloseBox(){
   const box=document.getElementById('story-box');if(box){box.style.display='none';}
-  const sk=document.getElementById('story-skip');if(sk)sk.style.display='none';
 }
 function _storyClose(){
   _storyCloseBox();
   const cb=_sCb;_sCb=null;
   if(cb){cb();}
-}
-// 건너뛰기 — 모든 대사를 건너뛰고 바로 완료 처리
-function _storySkip(){
-  clearInterval(_sTypTimer);_sTyping=false;
-  _sLineIdx=_sLines.length; // 끝으로 점프
-  _storyAllDone();
 }
 
 
@@ -6444,17 +6431,6 @@ const _DARK_STORY=[
    "우리가 해냈어. 아직 끝나지 않았지만 — 함께라면 할 수 있어!"],
 ];
 
-function _storyShowSkip(){
-  const sk=document.getElementById('story-skip');
-  if(!sk)return;
-  sk.style.display='block';
-  sk.onclick=null;
-  let _sd=false;
-  function _go(){if(_sd)return;_sd=true;_storySkip();}
-  sk.onclick=_go;
-  sk.ontouchend=function(e){e.preventDefault();_go();};
-}
-
 function showDarkArrowStory(idx,callback){
   const box=document.getElementById('story-box');
   if(!box){if(callback)callback();return;}
@@ -6472,7 +6448,6 @@ function showDarkArrowStory(idx,callback){
   const tap=document.getElementById('story-tap');if(tap)tap.classList.remove('ready');
   const txtEl=document.getElementById('story-text');if(txtEl)txtEl.textContent='';
   box.style.display='block';
-  _storyShowSkip();
   _storyShowLine(0);
 }
 
@@ -6484,17 +6459,21 @@ function showStoryDialogue(stageIdx,callback){
   _sCurStage=stageIdx;_sCb=callback;_sLineIdx=0;_sChoiceShown=false;
   _sLines=typeof entry.lines==='function'?entry.lines(_SC):entry.lines;
   if(!_sLines||!_sLines.length){if(callback){callback();}return;}
+  // 아바타·화자
   const av=document.getElementById('story-avatar');if(av)av.textContent='🏹';
   const nm=document.getElementById('story-name');if(nm)nm.textContent='에로';
+  // 선택지·버튼 초기화
   const cont=document.getElementById('story-choices');
   if(cont){cont.style.display='none';cont.innerHTML='';}
   const mb=document.getElementById('story-main-btn');
   if(mb){mb.style.display='none';mb.onclick=null;}
+  // tap 초기화
   const tap=document.getElementById('story-tap');
   if(tap)tap.classList.remove('ready');
+  // 텍스트 초기화
   const txtEl=document.getElementById('story-text');if(txtEl)txtEl.textContent='';
+  // 박스 표시
   box.style.display='block';
-  _storyShowSkip();
   _storyShowLine(0);
 }
 
@@ -8065,9 +8044,7 @@ const EROMAP={
   _moveTimer:null,
   _playerStopAnim:null,
   _playerRenderer:null,
-  _playerScene:null,
-  sessionCoins:0,
-  sessionCollected:0
+  _playerScene:null
 };
 
 const WMAP={
@@ -8091,16 +8068,11 @@ function getWInfo(code){
 function openEroMap(){
   if(EROMAP.open)return;
   EROMAP.open=true;
-  EROMAP.sessionCoins=0;
-  EROMAP.sessionCollected=0;
   document.getElementById('eromap-ov').classList.add('on');
   // 안드로이드/브라우저 뒤로가기 버튼 지원
   history.pushState({eromap:true},'');
   EROMAP.timeInterval=setInterval(updateEroTime,1000);
   updateEroTime();
-  _updateEroStats();
-  // 장식 오브 파티클 추가
-  setTimeout(()=>_addEroMapParticles(),300);
   // 화면 방향 잠금 해제 (에로맵에서는 자유롭게)
   _unlockOrientation();
   // 나침반/자이로 연동
@@ -8132,18 +8104,29 @@ function openEroMap(){
     }
   }
   if('geolocation' in navigator){
-    _startEroGPS();
-    // Permissions API로 권한 상태 변화 감시 (Safari 16+, Chrome 지원)
-    if(navigator.permissions){
-      navigator.permissions.query({name:'geolocation'}).then(status=>{
-        status.onchange=function(){
-          if(this.state==='granted'){
-            _hideGPSRetry();
-            _startEroGPS();
-          }
-        };
-      }).catch(()=>{});
+    function _gpsError(err){
+      if(err&&err.code===1){
+        document.getElementById('eromap-gps').textContent='📍 위치 권한 거부됨 — 브라우저 설정에서 허용해주세요';
+        eroSimulate();
+      }else{
+        document.getElementById('eromap-gps').textContent='📍 GPS 재시도 중...';
+        navigator.geolocation.getCurrentPosition(
+          pos=>eroGPSInit(pos),
+          ()=>eroSimulate(),
+          {enableHighAccuracy:false,timeout:15000,maximumAge:60000}
+        );
+      }
     }
+    navigator.geolocation.getCurrentPosition(
+      pos=>eroGPSInit(pos),
+      err=>_gpsError(err),
+      {enableHighAccuracy:true,timeout:10000,maximumAge:0}
+    );
+    EROMAP.watchId=navigator.geolocation.watchPosition(
+      pos=>eroGPSUpdate(pos),
+      ()=>{},
+      {enableHighAccuracy:true,maximumAge:2000,timeout:10000}
+    );
   }else{eroSimulate();}
   setTimeout(()=>fetchEroWeather(),600);
 }
@@ -8151,39 +8134,35 @@ function openEroMap(){
 function _initMapLibre(){
   if(typeof maplibregl==='undefined'){setTimeout(()=>_initMapLibre(),300);return;}
   if(EROMAP.map){EROMAP.map.resize();return;}
-  const hasGPS=EROMAP.lat!==null;
-  const lng=hasGPS?EROMAP.lon:127.0,lat=hasGPS?EROMAP.lat:36.5;
-  // Safari에서도 항상 동일한 초기 줌 유지 (GPS 유무 무관)
-  const initZoom=18.5,initPitch=78;
-  // ±1.2배 줌만 허용: MapLibre zoom은 log2 스케일이므로 log2(1.2)≈0.26 레벨 차이
-  const zoomDelta=Math.log2(1.2);
+  const lng=EROMAP.lon||126.9780,lat=EROMAP.lat||37.5665;
   const map=new maplibregl.Map({
     container:'eromap-map',
     style:'https://tiles.openfreemap.org/styles/liberty',
     center:[lng,lat],
-    zoom:initZoom,pitch:initPitch,bearing:(EROMAP.heading||0),antialias:true,
-    minZoom:initZoom-zoomDelta,maxZoom:initZoom+zoomDelta
+    zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),antialias:true
   });
   // AR모드: 사용자가 지도를 수동으로 회전 못하게 (나침반이 제어)
   map.dragRotate.disable();
   map.touchZoomRotate.disableRotation();
   EROMAP.map=map;
   map.on('load',()=>{
-    // 지형 평지 — DEM 제거, 땅은 평평하게 유지 / 건물 3D는 살림
+    // 지형 (AWS Terrain Tiles - 무료·무키)
+    map.addSource('ero-dem',{
+      type:'raster-dem',
+      tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+      encoding:'terrarium',tileSize:256,maxzoom:15,
+      attribution:'Terrain © Mapzen/Amazon'
+    });
+    map.setTerrain({source:'ero-dem',exaggeration:1.3});
     // 3D 건물
     _addBuildingLayer(map);
-    // 땅 초록색으로 변경
-    _setGreenLand(map);
-    // 도로 네온 색상
-    _setRoadColors(map);
-    // 하늘 (게임 분위기에 맞는 신비로운 톤)
-    try{map.setSky({'sky-color':'#0a1a3a','sky-horizon-blend':0.4,'horizon-color':'#1a3a6e','horizon-fog-blend':0.5,'atmosphere-blend':0.6});}catch(e){}
+    // 하늘
+    try{map.setSky({'sky-color':'#4fc3f7','sky-horizon-blend':0.5,'horizon-color':'#fde8ff','horizon-fog-blend':0.3,'atmosphere-blend':0.5});}catch(e){}
     // 플레이어·화살 — GPS가 지도보다 먼저 도착했을 경우 실제 위치로 이동
     if(EROMAP.lat!==null){
       map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),duration:1200});
       _addOrMovePlayerMarker();
       if(!EROMAP.arrows.length)spawnEroArrows();
-      _addCollectRadius(map);
     }
   });
   map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'top-right');
@@ -8193,148 +8172,6 @@ function _initMapLibre(){
       const alt=_getTerrainAlt(EROMAP.lon,EROMAP.lat);
       EROMAP.playerMarker.setLngLat([EROMAP.lon,EROMAP.lat,alt]);
     }
-  });
-}
-
-// ── 수집 반경 GeoJSON 원 생성 ──────────────────────────────────────
-function _makeCircleGeoJSON(lat,lon,radiusM){
-  const pts=64,coords=[];
-  for(let i=0;i<pts;i++){
-    const ang=i/pts*Math.PI*2;
-    const dlat=radiusM*Math.cos(ang)/111000;
-    const dlon=radiusM*Math.sin(ang)/(111000*Math.cos(lat*Math.PI/180));
-    coords.push([lon+dlon,lat+dlat]);
-  }
-  coords.push(coords[0]);
-  return{type:'Feature',geometry:{type:'Polygon',coordinates:[coords]}};
-}
-function _addCollectRadius(map){
-  if(EROMAP.lat===null)return;
-  const geoj=_makeCircleGeoJSON(EROMAP.lat,EROMAP.lon,EROMAP.COLLECT_R);
-  const fc={type:'FeatureCollection',features:[geoj]};
-  if(map.getSource('ero-cr')){map.getSource('ero-cr').setData(fc);return;}
-  map.addSource('ero-cr',{type:'geojson',data:fc});
-  // 반경 채우기 (반투명 청록)
-  map.addLayer({id:'ero-cr-fill',type:'fill',source:'ero-cr',paint:{
-    'fill-color':'#4cc9f0','fill-opacity':0.07
-  }});
-  // 반경 테두리 (점선)
-  map.addLayer({id:'ero-cr-line',type:'line',source:'ero-cr',paint:{
-    'line-color':'#4cc9f0','line-width':2,'line-opacity':0.55,
-    'line-dasharray':[5,5]
-  }});
-}
-function _updateCollectRadius(){
-  const map=EROMAP.map;
-  if(!map||!map.loaded()||EROMAP.lat===null)return;
-  const geoj=_makeCircleGeoJSON(EROMAP.lat,EROMAP.lon,EROMAP.COLLECT_R);
-  const fc={type:'FeatureCollection',features:[geoj]};
-  const src=map.getSource('ero-cr');
-  if(src)src.setData(fc);
-  else _addCollectRadius(map);
-}
-
-// ── 도로 레이어 네온 색상 적용 ─────────────────────────────────────
-function _setRoadColors(map){
-  // Liberty 스타일 도로 레이어 이름 패턴 (try/catch로 오류 무시)
-  const layers=[
-    // 주요 간선도로 — 분홍/마젠타 계열
-    {id:'road_motorway',p:'line-color',v:'#cc3366'},
-    {id:'road_motorway_link',p:'line-color',v:'#cc3366'},
-    {id:'road_trunk',p:'line-color',v:'#cc3366'},
-    {id:'road_trunk_link',p:'line-color',v:'#cc3366'},
-    // 1·2차로 — 파란 계열
-    {id:'road_primary',p:'line-color',v:'#2a7fd4'},
-    {id:'road_primary_link',p:'line-color',v:'#2a7fd4'},
-    {id:'road_secondary',p:'line-color',v:'#1a5a8a'},
-    {id:'road_secondary_link',p:'line-color',v:'#1a5a8a'},
-    // 3차로 이하 — 어두운 파랑
-    {id:'road_tertiary',p:'line-color',v:'#12406a'},
-    {id:'road_tertiary_link',p:'line-color',v:'#12406a'},
-    {id:'road_minor',p:'line-color',v:'#0e2e52'},
-    {id:'road_minor_link',p:'line-color',v:'#0e2e52'},
-    // 서비스·보행로
-    {id:'road_service_track',p:'line-color',v:'#0a2040'},
-    {id:'road_path',p:'line-color',v:'#1a3060'},
-    {id:'road_pedestrian',p:'line-color',v:'#152840'},
-    // 보도 / 자전거
-    {id:'road_cycleway',p:'line-color',v:'#1a6040'},
-    {id:'road_footway',p:'line-color',v:'#152035'},
-    // 케이싱(외곽선) — 좀 더 어두운 버전
-    {id:'road_motorway_casing',p:'line-color',v:'#880033'},
-    {id:'road_primary_casing',p:'line-color',v:'#0a4a80'},
-  ];
-  layers.forEach(({id,p,v})=>{
-    try{if(map.getLayer(id))map.setPaintProperty(id,p,v);}catch(e){}
-  });
-  // 물(강·호수) — 게임 느낌 강조
-  const waterLayers=['water','waterway','waterway-label'];
-  waterLayers.forEach(id=>{
-    try{if(map.getLayer(id))map.setPaintProperty(id,'fill-color','#0d2a4a');}catch(e){}
-  });
-}
-
-// ── 장식 오브 파티클 (EROMAP 배경) ────────────────────────────────
-function _addEroMapParticles(){
-  const wrap=document.getElementById('eromap-orbs');
-  if(!wrap||wrap.dataset.init)return;
-  wrap.dataset.init='1';
-  const orbs=[
-    {size:120,x:'8%',y:'22%',color:'rgba(76,201,240,0.18)',od:'8s',odel:'0s',otx:'12px',oty:'-18px',otx2:'-8px',oty2:'10px'},
-    {size:80, x:'78%',y:'15%',color:'rgba(114,9,183,0.15)',od:'6.5s',odel:'1.2s',otx:'-10px',oty:'14px',otx2:'6px',oty2:'-8px'},
-    {size:160,x:'55%',y:'60%',color:'rgba(247,37,133,0.1)',od:'10s',odel:'2.4s',otx:'16px',oty:'-10px',otx2:'-12px',oty2:'14px'},
-    {size:60, x:'20%',y:'70%',color:'rgba(76,201,240,0.12)',od:'7s',odel:'0.8s',otx:'-8px',oty:'10px',otx2:'5px',oty2:'-6px'},
-    {size:100,x:'85%',y:'50%',color:'rgba(67,97,238,0.13)',od:'9s',odel:'3s',otx:'10px',oty:'-16px',otx2:'-7px',oty2:'12px'},
-  ];
-  orbs.forEach(o=>{
-    const el=document.createElement('div');
-    el.className='ero-map-orb';
-    el.style.cssText=`
-      width:${o.size}px;height:${o.size}px;
-      left:${o.x};top:${o.y};
-      background:radial-gradient(circle,${o.color} 0%,transparent 70%);
-      --od:${o.od};--odel:${o.odel};
-      --otx:${o.otx};--oty:${o.oty};--otx2:${o.otx2};--oty2:${o.oty2};
-      --oa:0.7;
-    `.replace(/\n\s+/g,' ');
-    wrap.appendChild(el);
-  });
-}
-
-// ── 에로맵 수집 통계 UI 업데이트 ──────────────────────────────────
-function _updateEroStats(){
-  const total=EROMAP.arrows.length||10;
-  const col=EROMAP.sessionCollected;
-  const el=document.getElementById('eromap-col-count');
-  const et=document.getElementById('eromap-col-total');
-  const ef=document.getElementById('eromap-collected-fill');
-  const ec=document.getElementById('eromap-session-coins');
-  if(el)el.textContent=col;
-  if(et)et.textContent=total;
-  if(ef)ef.style.width=(Math.min(col/total,1)*100)+'%';
-  if(ec)ec.textContent=`💰 +${EROMAP.sessionCoins}`;
-}
-
-// 땅(배경·잔디·공원 등) 초록색으로 일괄 변경
-function _setGreenLand(map){
-  const greenLayers=[
-    {id:'background',prop:'background-color',val:'#4a7c3f'},
-    {id:'landcover_grass',prop:'fill-color',val:'#5a9e4a'},
-    {id:'landcover-grass',prop:'fill-color',val:'#5a9e4a'},
-    {id:'landcover_wood',prop:'fill-color',val:'#3a6e30'},
-    {id:'landcover-wood',prop:'fill-color',val:'#3a6e30'},
-    {id:'landuse_park',prop:'fill-color',val:'#52934a'},
-    {id:'landuse-park',prop:'fill-color',val:'#52934a'},
-    {id:'park',prop:'fill-color',val:'#52934a'},
-    {id:'landuse',prop:'fill-color',val:'#4a8040'},
-    {id:'landuse-residential',prop:'fill-color',val:'#4e7e44'},
-    {id:'residential',prop:'fill-color',val:'#4e7e44'},
-    {id:'grass',prop:'fill-color',val:'#5a9e4a'},
-    {id:'meadow',prop:'fill-color',val:'#5a9e4a'},
-    {id:'sand',prop:'fill-color',val:'#c8b96e'},
-  ];
-  greenLayers.forEach(({id,prop,val})=>{
-    try{if(map.getLayer(id))map.setPaintProperty(id,prop,val);}catch(e){}
   });
 }
 
@@ -8361,9 +8198,10 @@ function _addBuildingLayer(map){
   }catch(e){}
 }
 
-// ── 지형 고도 쿼리 — DEM 제거로 항상 평지(0) 반환 ──────
+// ── 지형 고도 쿼리 ─────────────────────────────────────
 function _getTerrainAlt(lng,lat){
-  return 0;
+  if(!EROMAP.map)return 0;
+  try{return EROMAP.map.queryTerrainElevation({lng,lat})||0;}catch(e){return 0;}
 }
 
 // ── 근처 건물 투명화 (플레이어 주변 건물을 feature-state로 반투명) ──
@@ -8507,8 +8345,8 @@ function _addOrMovePlayerMarker(){
     return;
   }
   const el=_initPlayerMarker3D();
-  // pitchAlignment:'viewport' 로 항상 화면을 향해 세워짐, anchor:'bottom'으로 마커 하단이 땅에 닿게
-  EROMAP.playerMarker=new maplibregl.Marker({element:el,anchor:'bottom',pitchAlignment:'viewport',rotationAlignment:'viewport'})
+  // pitchAlignment:'map' 으로 지형 표면에 고정, anchor:'bottom'으로 마커 하단이 땅에 닿게
+  EROMAP.playerMarker=new maplibregl.Marker({element:el,anchor:'bottom',pitchAlignment:'map',rotationAlignment:'viewport'})
     .setLngLat([EROMAP.lon,EROMAP.lat,alt]).addTo(EROMAP.map);
 }
 
@@ -8526,8 +8364,6 @@ function closeEroMap(){
   }
   // 이동 타이머 정리
   if(EROMAP._moveTimer){clearTimeout(EROMAP._moveTimer);EROMAP._moveTimer=null;}
-  // 방위 쓰로틀 타이머 정리
-  if(EROMAP._bearingThrottle){clearTimeout(EROMAP._bearingThrottle);EROMAP._bearingThrottle=null;}
   EROMAP.isMoving=false;
   // 3D 플레이어 마커 정리 및 지도에서 제거
   _destroyPlayerMarker3D();
@@ -8546,72 +8382,12 @@ function closeEroMap(){
   initDemo();
 }
 
-// ── GPS 권한/재시도 헬퍼 ──────────────────────────────────
-function _isIOS(){return/iP(hone|od|ad)/.test(navigator.userAgent);}
-function _isMac(){return/Macintosh/.test(navigator.userAgent)&&'ontouchend' in document;}
-
-function _showGPSRetry(guideText){
-  const btn=document.getElementById('eromap-gps-retry');
-  const guide=document.getElementById('eromap-gps-guide');
-  if(btn)btn.style.display='block';
-  if(guide&&guideText){guide.textContent=guideText;guide.style.display='block';}
-}
-function _hideGPSRetry(){
-  const btn=document.getElementById('eromap-gps-retry');
-  const guide=document.getElementById('eromap-gps-guide');
-  if(btn)btn.style.display='none';
-  if(guide){guide.textContent='';guide.style.display='none';}
-}
-
-function _startEroGPS(){
-  if(!('geolocation' in navigator)){eroSimulate();return;}
-  function _gpsError(err){
-    if(err&&err.code===1){
-      // 권한 거부
-      document.getElementById('eromap-gps').textContent='📍 위치 권한 거부됨';
-      const guide=(_isIOS()||_isMac())
-        ? '설정 > 개인 정보 보호 > 위치 서비스\n> Safari > "앱을 사용하는 동안"'
-        : '브라우저 주소창 자물쇠 아이콘 >\n위치 > 허용 후 새로고침';
-      _showGPSRetry(guide);
-      eroSimulate();
-    }else{
-      document.getElementById('eromap-gps').textContent='📍 GPS 재시도 중...';
-      navigator.geolocation.getCurrentPosition(
-        pos=>{_hideGPSRetry();eroGPSInit(pos);},
-        ()=>eroSimulate(),
-        {enableHighAccuracy:false,timeout:15000,maximumAge:60000}
-      );
-    }
-  }
-  navigator.geolocation.getCurrentPosition(
-    pos=>{_hideGPSRetry();eroGPSInit(pos);},
-    err=>_gpsError(err),
-    {enableHighAccuracy:true,timeout:10000,maximumAge:0}
-  );
-  if(EROMAP.watchId==null){
-    EROMAP.watchId=navigator.geolocation.watchPosition(
-      pos=>eroGPSUpdate(pos),
-      ()=>{},
-      {enableHighAccuracy:true,maximumAge:2000,timeout:10000}
-    );
-  }
-}
-
-function eroRetryGPS(){
-  _hideGPSRetry();
-  document.getElementById('eromap-gps').textContent='📍 GPS 확인 중...';
-  // watchPosition 재시작
-  if(EROMAP.watchId!=null){navigator.geolocation.clearWatch(EROMAP.watchId);EROMAP.watchId=null;}
-  _startEroGPS();
-}
-
 function eroSimulate(){
   EROMAP.lat=37.5665;EROMAP.lon=126.9780;
   document.getElementById('eromap-gps').textContent='📍 시뮬레이션 모드 (서울)';
   if(EROMAP.map&&EROMAP.map.loaded()){
     EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),duration:1000});
     _addOrMovePlayerMarker();spawnEroArrows();
-    _updateCollectRadius();
   }
 }
 
@@ -8621,7 +8397,6 @@ function eroGPSInit(pos){
   if(EROMAP.map&&EROMAP.map.loaded()){
     EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),duration:1200});
     _addOrMovePlayerMarker();spawnEroArrows();
-    _updateCollectRadius();
   }
   setTimeout(()=>{_updateArrowVisibility();_updateBuildingTransparency();},600);
 }
@@ -8644,7 +8419,6 @@ function eroGPSUpdate(pos){
   }
   _updateArrowVisibility();
   _updateBuildingTransparency();
-  _updateCollectRadius();
   // 자동수집 제거 — 탭해야만 퍼즐 열고 수집 가능
   // checkEroCollection();
 }
@@ -8808,8 +8582,8 @@ function _createArrowMarker(arrow,sk,visible=true){
 
   // pitchAlignment:'viewport' → 카메라를 향해 항상 수직으로 세워짐 (땅에 박히지 않음)
   // offset: 화면 Y축으로 위로 띄움 (양수=아래, 음수=위)
-  return new maplibregl.Marker({element:el,anchor:'center',pitchAlignment:'viewport',rotationAlignment:'viewport',offset:[0,-10]})
-    .setLngLat([arrow.lon,arrow.lat,15]).addTo(EROMAP.map);
+  return new maplibregl.Marker({element:el,anchor:'bottom',pitchAlignment:'viewport',rotationAlignment:'viewport',offset:[0,-10]})
+    .setLngLat([arrow.lon,arrow.lat]).addTo(EROMAP.map);
 }
 
 function checkEroCollection(){
@@ -8826,7 +8600,6 @@ function checkEroCollection(){
 function collectEroArrow(a){
   if(a.collected)return;
   a.collected=true;
-  EROMAP.sessionCollected++;
   if(a._distInterval){clearInterval(a._distInterval);a._distInterval=null;}
   playEroCollectSound();
   if(a.marker){
@@ -8839,9 +8612,8 @@ function collectEroArrow(a){
   if(wasNew){owned.add(sk.id);recordSkinDate(sk.id);doSave();showEroCollectBanner(`✨ 새 화살표 획득! ${sk.emoji} ${sk.name}`,'new');}
   else{
     const bonus=sk.rarity==='legendary'?200:sk.rarity==='epic'?80:sk.rarity==='rare'?40:20;
-    coins+=bonus;EROMAP.sessionCoins+=bonus;doSave();showEroCollectBanner(`${sk.emoji} 이미 보유! +${bonus} 💰`,'coin');
+    coins+=bonus;doSave();showEroCollectBanner(`${sk.emoji} 이미 보유! +${bonus} 💰`,'coin');
   }
-  _updateEroStats();
   setTimeout(()=>respawnEroArrow(a),30000);
 }
 
@@ -8923,16 +8695,11 @@ function _eroOrientationHandler(e){
     _eroSmoothHeading=(_eroSmoothHeading+diff*0.18+360)%360;
   }
   EROMAP.heading=_eroSmoothHeading;
-  if(EROMAP.map&&!EROMAP._bearingThrottle){
-    // 쓰로틀링: 100ms마다 한 번만 업데이트 → 초당 60회 이벤트로 인한 화면 흔들림 방지
-    EROMAP._bearingThrottle=setTimeout(()=>{
-      EROMAP._bearingThrottle=null;
-      if(!EROMAP.map)return;
-      // easeTo로 부드러운 전환 (jumpTo 대신)
-      const easeOpts={bearing:EROMAP.heading,duration:150,easing:t=>t};
-      if(EROMAP.lat!==null)easeOpts.center=[EROMAP.lon,EROMAP.lat];
-      EROMAP.map.easeTo(easeOpts);
-    },100);
+  if(EROMAP.map){
+    // 플레이어를 항상 화면 중앙에 유지하면서 방향 회전
+    const jumpOpts={bearing:_eroSmoothHeading};
+    if(EROMAP.lat!==null)jumpOpts.center=[EROMAP.lon,EROMAP.lat];
+    EROMAP.map.jumpTo(jumpOpts);
   }
   // 나침반 UI 업데이트
   const compassNeedle=document.getElementById('eromap-compass-needle');
