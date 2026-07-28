@@ -8507,8 +8507,8 @@ function _addOrMovePlayerMarker(){
     return;
   }
   const el=_initPlayerMarker3D();
-  // pitchAlignment:'map' 으로 지형 표면에 고정, anchor:'bottom'으로 마커 하단이 땅에 닿게
-  EROMAP.playerMarker=new maplibregl.Marker({element:el,anchor:'center',pitchAlignment:'map',rotationAlignment:'viewport'})
+  // pitchAlignment:'viewport' 로 항상 화면을 향해 세워짐, anchor:'bottom'으로 마커 하단이 땅에 닿게
+  EROMAP.playerMarker=new maplibregl.Marker({element:el,anchor:'bottom',pitchAlignment:'viewport',rotationAlignment:'viewport'})
     .setLngLat([EROMAP.lon,EROMAP.lat,alt]).addTo(EROMAP.map);
 }
 
@@ -8526,6 +8526,8 @@ function closeEroMap(){
   }
   // 이동 타이머 정리
   if(EROMAP._moveTimer){clearTimeout(EROMAP._moveTimer);EROMAP._moveTimer=null;}
+  // 방위 쓰로틀 타이머 정리
+  if(EROMAP._bearingThrottle){clearTimeout(EROMAP._bearingThrottle);EROMAP._bearingThrottle=null;}
   EROMAP.isMoving=false;
   // 3D 플레이어 마커 정리 및 지도에서 제거
   _destroyPlayerMarker3D();
@@ -8921,11 +8923,16 @@ function _eroOrientationHandler(e){
     _eroSmoothHeading=(_eroSmoothHeading+diff*0.18+360)%360;
   }
   EROMAP.heading=_eroSmoothHeading;
-  if(EROMAP.map){
-    // 플레이어를 항상 화면 중앙에 유지하면서 방향 회전
-    const jumpOpts={bearing:_eroSmoothHeading};
-    if(EROMAP.lat!==null)jumpOpts.center=[EROMAP.lon,EROMAP.lat];
-    EROMAP.map.jumpTo(jumpOpts);
+  if(EROMAP.map&&!EROMAP._bearingThrottle){
+    // 쓰로틀링: 100ms마다 한 번만 업데이트 → 초당 60회 이벤트로 인한 화면 흔들림 방지
+    EROMAP._bearingThrottle=setTimeout(()=>{
+      EROMAP._bearingThrottle=null;
+      if(!EROMAP.map)return;
+      // easeTo로 부드러운 전환 (jumpTo 대신)
+      const easeOpts={bearing:EROMAP.heading,duration:150,easing:t=>t};
+      if(EROMAP.lat!==null)easeOpts.center=[EROMAP.lon,EROMAP.lat];
+      EROMAP.map.easeTo(easeOpts);
+    },100);
   }
   // 나침반 UI 업데이트
   const compassNeedle=document.getElementById('eromap-compass-needle');
