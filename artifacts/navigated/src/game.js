@@ -1051,8 +1051,13 @@ function clearPreview(){if(prevMesh){scene.remove(prevMesh);prevMesh=null;}}
 // ══════════════════════════════════════════════════
 function setGlow(entry,on){
   const sk=skinDef(activeSkin);
-  entry.parts.forEach(p=>{if(!p.material)return;p.material.emissive.set(on?entry.def.col:'#000');p.material.emissiveIntensity=on?0.8:(sk.neon?1.4:0);});
-  entry.ring.visible=on;
+  entry.parts.forEach(p=>{
+    if(!p.material)return;
+    p.material.emissive.set(on?entry.def.col:'#000');
+    // 선택 시: neon 스킨은 1.2, 일반 0.8 / 해제 시: 항상 0 (neon이어도 반짝이면 선택된 것처럼 보임)
+    p.material.emissiveIntensity=on?(sk.neon?1.2:0.8):0;
+  });
+  entry.ring.visible=on; // ring은 오직 setGlow만 제어
 }
 
 // ══════════════════════════════════════════════════
@@ -1720,31 +1725,29 @@ function tickFreeHint(dt){
   const pulse=0.45+0.55*Math.sin(_hintT*2.8);
   arrows.forEach(a=>{
     if(a.state!=='idle')return;
+    // 선택된 화살표는 setGlow가 완전히 관리 — 건드리지 않음
+    if(a.id===selId)return;
     const free=!blocked(a);
     const inJust=_isJustPerfect(a);
     a.parts.forEach(p=>{
       if(!p.material||!p.material.emissive)return;
-      if(inJust&&free){
-        // PERFECT window: bright flash to signal timing
+      if(selId){
+        // 다른 화살표가 선택된 상태: 비선택은 매우 어둡게
+        p.material.emissiveIntensity=free?0.06:0.0;
+      }else if(inJust&&free){
+        // JUST 타이밍: 밝게 점멸 (ring은 표시 안 함 — ring은 선택 시만)
         p.material.emissiveIntensity=2.2;
       }else if(inJust){
-        // JUST window but blocked: amber flash
         p.material.emissiveIntensity=1.2;
       }else if(free){
-        // Free arrow: gentle pulse
+        // 여유 화살표: 부드러운 맥동
         p.material.emissiveIntensity=0.15+pulse*0.55;
       }else{
-        // Blocked: dim
         p.material.emissiveIntensity=0.0;
       }
     });
-    // Flash ring when in JUST window (regardless of selection)
-    if(a.ring&&inJust){
-      a.ring.visible=true;
-      a.ring.material.emissiveIntensity=2.0+Math.sin(_hintT*18)*1.0;
-    }else if(a.ring&&a.id!==selId){
-      a.ring.visible=false;
-    }
+    // ring은 setGlow만 제어 — 여기서는 항상 숨김 (선택 안 된 화살표)
+    if(a.ring)a.ring.visible=false;
   });
 }
 
@@ -8118,6 +8121,9 @@ function getWInfo(code){
   return WMAP[best]||WMAP[0];
 }
 
+// iOS Safari에서 _unlockOrientation()이 비동기로 popstate를 발화하는 문제를 막기 위한 카운터
+let _eromapSpuriousPopstate=0;
+
 function openEroMap(){
   if(EROMAP.open)return;
   EROMAP.open=true;
@@ -8127,6 +8133,10 @@ function openEroMap(){
   EROMAP.timeInterval=setInterval(updateEroTime,1000);
   updateEroTime();
   // 화면 방향 잠금 해제 (에로맵에서는 자유롭게)
+  // iOS Safari에서 orientation unlock이 1~2초 후 spurious popstate를 발화하는 경우가 있음
+  // → 카운터로 흡수하여 에로맵이 의도치 않게 닫히는 것을 방지
+  _eromapSpuriousPopstate++;
+  setTimeout(()=>{_eromapSpuriousPopstate=Math.max(0,_eromapSpuriousPopstate-1);},4000);
   _unlockOrientation();
   // 나침반/자이로 연동
   function _addOrientationListener(){
@@ -8940,8 +8950,16 @@ document.getElementById('eromap-exit')?.addEventListener('click',()=>{
   if(EROMAP.open){history.back();}
 });
 // 안드로이드 하드웨어 뒤로가기 / 브라우저 뒤로가기 버튼 처리
+// iOS orientation unlock이 spurious popstate를 발화할 수 있으므로 카운터로 걸러냄
 window.addEventListener('popstate',()=>{
-  if(EROMAP.open)closeEroMap();
+  if(!EROMAP.open)return;
+  if(_eromapSpuriousPopstate>0){
+    // orientation unlock으로 인한 가짜 popstate — 네비게이션 상태 복구 후 무시
+    _eromapSpuriousPopstate--;
+    history.pushState({eromap:true},'');
+    return;
+  }
+  closeEroMap();
 });
 document.getElementById('sdm-close')?.addEventListener('click',()=>{document.getElementById('skin-detail-modal').style.display='none';});
 
