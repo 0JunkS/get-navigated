@@ -8183,6 +8183,7 @@ function _initMapLibre(){
       map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),duration:1200});
       _addOrMovePlayerMarker();
       if(!EROMAP.arrows.length)spawnEroArrows();
+      _updateArrowVisibility();
       _addCollectRadius(map);
     }
   });
@@ -8611,6 +8612,7 @@ function eroSimulate(){
   if(EROMAP.map&&EROMAP.map.loaded()){
     EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),duration:1000});
     _addOrMovePlayerMarker();spawnEroArrows();
+    _updateArrowVisibility();
     _updateCollectRadius();
   }
 }
@@ -8621,6 +8623,7 @@ function eroGPSInit(pos){
   if(EROMAP.map&&EROMAP.map.loaded()){
     EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:78,bearing:(EROMAP.heading||0),duration:1200});
     _addOrMovePlayerMarker();spawnEroArrows();
+    _updateArrowVisibility();
     _updateCollectRadius();
   }
   setTimeout(()=>{_updateArrowVisibility();_updateBuildingTransparency();},600);
