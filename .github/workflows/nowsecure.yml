@@ -43,8 +43,9 @@ jobs:
         uses: nowsecure/nowsecure-action@3b439db31b6dce857b09f5222fd13ffc3159ad26
         with:
           token: ${{ secrets.NS_TOKEN }}
-          app_file: app-debug.apk                 # Update this to a path to your .ipa or .apk
-          group_id: {{ groupId }}                 # Update this to your desired Platform group ID
+          app_file: app-debug.apk                 # 앱 빌드 파일 경로 (.apk 또는 .ipa)
+          group_id: "YOUR_NOWSECURE_GROUP_ID"     # 실제 NowSecure Group ID를 큰따옴표로 감싸서 작성
+
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
