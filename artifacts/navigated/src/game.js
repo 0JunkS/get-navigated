@@ -8205,7 +8205,7 @@ function openEroMap(){
   }else{
     EROMAP.map.resize();
     if(EROMAP.lat!==null){
-      EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:60,bearing:(EROMAP.heading||0),duration:800});
+      EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:45,bearing:(EROMAP.heading||0),duration:800});
       _addOrMovePlayerMarker();
       if(!EROMAP.arrows.length)spawnEroArrows();
     }
@@ -8242,8 +8242,8 @@ function _initMapLibre(){
   if(typeof maplibregl==='undefined'){setTimeout(()=>_initMapLibre(),300);return;}
   if(EROMAP.map){EROMAP.map.resize();return;}
   const lng=EROMAP.lon||126.9780,lat=EROMAP.lat||37.5665;
-  // pitch:60 — 이전 78에서 낮춤: 하늘 영역을 줄여 지도 타일이 더 많이 보이게 하여 검은 화면 방지
-  const MAP_PITCH=60;
+  // pitch:45 — 지형(terrain) 과장값과 높은 줌에서 카메라가 지형 아래로 들어가는 현상 방지
+  const MAP_PITCH=45;
   const STYLE_PRIMARY='https://tiles.openfreemap.org/styles/liberty';
   const STYLE_FALLBACK='https://demotiles.maplibre.org/style.json';
   function _createMap(styleUrl){
@@ -8290,7 +8290,7 @@ function _initMapLibre(){
           encoding:'terrarium',tileSize:256,maxzoom:15,
           attribution:'Terrain © Mapzen/Amazon'
         });
-        map.setTerrain({source:'ero-dem',exaggeration:1.3});
+        map.setTerrain({source:'ero-dem',exaggeration:0.5});
       }catch(e){}
       // 3D 건물
       _addBuildingLayer(map);
@@ -8537,7 +8537,7 @@ function eroSimulate(){
   EROMAP.lat=37.5665;EROMAP.lon=126.9780;
   document.getElementById('eromap-gps').textContent='📍 시뮬레이션 모드 (서울)';
   if(EROMAP.map&&EROMAP.map.loaded()){
-    EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:60,bearing:(EROMAP.heading||0),duration:1000});
+    EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:45,bearing:(EROMAP.heading||0),duration:1000});
     _addOrMovePlayerMarker();spawnEroArrows();
     setTimeout(()=>{_updateArrowVisibility();_updateBuildingTransparency();},800);
   }
@@ -8547,7 +8547,7 @@ function eroGPSInit(pos){
   EROMAP.lat=pos.coords.latitude;EROMAP.lon=pos.coords.longitude;
   document.getElementById('eromap-gps').textContent=`📍 ${EROMAP.lat.toFixed(4)}°N, ${EROMAP.lon.toFixed(4)}°E`;
   if(EROMAP.map&&EROMAP.map.loaded()){
-    EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:60,bearing:(EROMAP.heading||0),duration:1200});
+    EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:45,bearing:(EROMAP.heading||0),duration:1200});
     _addOrMovePlayerMarker();spawnEroArrows();
   }
   setTimeout(()=>{_updateArrowVisibility();_updateBuildingTransparency();},600);
