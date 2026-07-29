@@ -1032,6 +1032,17 @@ function blocked(a,pool){
     if(d==='pz')return bx===ax&&by===ay&&bz>az;if(d==='nz')return bx===ax&&by===ay&&bz<az;
   });
 }
+// ── Ray-based collision for rotated escape directions (non-vertical arrows) ──
+function blockedInDirection(a,dir){
+  return arrows.some(o=>{
+    if(o.id===a.id||o.state==='escaped')return false;
+    const delta=o.bp.clone().sub(a.bp);
+    const dot=delta.dot(dir);
+    if(dot<=0.05)return false;
+    const perp=delta.clone().sub(dir.clone().multiplyScalar(dot));
+    return perp.length()<GRID*0.6;
+  });
+}
 
 // ══════════════════════════════════════════════════
 // PATH PREVIEW
@@ -1405,35 +1416,46 @@ function launchArrow(id){
   clearPreview();setGlow(e,false);
   document.getElementById('launch-btn').style.display='none';
   selId=null;lastId=null;
-  // ── JUST system: check rotation timing ──
-  const justOK=_isJustPerfect(e);
-  if(!justOK){
-    // Wrong timing → miss
-    e.state='returning';e.prog=0.22;
-    resetComboSound();
-    if(phase==='playing'){lives--;shk=1.0;updateHUD();flashBlock();if(lives<=0)setTimeout(()=>endGame(false),700);}
-    else if(phase==='multi-playing'){shk=0.6;flashBlock();multiBlockCount++;multiLives=Math.max(0,multiLives-1);updateMultiHUD();popup('타이밍 실패! ❤️×'+multiLives,innerWidth/2,innerHeight*.38,'#ff6b6b');if(multiLives<=0){setTimeout(()=>multiLiveOut(),600);}}
-    // ero-puzzle: 타이밍 실패도 목숨 없음
-    popup('타이밍 실패!',innerWidth/2,innerHeight*.38,'#ff6b6b');
-    return;
-  }
-  if(blocked(e)){
-    // Perfect timing but blocked → same collision judgment as before
-    e.state='returning';e.prog=0.22;
-    resetComboSound();
-    if(phase==='playing'){lives--;shk=1.0;updateHUD();flashBlock();if(lives<=0)setTimeout(()=>endGame(false),700);}
-    else if(phase==='multi-playing'){shk=0.6;flashBlock();multiBlockCount++;multiLives=Math.max(0,multiLives-1);updateMultiHUD();const pen=Math.min(2,multiBlockCount);popup('실수! ❤️×'+multiLives,innerWidth/2,innerHeight*.38,'#ff6b6b');if(multiLives<=0){setTimeout(()=>multiLiveOut(),600);}}
-    // ero-puzzle: 막혀도 목숨 없음, 그냥 돌아옴
-  }else{
-    e.state='moving';e.prog=0;
-    popup('PERFECT!',innerWidth/2,innerHeight*.38,'#FFD700');
-    playComboNote();
-    if(phase!=='ero-puzzle'&&typeof achieveState!=='undefined'){
-      _achStat('totalArrows',1,true);
-      _achStat('maxCombo',_comboIdx,false,true);
-      _missionProg('arrows',1);
+
+  const isVertical=e.def.dir==='py'||e.def.dir==='ny';
+
+  if(isVertical){
+    // ── 세로 화살표: 타이밍 없이 충돌만 없으면 항상 PERFECT 탈출 ──
+    if(blocked(e)){
+      e.state='returning';e.prog=0.22;e.launchRotY=0;
+      resetComboSound();
+      if(phase==='playing'){lives--;shk=1.0;updateHUD();flashBlock();if(lives<=0)setTimeout(()=>endGame(false),700);}
+      else if(phase==='multi-playing'){shk=0.6;flashBlock();multiBlockCount++;multiLives=Math.max(0,multiLives-1);updateMultiHUD();const pen=Math.min(2,multiBlockCount);popup('실수! ❤️×'+multiLives,innerWidth/2,innerHeight*.38,'#ff6b6b');if(multiLives<=0){setTimeout(()=>multiLiveOut(),600);}}
+    }else{
+      e.launchRotY=0;e.state='moving';e.prog=0;
+      popup('PERFECT!',innerWidth/2,innerHeight*.38,'#FFD700');
+      playComboNote();
+      if(phase!=='ero-puzzle'&&typeof achieveState!=='undefined'){_achStat('totalArrows',1,true);_achStat('maxCombo',_comboIdx,false,true);_missionProg('arrows',1);}
+      if(phase==='multi-playing'){multiEscape();}
     }
-    if(phase==='multi-playing'){multiEscape();}
+  }else{
+    // ── 가로/깊이 화살표: 현재 회전 방향으로 탈출 ──
+    const spinA=e.spinAngle||0;
+    const spinDir=DV[e.def.dir].clone().applyEuler(new THREE.Euler(0,spinA,0)).normalize();
+    if(blockedInDirection(e,spinDir)){
+      // 현재 방향이 막혀 있음 → 실패
+      e.state='returning';e.prog=0.22;e.launchRotY=spinA;
+      resetComboSound();
+      if(phase==='playing'){lives--;shk=1.0;updateHUD();flashBlock();if(lives<=0)setTimeout(()=>endGame(false),700);}
+      else if(phase==='multi-playing'){shk=0.6;flashBlock();multiBlockCount++;multiLives=Math.max(0,multiLives-1);updateMultiHUD();const pen=Math.min(2,multiBlockCount);popup('실수! ❤️×'+multiLives,innerWidth/2,innerHeight*.38,'#ff6b6b');if(multiLives<=0){setTimeout(()=>multiLiveOut(),600);}}
+    }else{
+      // 탈출 방향을 현재 스핀 방향으로 갱신
+      e.dv=spinDir.clone();
+      e.launchRotY=spinA;
+      e.state='moving';e.prog=0;
+      // 90도 방향 탈출이면 PERFECT! ★
+      const cosA=Math.abs(DV[e.def.dir].dot(spinDir));
+      const is90=cosA<Math.sin(JUST_WINDOW);
+      popup(is90?'PERFECT! ★':'PERFECT!',innerWidth/2,innerHeight*.38,'#FFD700');
+      playComboNote();
+      if(phase!=='ero-puzzle'&&typeof achieveState!=='undefined'){_achStat('totalArrows',1,true);_achStat('maxCombo',_comboIdx,false,true);_missionProg('arrows',1);}
+      if(phase==='multi-playing'){multiEscape();}
+    }
   }
 }
 function flashBlock(){const el=document.getElementById('blocked-flash');el.style.opacity='1';setTimeout(()=>{el.style.opacity='0';},900);if(typeof _settings!=='undefined'&&_settings.vibration&&navigator.vibrate)navigator.vibrate([80,30,80]);}
@@ -1461,8 +1483,8 @@ function tickArrow(a,dt){
   if(a.state==='escaped'){a.root.visible=false;return;}
   a.root.visible=true;
   if(a.state==='moving'){
-    // Stop spin while flying; reset rotation to show correct exit direction
-    a.root.rotation.y=0;
+    // Keep the rotation angle from the moment of launch so the arrow visually exits in the right direction
+    a.root.rotation.y=a.launchRotY||0;
     a.prog+=dt*SPEED;
     if(a.prog>=1){a.prog=1;a.state='escaped';if(phase==='playing'){escaped++;updateHUD();checkWin();}else if(phase==='ero-puzzle'){escaped++;_updateEroPuzzleProgress();checkEroPuzzleWin();}else if(phase==='multi-playing'){escaped++;if(multiMode==='blast-rank'){_blastArrowEscaped(a);}else{updateMultiHUD();checkMultiWin();}}}
     const t=a.prog,e=t<.5?2*t*t:-1+(4-2*t)*t;
@@ -1477,6 +1499,14 @@ function tickArrow(a,dt){
     if(spinning){
       a.spinAngle=(a.spinAngle||0)+SPIN_SPEED*dt;
       a.root.rotation.y=a.spinAngle;
+      // ── 선택 상태: 세로 화살표(py/ny) 제외하고 궤적 미리보기도 같이 회전 ──
+      if(a.id===selId&&prevMesh&&a.def.dir!=='py'&&a.def.dir!=='ny'){
+        const spinDir=DV[a.def.dir].clone().applyEuler(new THREE.Euler(0,a.spinAngle,0)).normalize();
+        const sp=a.bp.clone(),ep=sp.clone().addScaledVector(spinDir,4.2);
+        const mid=sp.clone().lerp(ep,0.5);
+        prevMesh.position.copy(mid);
+        prevMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),spinDir);
+      }
     }
   }
 }
@@ -1727,20 +1757,34 @@ function tickFreeHint(dt){
     if(a.state!=='idle')return;
     // 선택된 화살표는 setGlow가 완전히 관리 — 건드리지 않음
     if(a.id===selId)return;
-    const free=!blocked(a);
-    const inJust=_isJustPerfect(a);
+    const isVertical=a.def.dir==='py'||a.def.dir==='ny';
+    let free,inJust;
+    if(isVertical){
+      // 세로 화살표: 충돌만 없으면 항상 탈출 가능 — 타이밍 점멸 없음
+      free=!blocked(a);
+      inJust=free; // 막히지 않으면 항상 PERFECT 구간으로 표시
+    }else{
+      // 가로/깊이 화살표: 현재 회전 방향 기준으로 힌트 계산
+      const spinDir=DV[a.def.dir].clone().applyEuler(new THREE.Euler(0,a.spinAngle||0,0)).normalize();
+      free=!blockedInDirection(a,spinDir);
+      // PERFECT 구간: 원래 방향(0도) 또는 90도 부근에서 현재 방향이 막히지 않을 때 점멸
+      const cosA=Math.abs(DV[a.def.dir].dot(spinDir));
+      const at0=cosA>Math.cos(JUST_WINDOW);
+      const at90=cosA<Math.sin(JUST_WINDOW);
+      inJust=free&&(at0||at90);
+    }
     a.parts.forEach(p=>{
       if(!p.material||!p.material.emissive)return;
       if(selId){
         // 다른 화살표가 선택된 상태: 비선택은 매우 어둡게
         p.material.emissiveIntensity=free?0.06:0.0;
       }else if(inJust&&free){
-        // JUST 타이밍: 밝게 점멸 (ring은 표시 안 함 — ring은 선택 시만)
+        // JUST/PERFECT 타이밍 구간: 밝게 점멸
         p.material.emissiveIntensity=2.2;
       }else if(inJust){
         p.material.emissiveIntensity=1.2;
       }else if(free){
-        // 여유 화살표: 부드러운 맥동
+        // 탈출 가능: 부드러운 맥동
         p.material.emissiveIntensity=0.15+pulse*0.55;
       }else{
         p.material.emissiveIntensity=0.0;
