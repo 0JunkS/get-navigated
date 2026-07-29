@@ -1420,16 +1420,7 @@ function launchArrow(id){
   const isVertical=e.def.dir==='py'||e.def.dir==='ny';
 
   if(isVertical){
-    // ── 세로 화살표: 기존 JUST 타이밍 시스템 유지 ──
-    const justOK=_isJustPerfect(e);
-    if(!justOK){
-      e.state='returning';e.prog=0.22;e.launchRotY=0;
-      resetComboSound();
-      if(phase==='playing'){lives--;shk=1.0;updateHUD();flashBlock();if(lives<=0)setTimeout(()=>endGame(false),700);}
-      else if(phase==='multi-playing'){shk=0.6;flashBlock();multiBlockCount++;multiLives=Math.max(0,multiLives-1);updateMultiHUD();popup('타이밍 실패! ❤️×'+multiLives,innerWidth/2,innerHeight*.38,'#ff6b6b');if(multiLives<=0){setTimeout(()=>multiLiveOut(),600);}}
-      popup('타이밍 실패!',innerWidth/2,innerHeight*.38,'#ff6b6b');
-      return;
-    }
+    // ── 세로 화살표: 타이밍 없이 충돌만 없으면 항상 PERFECT 탈출 ──
     if(blocked(e)){
       e.state='returning';e.prog=0.22;e.launchRotY=0;
       resetComboSound();
@@ -1769,9 +1760,9 @@ function tickFreeHint(dt){
     const isVertical=a.def.dir==='py'||a.def.dir==='ny';
     let free,inJust;
     if(isVertical){
-      // 세로 화살표: 기존 로직
+      // 세로 화살표: 충돌만 없으면 항상 탈출 가능 — 타이밍 점멸 없음
       free=!blocked(a);
-      inJust=_isJustPerfect(a);
+      inJust=free; // 막히지 않으면 항상 PERFECT 구간으로 표시
     }else{
       // 가로/깊이 화살표: 현재 회전 방향 기준으로 힌트 계산
       const spinDir=DV[a.def.dir].clone().applyEuler(new THREE.Euler(0,a.spinAngle||0,0)).normalize();
