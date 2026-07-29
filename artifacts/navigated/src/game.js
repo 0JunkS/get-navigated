@@ -8455,7 +8455,7 @@ function _addOrMovePlayerMarker(){
   const el=_initPlayerMarker3D();
   // pitchAlignment:'map' 으로 지형 표면에 고정, anchor:'bottom'으로 마커 하단이 땅에 닿게
   // pitchAlignment:'viewport' — 마커가 항상 카메라를 향해 세워짐, 지형 아래 박힘 방지
-  EROMAP.playerMarker=new maplibregl.Marker({element:el,anchor:'bottom',pitchAlignment:'viewport',rotationAlignment:'viewport'})
+  EROMAP.playerMarker=new maplibregl.Marker({element:el,anchor:'bottom',pitchAlignment:'viewport',rotationAlignment:'viewport',offset:[0,-20]})
     .setLngLat([EROMAP.lon,EROMAP.lat]).addTo(EROMAP.map);
 }
 
