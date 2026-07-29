@@ -3,7 +3,7 @@ name: Deploy to Render
 on:
   push:
     branches:
-      - main
+      - just-system-rework
 
 jobs:
   deploy:
