@@ -6450,29 +6450,11 @@ function _storyAllDone(){
 
 function _storyCloseBox(){
   const box=document.getElementById('story-box');if(box){box.style.display='none';}
-  const sk=document.getElementById('story-skip');if(sk)sk.style.display='none';
 }
 function _storyClose(){
   _storyCloseBox();
   const cb=_sCb;_sCb=null;
   if(cb){cb();}
-}
-// 건너뛰기 — 모든 대사를 건너뛰고 바로 완료 처리
-function _storySkip(){
-  clearInterval(_sTypTimer);_sTyping=false;
-  _sLineIdx=_sLines.length; // 끝으로 점프
-  _storyAllDone();
-}
-
-function _storyShowSkip(){
-  const sk=document.getElementById('story-skip');
-  if(!sk)return;
-  sk.style.display='block';
-  sk.onclick=null;
-  let _sd=false;
-  function _go(){if(_sd)return;_sd=true;_storySkip();}
-  sk.onclick=_go;
-  sk.ontouchend=function(e){e.preventDefault();_go();};
 }
 
 
@@ -6559,7 +6541,6 @@ function showDarkArrowStory(idx,callback){
   const tap=document.getElementById('story-tap');if(tap)tap.classList.remove('ready');
   const txtEl=document.getElementById('story-text');if(txtEl)txtEl.textContent='';
   box.style.display='block';
-  _storyShowSkip();
   _storyShowLine(0);
 }
 
@@ -6571,17 +6552,21 @@ function showStoryDialogue(stageIdx,callback){
   _sCurStage=stageIdx;_sCb=callback;_sLineIdx=0;_sChoiceShown=false;
   _sLines=typeof entry.lines==='function'?entry.lines(_SC):entry.lines;
   if(!_sLines||!_sLines.length){if(callback){callback();}return;}
+  // 아바타·화자
   const av=document.getElementById('story-avatar');if(av)av.textContent='🏹';
   const nm=document.getElementById('story-name');if(nm)nm.textContent='에로';
+  // 선택지·버튼 초기화
   const cont=document.getElementById('story-choices');
   if(cont){cont.style.display='none';cont.innerHTML='';}
   const mb=document.getElementById('story-main-btn');
   if(mb){mb.style.display='none';mb.onclick=null;}
+  // tap 초기화
   const tap=document.getElementById('story-tap');
   if(tap)tap.classList.remove('ready');
+  // 텍스트 초기화
   const txtEl=document.getElementById('story-text');if(txtEl)txtEl.textContent='';
+  // 박스 표시
   box.style.display='block';
-  _storyShowSkip();
   _storyShowLine(0);
 }
 
@@ -8278,8 +8263,6 @@ function _initMapLibre(){
     map.setTerrain({source:'ero-dem',exaggeration:1.3});
     // 3D 건물
     _addBuildingLayer(map);
-    // 땅 초록색으로 변경
-    _setGreenLand(map);
     // 하늘
     try{map.setSky({'sky-color':'#4fc3f7','sky-horizon-blend':0.5,'horizon-color':'#fde8ff','horizon-fog-blend':0.3,'atmosphere-blend':0.5});}catch(e){}
     // 플레이어·화살 — GPS가 지도보다 먼저 도착했을 경우 실제 위치로 이동
@@ -8295,29 +8278,6 @@ function _initMapLibre(){
     if(EROMAP.playerMarker&&EROMAP.lat!==null){
       EROMAP.playerMarker.setLngLat([EROMAP.lon,EROMAP.lat]);
     }
-  });
-}
-
-// 땅(배경·잔디·공원 등) 초록색으로 일괄 변경
-function _setGreenLand(map){
-  const greenLayers=[
-    {id:'background',prop:'background-color',val:'#4a7c3f'},
-    {id:'landcover_grass',prop:'fill-color',val:'#5a9e4a'},
-    {id:'landcover-grass',prop:'fill-color',val:'#5a9e4a'},
-    {id:'landcover_wood',prop:'fill-color',val:'#3a6e30'},
-    {id:'landcover-wood',prop:'fill-color',val:'#3a6e30'},
-    {id:'landuse_park',prop:'fill-color',val:'#52934a'},
-    {id:'landuse-park',prop:'fill-color',val:'#52934a'},
-    {id:'park',prop:'fill-color',val:'#52934a'},
-    {id:'landuse',prop:'fill-color',val:'#4a8040'},
-    {id:'landuse-residential',prop:'fill-color',val:'#4e7e44'},
-    {id:'residential',prop:'fill-color',val:'#4e7e44'},
-    {id:'grass',prop:'fill-color',val:'#5a9e4a'},
-    {id:'meadow',prop:'fill-color',val:'#5a9e4a'},
-    {id:'sand',prop:'fill-color',val:'#c8b96e'},
-  ];
-  greenLayers.forEach(({id,prop,val})=>{
-    try{if(map.getLayer(id))map.setPaintProperty(id,prop,val);}catch(e){}
   });
 }
 
