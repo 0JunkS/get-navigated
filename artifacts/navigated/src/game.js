@@ -8242,10 +8242,10 @@ function _initMapLibre(){
   if(typeof maplibregl==='undefined'){setTimeout(()=>_initMapLibre(),300);return;}
   if(EROMAP.map){EROMAP.map.resize();return;}
   const lng=EROMAP.lon||126.9780,lat=EROMAP.lat||37.5665;
-  // pitch:45 — 지형(terrain) 과장값과 높은 줌에서 카메라가 지형 아래로 들어가는 현상 방지
   const MAP_PITCH=45;
-  const STYLE_PRIMARY='https://tiles.openfreemap.org/styles/liberty';
-  const STYLE_FALLBACK='https://demotiles.maplibre.org/style.json';
+  // CARTO 무료 타일 — 글로벌 CDN, API 키 불필요, 모바일 안정적
+  const STYLE_PRIMARY='https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+  const STYLE_FALLBACK='https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
   function _createMap(styleUrl){
     const map=new maplibregl.Map({
       container:'eromap-map',
@@ -8253,58 +8253,25 @@ function _initMapLibre(){
       center:[lng,lat],
       zoom:18.5,pitch:MAP_PITCH,bearing:(EROMAP.heading||0),antialias:true
     });
-    // AR모드: 사용자가 지도를 수동으로 회전 못하게 (나침반이 제어)
     map.dragRotate.disable();
     map.touchZoomRotate.disableRotation();
     EROMAP.map=map;
-    // 스타일 로드 실패 시 폴백 스타일로 재시도
+    // 스타일 로드 실패 시 폴백으로 재시도 (3초 타임아웃)
     if(styleUrl===STYLE_PRIMARY){
       let _errHandled=false;
-      map.once('error',(e)=>{
-        if(_errHandled)return;
-        const msg=String((e&&e.error&&(e.error.message||e.error))||'');
-        if(msg.includes('style')||msg.includes('fetch')||msg.includes('load')||!EROMAP.map){
-          _errHandled=true;
-          try{map.remove();}catch(ex){}
-          EROMAP.map=null;
-          setTimeout(()=>_createMap(STYLE_FALLBACK),200);
-        }
-      });
-      // 5초 내에 스타일이 로드되지 않으면 폴백으로 전환
-      const _styleTimer=setTimeout(()=>{
-        if(EROMAP.map===map&&!map.isStyleLoaded()){
-          _errHandled=true;
-          try{map.remove();}catch(ex){}
-          EROMAP.map=null;
-          _createMap(STYLE_FALLBACK);
-        }
-      },5000);
-      map.once('load',()=>clearTimeout(_styleTimer));
+      const _fallback=()=>{
+        if(_errHandled)return;_errHandled=true;
+        try{map.remove();}catch(ex){}
+        EROMAP.map=null;
+        setTimeout(()=>_createMap(STYLE_FALLBACK),200);
+      };
+      map.once('error',_fallback);
+      const _t=setTimeout(()=>{if(!map.isStyleLoaded())_fallback();},4000);
+      map.once('load',()=>clearTimeout(_t));
     }
     map.on('load',()=>{
-      // 지형 (AWS Terrain Tiles - 무료·무키)
-      try{
-        map.addSource('ero-dem',{
-          type:'raster-dem',
-          tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
-          encoding:'terrarium',tileSize:256,maxzoom:15,
-          attribution:'Terrain © Mapzen/Amazon'
-        });
-        map.setTerrain({source:'ero-dem',exaggeration:0.5});
-      }catch(e){}
-      // 3D 건물
+      // 3D 건물 (terrain은 제거 — 지형 아래로 카메라 파고드는 현상 방지)
       _addBuildingLayer(map);
-      // 하늘 — MapLibre 4.x: addLayer sky 방식 우선, setSky는 폴백
-      try{
-        map.addLayer({id:'ero-sky',type:'sky',paint:{
-          'sky-type':'atmosphere',
-          'sky-atmosphere-sun':[0.0,90.0],
-          'sky-atmosphere-sun-intensity':15,
-          'sky-opacity':['interpolate',['linear'],['zoom'],0,0,5,0.3,8,1]
-        }});
-      }catch(e){
-        try{map.setSky({'sky-color':'#4fc3f7','sky-horizon-blend':0.5,'horizon-color':'#c8e8ff','horizon-fog-blend':0.5});}catch(e2){}
-      }
       // 플레이어·화살 — GPS가 지도보다 먼저 도착했을 경우 실제 위치로 이동
       if(EROMAP.lat!==null){
         map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:MAP_PITCH,bearing:(EROMAP.heading||0),duration:1200});
@@ -8313,7 +8280,6 @@ function _initMapLibre(){
       }
     });
     map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'top-right');
-    // 플레이어 마커 위치 동기화 (pitchAlignment:'viewport' 사용 — 땅 아래 박힘 방지)
     map.on('render',()=>{
       if(EROMAP.playerMarker&&EROMAP.lat!==null){
         EROMAP.playerMarker.setLngLat([EROMAP.lon,EROMAP.lat]);
@@ -8327,8 +8293,9 @@ function _addBuildingLayer(map){
   try{
     const style=map.getStyle();
     const sources=Object.keys(style.sources||{});
-    // openfreemap liberty uses 'openmaptiles'; fallback to any vector source
-    const omtSrc=sources.find(s=>s==='openmaptiles')||
+    // CARTO uses 'carto'; openfreemap uses 'openmaptiles'; fallback to any vector source
+    const omtSrc=sources.find(s=>s==='carto')||
+      sources.find(s=>s==='openmaptiles')||
       sources.find(s=>s.includes('maptiler')||s==='v3')||
       sources.find(s=>{const src=style.sources[s];return src&&src.type==='vector';})||
       sources[0]||null;
