@@ -4,11 +4,8 @@ set -e
 echo "=== Using npx pnpm@9 (no global install needed) ==="
 npx --yes pnpm@9 --version
 
-echo "=== Installing dependencies ==="
+echo "=== Installing dependencies (hoisted linker) ==="
 npx pnpm@9 install --no-frozen-lockfile
-
-echo "=== Installing ws for server.mjs (ignore-scripts to bypass preinstall check) ==="
-npm install --ignore-scripts ws
 
 echo "=== Building navigated app ==="
 PORT=19477 BASE_PATH=/ npx pnpm@9 --filter @workspace/navigated run build
