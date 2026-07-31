@@ -222,7 +222,7 @@ const SKINS=[
   {id:'silver',   name:'실버',         desc:'고급 은빛 도금',           price:60,  emoji:'🥈',pc:'p-cheap', r:0.04,m:0.97,fc:'#d0d4e0',            rarity:'common'},
   {id:'chrome',   name:'크롬',         desc:'완벽한 크롬 마감',         price:90,  emoji:'💿',pc:'p-cheap', r:0.0, m:1.0, fc:'#e8eeff',            rarity:'common'},
   {id:'neon',     name:'네온',         desc:'빛나는 형광 글로우',       price:150, emoji:'💡',pc:'p-cheap', r:1.0, m:0.0, neon:true,               rarity:'rare'},
-  {id:'crystal',  name:'크리스탈',     desc:'투명한 유리 질감',         price:350, emoji:'💎',pc:'p-exp',   r:0.0, m:0.1, tr:true,op:0.42,crystal:true, rarity:'epic'},
+  {id:'crystal',  name:'크리스탈',     desc:'투명한 유리 질감',         price:350, emoji:'💎',pc:'p-exp',   r:0.0, m:0.1, tr:true,op:1,crystal:true, rarity:'epic'},
   {id:'car',      name:'자동차',       desc:'달리는 자동차 모양',       price:500, emoji:'🚗',pc:'p-exp',   shape:'car',                           rarity:'rare'},
   {id:'rocket',   name:'로켓',         desc:'솟아오르는 로켓 형태',     price:600, emoji:'🚀',pc:'p-exp',   shape:'rocket',                        rarity:'epic'},
   {id:'star',     name:'별',           desc:'다섯 꼭짓점 별 모양',      price:400, emoji:'⭐',pc:'p-exp',   shape:'star',                          rarity:'rare'},
@@ -231,13 +231,13 @@ const SKINS=[
   {id:'crystal2', name:'크리스탈 샤드',desc:'날카로운 크리스탈 파편',   price:700, emoji:'🔷',pc:'p-exp',   shape:'crystal2',                      rarity:'epic'},
   // ── 에로맵 & 신규 스킨 ──────────────────────────────────
   {id:'flame',    name:'불꽃',         desc:'타오르는 불꽃 화살',       price:400, emoji:'🔥',pc:'p-exp',   shape:'flame',   fc:'#FF4500',r:0.9,m:0,neon:true,  rarity:'rare'},
-  {id:'ice',      name:'얼음',         desc:'차가운 얼음 화살',         price:400, emoji:'❄️',pc:'p-exp',   shape:'ice',     fc:'#C8F4FF',r:0,m:0.1,tr:true,op:0.75,crystal:true, rarity:'rare'},
+  {id:'ice',      name:'얼음',         desc:'차가운 얼음 화살',         price:400, emoji:'❄️',pc:'p-exp',   shape:'ice',     fc:'#C8F4FF',r:0,m:0.1,tr:true,op:1,crystal:true, rarity:'rare'},
   {id:'thunder',  name:'번개',         desc:'번쩍이는 번개 화살',       price:700, emoji:'⚡',pc:'p-exp',   shape:'thunder', fc:'#FFE600',r:1,m:0,neon:true,    rarity:'epic'},
   {id:'dragon',   name:'드래곤',       desc:'전설의 드래곤 화살 · 에로맵 전용', price:0, emoji:'🐉',pc:'p-gacha', shape:'dragon', gacha:true, fc:'#1E6B3A',r:0.4,m:0.55, rarity:'legendary'},
   {id:'rainbow',  name:'무지개',       desc:'화려한 무지개 화살',       price:800, emoji:'🌈',pc:'p-exp',   shape:'rainbow', fc:'#FF6EFF',r:0.9,m:0,neon:true,  rarity:'epic'},
-  {id:'ghost',    name:'유령',         desc:'투명한 유령 화살',         price:450, emoji:'👻',pc:'p-exp',   shape:'ghost',   fc:'#D8E4FF',r:0.3,m:0,tr:true,op:0.65, rarity:'rare'},
+  {id:'ghost',    name:'유령',         desc:'투명한 유령 화살',         price:450, emoji:'👻',pc:'p-exp',   shape:'ghost',   fc:'#D8E4FF',r:0.3,m:0,tr:true,op:1, rarity:'rare'},
   {id:'lava',     name:'용암',         desc:'뜨거운 용암 화살',         price:900, emoji:'🌋',pc:'p-exp',   shape:'lava',    fc:'#1A1A1A',r:0.95,m:0.1,          rarity:'epic'},
-  {id:'cosmic',   name:'코스믹',       desc:'우주의 힘 · 에로맵 전용', price:0,   emoji:'🌟',pc:'p-gacha', shape:'cosmic', gacha:true, fc:'#1010AA',r:0,m:0.2,tr:true,op:0.88,crystal:true, rarity:'legendary'},
+  {id:'cosmic',   name:'코스믹',       desc:'우주의 힘 · 에로맵 전용', price:0,   emoji:'🌟',pc:'p-gacha', shape:'cosmic', gacha:true, fc:'#1010AA',r:0,m:0.2,tr:true,op:1,crystal:true, rarity:'legendary'},
 ];
 
 // ══════════════════════════════════════════════════
@@ -459,7 +459,7 @@ function buildArrow(col,sk,grp,tex){
   // Decorative glowing collar ring where shaft meets head
   const collarMat=new THREE.MeshStandardMaterial({
     color:col,emissive:col,emissiveIntensity:0.7,
-    roughness:0.3,metalness:0.6,transparent:true,opacity:0.9
+    roughness:0.3,metalness:0.6,transparent:false,opacity:1
   });
   const collar=new THREE.Mesh(new THREE.TorusGeometry(HR*0.55,BR*1.3,8,24),collarMat);
   collar.rotation.x=Math.PI/2;
@@ -475,7 +475,7 @@ function buildArrow(col,sk,grp,tex){
   // Cute bright sparkle sphere at the very tip
   const tipMat=new THREE.MeshStandardMaterial({
     color:'#ffffff',emissive:col,emissiveIntensity:1.1,
-    roughness:0.05,metalness:0.6,transparent:true,opacity:0.88,
+    roughness:0.05,metalness:0.6,transparent:false,opacity:1,
     envMap:_skinEnvMap,envMapIntensity:1.8
   });
   const tip=new THREE.Mesh(new THREE.SphereGeometry(BR*1.6,10,8),tipMat);
@@ -484,7 +484,7 @@ function buildArrow(col,sk,grp,tex){
   // Small decorative side fins at head base
   const finMat=new THREE.MeshStandardMaterial({
     color:col,emissive:col,emissiveIntensity:0.35,roughness:0.4,metalness:0.3,
-    transparent:true,opacity:0.75,side:THREE.DoubleSide
+    transparent:false,opacity:1,side:THREE.DoubleSide
   });
   const finGeo=new THREE.ConeGeometry(HR*0.42,HH*0.28,3);
   const finL=new THREE.Mesh(finGeo,finMat);finL.position.set(-HR*0.6,HH*0.1,0);finL.rotation.z=Math.PI*0.5;
@@ -539,7 +539,7 @@ function buildRocket(col,sk,grp){
   const nose=new THREE.Mesh(new THREE.ConeGeometry(BR*1.6,HH*1.2,10),bm());
   nose.position.y=BL*0.55+HH*0.6;
   // Nose tip sparkle
-  const tipMat=new THREE.MeshStandardMaterial({color:'#fff',emissive:col,emissiveIntensity:1.3,roughness:0.05,metalness:0.5,transparent:true,opacity:0.9,envMap:_skinEnvMap,envMapIntensity:1.5});
+  const tipMat=new THREE.MeshStandardMaterial({color:'#fff',emissive:col,emissiveIntensity:1.3,roughness:0.05,metalness:0.5,transparent:false,opacity:1,envMap:_skinEnvMap,envMapIntensity:1.5});
   const tip=new THREE.Mesh(new THREE.SphereGeometry(BR*1.0,8,6),tipMat);
   tip.position.y=BL*0.55+HH*1.2;
   // 4 fins at base
@@ -555,11 +555,11 @@ function buildRocket(col,sk,grp){
   const nozzle=new THREE.Mesh(new THREE.CylinderGeometry(BR*2.2,BR*1.4,BR*2,10),bm());
   nozzle.position.y=-BL*0.65;
   // Engine glow
-  const glowMat=new THREE.MeshStandardMaterial({color:'#ff6600',emissive:'#ff4400',emissiveIntensity:2.0,roughness:1,transparent:true,opacity:0.75});
+  const glowMat=new THREE.MeshStandardMaterial({color:'#ff6600',emissive:'#ff4400',emissiveIntensity:2.0,roughness:1,transparent:false,opacity:1});
   const glow=new THREE.Mesh(new THREE.SphereGeometry(BR*1.6,8,6),glowMat);
   glow.position.y=-BL*0.78;
   // Window
-  const winMat=new THREE.MeshStandardMaterial({color:'#88ccff',emissive:'#4499ff',emissiveIntensity:0.7,roughness:0.1,metalness:0.3,transparent:true,opacity:0.8});
+  const winMat=new THREE.MeshStandardMaterial({color:'#88ccff',emissive:'#4499ff',emissiveIntensity:0.7,roughness:0.1,metalness:0.3,transparent:false,opacity:1});
   const win=new THREE.Mesh(new THREE.SphereGeometry(BR*0.9,8,6),winMat);
   win.position.y=BL*0.12;win.position.z=BR*1.7;
   grp.add(body,nose,tip,nozzle,glow,win,...fins);
@@ -593,7 +593,7 @@ function buildStar(col,sk,grp){
   const topSpike=new THREE.Mesh(new THREE.ConeGeometry(BR*1.1,HH*0.9,6),bm());
   topSpike.position.y=HH*0.9;
   // Center sparkle
-  const sparkMat=new THREE.MeshStandardMaterial({color:'#fff',emissive:col,emissiveIntensity:1.6,roughness:0.05,metalness:0.4,transparent:true,opacity:0.95,envMap:_skinEnvMap,envMapIntensity:1.8});
+  const sparkMat=new THREE.MeshStandardMaterial({color:'#fff',emissive:col,emissiveIntensity:1.6,roughness:0.05,metalness:0.4,transparent:false,opacity:1,envMap:_skinEnvMap,envMapIntensity:1.8});
   const spark=new THREE.Mesh(new THREE.OctahedronGeometry(BR*1.6,0),sparkMat);
   spark.position.y=HH*0.45;
   grp.add(body,cap,hub,topSpike,spark);
@@ -623,7 +623,7 @@ function buildSword(col,sk,grp){
   const pommel=new THREE.Mesh(new THREE.SphereGeometry(BR*1.5,10,8),pommelMat);
   pommel.position.y=-BL*1.22;
   // Gem in guard
-  const gemMat=new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:1.1,roughness:0.0,metalness:0.1,transparent:true,opacity:0.88,envMap:_skinEnvMap,envMapIntensity:2});
+  const gemMat=new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:1.1,roughness:0.0,metalness:0.1,transparent:false,opacity:1,envMap:_skinEnvMap,envMapIntensity:2});
   const gem=new THREE.Mesh(new THREE.OctahedronGeometry(BR*1.1,0),gemMat);
   gem.position.y=-BL*0.55;
   grp.add(blade,tip,guard,handle,pommel,gem);
@@ -655,7 +655,7 @@ function buildMushroom(col,sk,grp){
     grp.add(spot);
   });
   // Top sparkle
-  const sparkMat=new THREE.MeshStandardMaterial({color:'#fff',emissive:col,emissiveIntensity:1.2,roughness:0.05,transparent:true,opacity:0.88});
+  const sparkMat=new THREE.MeshStandardMaterial({color:'#fff',emissive:col,emissiveIntensity:1.2,roughness:0.05,transparent:false,opacity:1});
   const spark=new THREE.Mesh(new THREE.SphereGeometry(BR*1.3,8,6),sparkMat);
   spark.position.y=BL*0.7;
   grp.add(stem,bottomCap,cap,spark);
@@ -668,19 +668,19 @@ function buildCrystal2(col,sk,grp){
   // Main large shard: tall thin octahedron
   const mainGeo=new THREE.OctahedronGeometry(HR*0.7,0);
   mainGeo.applyMatrix4(new THREE.Matrix4().makeScale(0.6,2.8,0.6));
-  const mainShard=new THREE.Mesh(mainGeo,new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:0.35,roughness:0.0,metalness:0.1,transparent:true,opacity:0.82,envMap:_skinEnvMap,envMapIntensity:2.4,side:THREE.DoubleSide}));
+  const mainShard=new THREE.Mesh(mainGeo,new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:0.35,roughness:0.0,metalness:0.1,transparent:false,opacity:1,envMap:_skinEnvMap,envMapIntensity:2.4,side:THREE.DoubleSide}));
   mainShard.position.y=HH*0.25;
   // 2 side shards
   [[-1,0.65],[1,-0.55]].forEach(([sign,yOff])=>{
     const sg=new THREE.OctahedronGeometry(HR*0.42,0);
     sg.applyMatrix4(new THREE.Matrix4().makeScale(0.5,2.0,0.5));
-    const s=new THREE.Mesh(sg,new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:0.5,roughness:0.0,metalness:0.1,transparent:true,opacity:0.68,envMap:_skinEnvMap,envMapIntensity:2,side:THREE.DoubleSide}));
+    const s=new THREE.Mesh(sg,new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:0.5,roughness:0.0,metalness:0.1,transparent:false,opacity:1,envMap:_skinEnvMap,envMapIntensity:2,side:THREE.DoubleSide}));
     s.position.set(sign*HR*0.75,yOff*HH,0);
     s.rotation.z=sign*0.35;
     grp.add(s);
   });
   // Glowing core
-  const coreMat=new THREE.MeshStandardMaterial({color:'#ffffff',emissive:col,emissiveIntensity:2.2,roughness:0,transparent:true,opacity:0.6});
+  const coreMat=new THREE.MeshStandardMaterial({color:'#ffffff',emissive:col,emissiveIntensity:2.2,roughness:0,transparent:false,opacity:1});
   const core=new THREE.Mesh(new THREE.SphereGeometry(BR*1.2,8,6),coreMat);
   core.position.y=HH*0.3;
   grp.add(mainShard,core);
@@ -701,21 +701,21 @@ function buildFlame(col,sk,grp){
   const fc='#FF4500';
   const body=new THREE.Mesh(
     new THREE.CylinderGeometry(BR*0.5,BR*0.9,BL*0.8,8),
-    new THREE.MeshStandardMaterial({color:'#FF6600',emissive:'#FF3300',emissiveIntensity:1.8,roughness:1,metalness:0,transparent:true,opacity:0.9})
+    new THREE.MeshStandardMaterial({color:'#FF6600',emissive:'#FF3300',emissiveIntensity:1.8,roughness:1,metalness:0,transparent:false,opacity:1})
   );
   body.position.y=-BL*0.4;grp.add(body);
   const parts=[body];
   // 불꽃 혀 (크기·각도 다른 원뿔 4개)
   const tongues=[
-    {h:BL*1.1,r:HR*0.7,col:'#FF6600',em:'#FF4400',op:0.78,rx:0,    rz:0,     py:HH*0.3},
-    {h:BL*0.95,r:HR*0.55,col:'#FF8800',em:'#FF5500',op:0.6,rx:0.22,rz:0.15,  py:HH*0.25},
-    {h:BL*0.85,r:HR*0.45,col:'#FFAA00',em:'#FF8800',op:0.5,rx:-0.18,rz:-0.12,py:HH*0.2},
-    {h:BL*0.6, r:HR*0.28,col:'#FFD700',em:'#FFBB00',op:0.85,rx:0,  rz:0,     py:HH*0.7},
+    {h:BL*1.1,r:HR*0.7,col:'#FF6600',em:'#FF4400',op:1,rx:0,    rz:0,     py:HH*0.3},
+    {h:BL*0.95,r:HR*0.55,col:'#FF8800',em:'#FF5500',op:1,rx:0.22,rz:0.15,  py:HH*0.25},
+    {h:BL*0.85,r:HR*0.45,col:'#FFAA00',em:'#FF8800',op:1,rx:-0.18,rz:-0.12,py:HH*0.2},
+    {h:BL*0.6, r:HR*0.28,col:'#FFD700',em:'#FFBB00',op:1,rx:0,  rz:0,     py:HH*0.7},
   ];
   tongues.forEach(t=>{
     const m=new THREE.Mesh(
       new THREE.ConeGeometry(t.r,t.h,7),
-      new THREE.MeshStandardMaterial({color:t.col,emissive:t.em,emissiveIntensity:2.2,roughness:1,metalness:0,transparent:true,opacity:t.op,side:THREE.DoubleSide})
+      new THREE.MeshStandardMaterial({color:t.col,emissive:t.em,emissiveIntensity:2.2,roughness:1,metalness:0,transparent:false,opacity:1,side:THREE.DoubleSide})
     );
     m.position.y=t.py;m.rotation.x=t.rx;m.rotation.z=t.rz;
     grp.add(m);parts.push(m);
@@ -723,7 +723,7 @@ function buildFlame(col,sk,grp){
   // 뜨거운 코어 구
   const core=new THREE.Mesh(
     new THREE.SphereGeometry(BR*2.2,8,6),
-    new THREE.MeshStandardMaterial({color:'#FFFFFF',emissive:'#FF6600',emissiveIntensity:3,roughness:1,transparent:true,opacity:0.9})
+    new THREE.MeshStandardMaterial({color:'#FFFFFF',emissive:'#FF6600',emissiveIntensity:3,roughness:1,transparent:false,opacity:1})
   );
   core.position.y=HH*0.9;grp.add(core);parts.push(core);
   return parts;
@@ -734,7 +734,7 @@ function buildIce(col,sk,grp){
   const ic='#C8F4FF',ie=0.6;
   const iceMat=()=>new THREE.MeshStandardMaterial({
     color:ic,emissive:'#88CCFF',emissiveIntensity:ie,
-    roughness:0,metalness:0.1,transparent:true,opacity:0.72,
+    roughness:0,metalness:0.1,transparent:false,opacity:1,
     envMap:_skinEnvMap,envMapIntensity:2,side:THREE.DoubleSide
   });
   // 메인 고드름 (긴 원뿔)
@@ -752,7 +752,7 @@ function buildIce(col,sk,grp){
   // 서리 구
   const frost=new THREE.Mesh(
     new THREE.SphereGeometry(BR*2.4,8,6),
-    new THREE.MeshStandardMaterial({color:'#EEFAFF',emissive:'#AADDFF',emissiveIntensity:1.2,roughness:0,transparent:true,opacity:0.55,envMap:_skinEnvMap,envMapIntensity:1.5})
+    new THREE.MeshStandardMaterial({color:'#EEFAFF',emissive:'#AADDFF',emissiveIntensity:1.2,roughness:0,transparent:false,opacity:1,envMap:_skinEnvMap,envMapIntensity:1.5})
   );
   frost.position.y=-BL*0.65;grp.add(frost);
   return[icicle,frost];
@@ -780,14 +780,14 @@ function buildThunder(col,sk,grp){
   // 번쩍이는 팁
   const tip=new THREE.Mesh(
     new THREE.SphereGeometry(HR*0.45,8,6),
-    new THREE.MeshStandardMaterial({color:'#FFFFFF',emissive:'#FFE600',emissiveIntensity:4,roughness:1,transparent:true,opacity:0.95})
+    new THREE.MeshStandardMaterial({color:'#FFFFFF',emissive:'#FFE600',emissiveIntensity:4,roughness:1,transparent:false,opacity:1})
   );
   tip.position.y=HH*1.0;grp.add(tip);parts.push(tip);
   // 전기 링 2개
   [0.55,0.25].forEach((py,i)=>{
     const ring=new THREE.Mesh(
       new THREE.TorusGeometry(HR*(0.55-i*0.12),BR*1.5,5,16),
-      new THREE.MeshStandardMaterial({color:'#FFE600',emissive:'#FFE600',emissiveIntensity:3,roughness:1,metalness:0,transparent:true,opacity:0.7})
+      new THREE.MeshStandardMaterial({color:'#FFE600',emissive:'#FFE600',emissiveIntensity:3,roughness:1,metalness:0,transparent:false,opacity:1})
     );
     ring.position.y=HH*py;ring.rotation.x=Math.PI/2;
     grp.add(ring);parts.push(ring);
@@ -825,7 +825,7 @@ function buildDragon(col,sk,grp){
     wingGeo.applyMatrix4(new THREE.Matrix4().makeScale(1,0.35,1));
     const wing=new THREE.Mesh(wingGeo,new THREE.MeshStandardMaterial({
       color:'#0A4020',emissive:'#081808',emissiveIntensity:0.3,roughness:0.6,metalness:0.2,
-      transparent:true,opacity:0.82,side:THREE.DoubleSide
+      transparent:false,opacity:1,side:THREE.DoubleSide
     }));
     wing.position.set(s*HR*1.2,HH*0.4,0);wing.rotation.z=s*1.1;
     grp.add(wing);parts.push(wing);
@@ -847,14 +847,14 @@ function buildRainbow(col,sk,grp){
   // 중심 흰 기둥
   const stem=new THREE.Mesh(
     new THREE.CylinderGeometry(BR*0.9,BR*1.1,BL*1.1,8),
-    new THREE.MeshStandardMaterial({color:'#FFFFFF',emissive:'#FFFFFF',emissiveIntensity:0.8,roughness:1,metalness:0,transparent:true,opacity:0.7})
+    new THREE.MeshStandardMaterial({color:'#FFFFFF',emissive:'#FFFFFF',emissiveIntensity:0.8,roughness:1,metalness:0,transparent:false,opacity:1})
   );
   stem.position.y=-BL*0.28;grp.add(stem);parts.push(stem);
   // 7색 링
   RCOLS.forEach((c,i)=>{
     const ring=new THREE.Mesh(
       new THREE.TorusGeometry(HR*(0.38+i*0.11),BR*(2.0-i*0.15),5,20),
-      new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:2.0,roughness:1,metalness:0,transparent:true,opacity:0.78-i*0.04})
+      new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:2.0,roughness:1,metalness:0,transparent:false,opacity:1-i*0.04})
     );
     ring.position.y=HH*(0.7-i*0.18);ring.rotation.x=Math.PI/2;
     grp.add(ring);parts.push(ring);
@@ -862,7 +862,7 @@ function buildRainbow(col,sk,grp){
   // 반짝이 팁
   const tip=new THREE.Mesh(
     new THREE.OctahedronGeometry(HR*0.55,0),
-    new THREE.MeshStandardMaterial({color:'#FFFFFF',emissive:'#FFFFFF',emissiveIntensity:3,roughness:0,transparent:true,opacity:0.9,envMap:_skinEnvMap,envMapIntensity:2})
+    new THREE.MeshStandardMaterial({color:'#FFFFFF',emissive:'#FFFFFF',emissiveIntensity:3,roughness:0,transparent:false,opacity:1,envMap:_skinEnvMap,envMapIntensity:2})
   );
   tip.position.y=HH*1.1;grp.add(tip);parts.push(tip);
   return parts;
@@ -872,7 +872,7 @@ function buildRainbow(col,sk,grp){
 function buildGhost(col,sk,grp){
   const gm=()=>new THREE.MeshStandardMaterial({
     color:'#D8E4FF',emissive:'#8899CC',emissiveIntensity:0.7,
-    roughness:0.3,metalness:0,transparent:true,opacity:0.62,side:THREE.DoubleSide
+    roughness:0.3,metalness:0,transparent:false,opacity:1,side:THREE.DoubleSide
   });
   const parts=[];
   // 치마 (아래 물결 구체들)
@@ -896,13 +896,13 @@ function buildGhost(col,sk,grp){
   // 눈 2개
   [-1,1].forEach(s=>{
     const eye=new THREE.Mesh(new THREE.SphereGeometry(BR*1.8,6,4),
-      new THREE.MeshStandardMaterial({color:'#001133',emissive:'#002266',emissiveIntensity:1.5,roughness:0,transparent:true,opacity:0.88}));
+      new THREE.MeshStandardMaterial({color:'#001133',emissive:'#002266',emissiveIntensity:1.5,roughness:0,transparent:false,opacity:1}));
     eye.position.set(s*HR*0.2,HH*0.98,HR*0.42);grp.add(eye);parts.push(eye);
   });
   // 유령 글로우 헤일로
   const halo=new THREE.Mesh(
     new THREE.SphereGeometry(HR*0.68,8,6),
-    new THREE.MeshStandardMaterial({color:'#AABBFF',emissive:'#7788FF',emissiveIntensity:1.5,roughness:1,transparent:true,opacity:0.18})
+    new THREE.MeshStandardMaterial({color:'#AABBFF',emissive:'#7788FF',emissiveIntensity:1.5,roughness:1,transparent:false,opacity:1})
   );
   halo.scale.set(1.6,1.6,1.6);halo.position.y=HH*0.92;grp.add(halo);parts.push(halo);
   return parts;
@@ -911,7 +911,7 @@ function buildGhost(col,sk,grp){
 // 🌋 용암 — 어두운 바위 + 글로잉 크랙
 function buildLava(col,sk,grp){
   const rockM=()=>new THREE.MeshStandardMaterial({color:'#1A1A1A',emissive:'#000000',emissiveIntensity:0,roughness:0.98,metalness:0.08});
-  const glowM=()=>new THREE.MeshStandardMaterial({color:'#FF4500',emissive:'#FF3300',emissiveIntensity:2.8,roughness:1,metalness:0,transparent:true,opacity:0.88});
+  const glowM=()=>new THREE.MeshStandardMaterial({color:'#FF4500',emissive:'#FF3300',emissiveIntensity:2.8,roughness:1,metalness:0,transparent:false,opacity:1});
   const parts=[];
   // 바위 몸통 (이코사헤드론 - 울퉁불퉁)
   const rock=new THREE.Mesh(new THREE.IcosahedronGeometry(HR*0.78,0),rockM());
@@ -933,7 +933,7 @@ function buildLava(col,sk,grp){
   // 녹아내리는 용암 팁
   const tip=new THREE.Mesh(
     new THREE.SphereGeometry(HR*0.42,8,6),
-    new THREE.MeshStandardMaterial({color:'#FF6600',emissive:'#FF4400',emissiveIntensity:3.5,roughness:1,transparent:true,opacity:0.95})
+    new THREE.MeshStandardMaterial({color:'#FF6600',emissive:'#FF4400',emissiveIntensity:3.5,roughness:1,transparent:false,opacity:1})
   );
   tip.position.y=HH*1.05;grp.add(tip);parts.push(tip);
   // 용암 방울 (아래)
@@ -949,17 +949,17 @@ function buildCosmic(col,sk,grp){
   const parts=[];
   const deepM=()=>new THREE.MeshStandardMaterial({
     color:'#080028',emissive:'#2020AA',emissiveIntensity:0.5,
-    roughness:0,metalness:0.2,transparent:true,opacity:0.88,
+    roughness:0,metalness:0.2,transparent:false,opacity:1,
     envMap:_skinEnvMap,envMapIntensity:1.6
   });
-  const glowM=(c,ei=2)=>new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:ei,roughness:0,transparent:true,opacity:0.8,envMap:_skinEnvMap,envMapIntensity:2});
+  const glowM=(c,ei=2)=>new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:ei,roughness:0,transparent:false,opacity:1,envMap:_skinEnvMap,envMapIntensity:2});
   // 슬림 본체
   const body=new THREE.Mesh(new THREE.CylinderGeometry(BR*0.6,BR*0.9,BL*1.1,8),deepM());
   body.position.y=-BL*0.35;grp.add(body);parts.push(body);
   // 코어 에너지 구
   const core=new THREE.Mesh(
     new THREE.SphereGeometry(HR*0.48,10,8),
-    new THREE.MeshStandardMaterial({color:'#FFFFFF',emissive:'#8080FF',emissiveIntensity:3.5,roughness:0,transparent:true,opacity:0.95,envMap:_skinEnvMap,envMapIntensity:2.5})
+    new THREE.MeshStandardMaterial({color:'#FFFFFF',emissive:'#8080FF',emissiveIntensity:3.5,roughness:0,transparent:false,opacity:1,envMap:_skinEnvMap,envMapIntensity:2.5})
   );
   core.position.y=HH*0.35;grp.add(core);parts.push(core);
   // 오비탈 링 3개 (다른 각도)
@@ -983,7 +983,7 @@ function buildCosmic(col,sk,grp){
   });
   // 테일 파티클 (하단)
   const tail=new THREE.Mesh(new THREE.ConeGeometry(HR*0.3,BL*0.4,6),
-    new THREE.MeshStandardMaterial({color:'#0000FF',emissive:'#4444FF',emissiveIntensity:2,roughness:1,transparent:true,opacity:0.6}));
+    new THREE.MeshStandardMaterial({color:'#0000FF',emissive:'#4444FF',emissiveIntensity:2,roughness:1,transparent:false,opacity:1}));
   tail.position.y=-BL*0.85;grp.add(tail);parts.push(tail);
   return parts;
 }
@@ -1052,7 +1052,7 @@ function showPreview(a){
   clearPreview();
   const s=a.bp.clone(),e=s.clone().addScaledVector(a.dv,4.2),m=s.clone().lerp(e,0.5),l=s.distanceTo(e);
   const q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),a.dv);
-  prevMesh=new THREE.Mesh(new THREE.CylinderGeometry(0.013,0.013,l,6),new THREE.MeshStandardMaterial({color:a.def.col,transparent:true,opacity:0.28,emissive:a.def.col,emissiveIntensity:0.35,roughness:1,metalness:0}));
+  prevMesh=new THREE.Mesh(new THREE.CylinderGeometry(0.013,0.013,l,6),new THREE.MeshStandardMaterial({color:a.def.col,transparent:false,opacity:1,emissive:a.def.col,emissiveIntensity:0.35,roughness:1,metalness:0}));
   prevMesh.position.copy(m);prevMesh.quaternion.copy(q);scene.add(prevMesh);
 }
 function clearPreview(){if(prevMesh){scene.remove(prevMesh);prevMesh=null;}}
@@ -1775,10 +1775,7 @@ function tickFreeHint(dt){
     }
     a.parts.forEach(p=>{
       if(!p.material||!p.material.emissive)return;
-      if(selId){
-        // 다른 화살표가 선택된 상태: 비선택은 매우 어둡게
-        p.material.emissiveIntensity=free?0.06:0.0;
-      }else if(inJust&&free){
+      if(inJust&&free){
         // JUST/PERFECT 타이밍 구간: 밝게 점멸
         p.material.emissiveIntensity=2.2;
       }else if(inJust){
@@ -8124,902 +8121,4 @@ window.closePlaza=closePlaza;
 })();
 
 
-// ══════════════════════════════════════════════════
-// EROMAP — MapLibre GL JS 3D GPS 시스템
-// ══════════════════════════════════════════════════
-
-const EROMAP={
-  open:false,
-  map:null,
-  playerMarker:null,
-  watchId:null,
-  timeInterval:null,
-  lat:null,lon:null,
-  arrows:[],
-  weather:{code:0,temp:20,emoji:'☀️',name:'맑음'},
-  COLLECT_R:17,
-  omtSrc:null,
-  nearBuildingIds:new Set(),
-  isMoving:false,
-  _moveTimer:null,
-  _playerStopAnim:null,
-  _playerRenderer:null,
-  _playerScene:null
-};
-
-const WMAP={
-  0:{emoji:'☀️',name:'맑음',pfn:'sun'},
-  1:{emoji:'🌤️',name:'대체로 맑음',pfn:'sun'},
-  2:{emoji:'⛅',name:'부분 흐림',pfn:'cloud'},
-  3:{emoji:'☁️',name:'흐림',pfn:'cloud'},
-  45:{emoji:'🌫️',name:'안개',pfn:'fog'},
-  51:{emoji:'🌦️',name:'이슬비',pfn:'rain'},
-  61:{emoji:'🌧️',name:'비',pfn:'rain'},
-  71:{emoji:'❄️',name:'눈',pfn:'snow'},
-  80:{emoji:'🌦️',name:'소나기',pfn:'rain'},
-  95:{emoji:'⛈️',name:'뇌우',pfn:'storm'},
-};
-function getWInfo(code){
-  const ks=Object.keys(WMAP).map(Number).sort((a,b)=>a-b);
-  let best=0;for(const k of ks){if(k<=code)best=k;}
-  return WMAP[best]||WMAP[0];
-}
-
-// iOS Safari에서 _unlockOrientation()이 비동기로 popstate를 발화하는 문제를 막기 위한 카운터
-let _eromapSpuriousPopstate=0;
-
-function openEroMap(){
-  if(EROMAP.open)return;
-  EROMAP.open=true;
-  document.getElementById('eromap-ov').classList.add('on');
-  // 안드로이드/브라우저 뒤로가기 버튼 지원
-  history.pushState({eromap:true},'');
-  EROMAP.timeInterval=setInterval(updateEroTime,1000);
-  updateEroTime();
-  // 화면 방향 잠금 해제 (에로맵에서는 자유롭게)
-  // iOS Safari에서 orientation unlock이 1~2초 후 spurious popstate를 발화하는 경우가 있음
-  // → 카운터로 흡수하여 에로맵이 의도치 않게 닫히는 것을 방지
-  _eromapSpuriousPopstate++;
-  setTimeout(()=>{_eromapSpuriousPopstate=Math.max(0,_eromapSpuriousPopstate-1);},4000);
-  _unlockOrientation();
-  // 나침반/자이로 연동
-  function _addOrientationListener(){
-    EROMAP.orientationHandler=_eroOrientationHandler;
-    if(typeof DeviceOrientationEvent!=='undefined'&&
-       typeof DeviceOrientationEvent.requestPermission==='function'){
-      // iOS 13+ 권한 요청
-      DeviceOrientationEvent.requestPermission().then(state=>{
-        if(state==='granted'){
-          window.addEventListener('deviceorientationabsolute',_eroOrientationHandler,{passive:true});
-          window.addEventListener('deviceorientation',_eroOrientationHandler,{passive:true});
-        }
-      }).catch(()=>{});
-    }else{
-      window.addEventListener('deviceorientationabsolute',_eroOrientationHandler,{passive:true});
-      window.addEventListener('deviceorientation',_eroOrientationHandler,{passive:true});
-    }
-  }
-  _addOrientationListener();
-  if(!EROMAP.map){
-    setTimeout(()=>_initMapLibre(),80);
-  }else{
-    EROMAP.map.resize();
-    if(EROMAP.lat!==null){
-      EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:45,bearing:(EROMAP.heading||0),duration:800});
-      _addOrMovePlayerMarker();
-      if(!EROMAP.arrows.length)spawnEroArrows();
-    }
-  }
-  if('geolocation' in navigator){
-    function _gpsError(err){
-      if(err&&err.code===1){
-        document.getElementById('eromap-gps').textContent='📍 위치 권한 거부됨 — 브라우저 설정에서 허용해주세요';
-        eroSimulate();
-      }else{
-        document.getElementById('eromap-gps').textContent='📍 GPS 재시도 중...';
-        navigator.geolocation.getCurrentPosition(
-          pos=>eroGPSInit(pos),
-          ()=>eroSimulate(),
-          {enableHighAccuracy:false,timeout:15000,maximumAge:60000}
-        );
-      }
-    }
-    navigator.geolocation.getCurrentPosition(
-      pos=>eroGPSInit(pos),
-      err=>_gpsError(err),
-      {enableHighAccuracy:true,timeout:10000,maximumAge:0}
-    );
-    EROMAP.watchId=navigator.geolocation.watchPosition(
-      pos=>eroGPSUpdate(pos),
-      ()=>{},
-      {enableHighAccuracy:true,maximumAge:2000,timeout:10000}
-    );
-  }else{eroSimulate();}
-  setTimeout(()=>fetchEroWeather(),600);
-}
-
-function _initMapLibre(){
-  if(typeof maplibregl==='undefined'){setTimeout(()=>_initMapLibre(),300);return;}
-  if(EROMAP.map){EROMAP.map.resize();return;}
-  const lng=EROMAP.lon||126.9780,lat=EROMAP.lat||37.5665;
-  const MAP_PITCH=45;
-  // CARTO 무료 타일 — 글로벌 CDN, API 키 불필요, 모바일 안정적
-  const STYLE_PRIMARY='https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
-  const STYLE_FALLBACK='https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
-  function _createMap(styleUrl){
-    const map=new maplibregl.Map({
-      container:'eromap-map',
-      style:styleUrl,
-      center:[lng,lat],
-      zoom:18.5,pitch:MAP_PITCH,bearing:(EROMAP.heading||0),antialias:true
-    });
-    map.dragRotate.disable();
-    map.touchZoomRotate.disableRotation();
-    EROMAP.map=map;
-    // 스타일 로드 실패 시 폴백으로 재시도 (3초 타임아웃)
-    if(styleUrl===STYLE_PRIMARY){
-      let _errHandled=false;
-      const _fallback=()=>{
-        if(_errHandled)return;_errHandled=true;
-        try{map.remove();}catch(ex){}
-        EROMAP.map=null;
-        setTimeout(()=>_createMap(STYLE_FALLBACK),200);
-      };
-      map.once('error',_fallback);
-      const _t=setTimeout(()=>{if(!map.isStyleLoaded())_fallback();},4000);
-      map.once('load',()=>clearTimeout(_t));
-    }
-    map.on('load',()=>{
-      // 3D 건물 (terrain은 제거 — 지형 아래로 카메라 파고드는 현상 방지)
-      _addBuildingLayer(map);
-      // 플레이어·화살 — GPS가 지도보다 먼저 도착했을 경우 실제 위치로 이동
-      if(EROMAP.lat!==null){
-        map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:MAP_PITCH,bearing:(EROMAP.heading||0),duration:1200});
-        _addOrMovePlayerMarker();
-        if(!EROMAP.arrows.length)spawnEroArrows();
-      }
-    });
-    map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'top-right');
-    map.on('render',()=>{
-      if(EROMAP.playerMarker&&EROMAP.lat!==null){
-        EROMAP.playerMarker.setLngLat([EROMAP.lon,EROMAP.lat]);
-      }
-    });
-  }
-  _createMap(STYLE_PRIMARY);
-}
-
-function _addBuildingLayer(map){
-  try{
-    const style=map.getStyle();
-    const sources=Object.keys(style.sources||{});
-    // CARTO uses 'carto'; openfreemap uses 'openmaptiles'; fallback to any vector source
-    const omtSrc=sources.find(s=>s==='carto')||
-      sources.find(s=>s==='openmaptiles')||
-      sources.find(s=>s.includes('maptiler')||s==='v3')||
-      sources.find(s=>{const src=style.sources[s];return src&&src.type==='vector';})||
-      sources[0]||null;
-    if(!omtSrc){console.warn('[EroMap] no vector source found for buildings');return;}
-    EROMAP.omtSrc=omtSrc;
-    if(map.getLayer('ero-bld'))map.removeLayer('ero-bld');
-    map.addLayer({
-      id:'ero-bld',type:'fill-extrusion',source:omtSrc,'source-layer':'building',minzoom:14,
-      paint:{
-        'fill-extrusion-color':['interpolate',['linear'],
-          ['coalesce',['get','render_height'],['get','height'],0],
-          0,'#1a2540',20,'#223060',60,'#2b3d7c',120,'#364e98',200,'#4a62b8'],
-        'fill-extrusion-height':['coalesce',['get','render_height'],['get','height'],10],
-        'fill-extrusion-base':['coalesce',['get','render_min_height'],['get','min_height'],0],
-        'fill-extrusion-opacity':0.85
-      }
-    });
-  }catch(e){console.warn('[EroMap] building layer:',e);}
-}
-
-// ── 지형 고도 쿼리 ─────────────────────────────────────
-function _getTerrainAlt(lng,lat){
-  if(!EROMAP.map)return 0;
-  try{return EROMAP.map.queryTerrainElevation({lng,lat})||0;}catch(e){return 0;}
-}
-
-// ── 근처 건물 투명화 (플레이어 주변 건물을 feature-state로 반투명) ──
-function _updateBuildingTransparency(){
-  const map=EROMAP.map;
-  if(!map||EROMAP.lat===null||!EROMAP.omtSrc)return;
-  try{
-    // 이전에 투명하게 설정된 건물 원상복구
-    for(const id of EROMAP.nearBuildingIds){
-      map.setFeatureState({source:EROMAP.omtSrc,sourceLayer:'building',id},{nearPlayer:false});
-    }
-    EROMAP.nearBuildingIds=new Set();
-    // 플레이어 스크린 좌표
-    const pt=map.project([EROMAP.lon,EROMAP.lat]);
-    const r=90; // 픽셀 반경
-    const feats=map.queryRenderedFeatures(
-      [[pt.x-r,pt.y-r],[pt.x+r,pt.y+r]],
-      {layers:['ero-bld']}
-    );
-    for(const f of feats){
-      if(f.id!=null){
-        map.setFeatureState({source:f.source,sourceLayer:f.sourceLayer,id:f.id},{nearPlayer:true});
-        EROMAP.nearBuildingIds.add(f.id);
-      }
-    }
-  }catch(e){}
-}
-
-// ── 3D 플레이어 마커 — 솔로플레이 모델 그대로 사용 ───────────────
-function _buildPlayerModel3D(sk,grp){
-  const col=typeof sk.c==='string'?sk.c:(sk.fc||'#4cc9f0');
-  if(sk.shape==='car')buildCar(col,sk,grp);
-  else if(sk.shape==='rocket')buildRocket(col,sk,grp);
-  else if(sk.shape==='star')buildStar(col,sk,grp);
-  else if(sk.shape==='sword')buildSword(col,sk,grp);
-  else if(sk.shape==='mushroom')buildMushroom(col,sk,grp);
-  else if(sk.shape==='crystal2')buildCrystal2(col,sk,grp);
-  else if(sk.shape==='flame')buildFlame(col,sk,grp);
-  else if(sk.shape==='ice')buildIce(col,sk,grp);
-  else if(sk.shape==='thunder')buildThunder(col,sk,grp);
-  else if(sk.shape==='dragon')buildDragon(col,sk,grp);
-  else if(sk.shape==='rainbow')buildRainbow(col,sk,grp);
-  else if(sk.shape==='ghost')buildGhost(col,sk,grp);
-  else if(sk.shape==='lava')buildLava(col,sk,grp);
-  else if(sk.shape==='cosmic')buildCosmic(col,sk,grp);
-  else buildArrow(col,sk,grp,null);
-}
-
-function _destroyPlayerMarker3D(){
-  if(EROMAP._playerStopAnim){EROMAP._playerStopAnim();EROMAP._playerStopAnim=null;}
-  if(EROMAP._playerRenderer){EROMAP._playerRenderer.dispose();EROMAP._playerRenderer=null;}
-  if(EROMAP._playerScene){
-    EROMAP._playerScene.traverse(obj=>{
-      if(obj.geometry)obj.geometry.dispose();
-      if(obj.material){if(Array.isArray(obj.material))obj.material.forEach(m=>m.dispose());else obj.material.dispose();}
-    });
-    EROMAP._playerScene=null;
-  }
-}
-
-function _initPlayerMarker3D(){
-  _destroyPlayerMarker3D();
-  const SIZE=80;
-  const sk=skinDef(activeSkin);
-
-  const container=document.createElement('div');
-  container.className='ero-player-marker ero-pm-3d';
-
-  // 펄스 링
-  const ring=document.createElement('div');ring.className='ero-pm-ring';
-  // 바닥 그림자
-  const shadow=document.createElement('div');shadow.className='ero-pm-shadow3d';
-  // Three.js 캔버스
-  const canvas=document.createElement('canvas');
-  canvas.width=SIZE;canvas.height=SIZE;
-  canvas.className='ero-pm-canvas';
-
-  container.appendChild(ring);
-  container.appendChild(canvas);
-  container.appendChild(shadow);
-
-  try{
-    const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
-    renderer.setSize(SIZE,SIZE);renderer.setPixelRatio(1);
-    renderer.setClearColor(0x000000,0);
-    renderer.outputColorSpace=THREE.SRGBColorSpace;
-
-    const pScene=new THREE.Scene();
-    const pCam=new THREE.PerspectiveCamera(35,1,0.01,100);
-
-    pScene.add(new THREE.AmbientLight(0xffffff,0.7));
-    const dl=new THREE.DirectionalLight(0xffffff,1.5);dl.position.set(1.5,3,2.5);pScene.add(dl);
-    const fill=new THREE.DirectionalLight(0x8888ff,0.5);fill.position.set(-2,-1,-1);pScene.add(fill);
-
-    const grp=new THREE.Group();pScene.add(grp);
-    _buildPlayerModel3D(sk,grp);
-
-    // 바운딩박스 기반 카메라
-    const box=new THREE.Box3().setFromObject(grp);
-    const cen=new THREE.Vector3();box.getCenter(cen);
-    const sizeVec=new THREE.Vector3();box.getSize(sizeVec);
-    const maxDim=Math.max(sizeVec.x,sizeVec.y,sizeVec.z);
-    const dist=maxDim*2.1;
-    pCam.position.set(cen.x+dist*0.4,cen.y+dist*0.5,cen.z+dist*0.95);
-    pCam.lookAt(cen);
-
-    let t=0,running=true;
-    function pmAnimate(){
-      if(!running)return;
-      requestAnimationFrame(pmAnimate);
-      t+=0.035;
-      if(EROMAP.isMoving){
-        // 뛰는 애니메이션: 위아래 바운싱 + 빠른 회전
-        grp.position.y=cen.y+Math.abs(Math.sin(t*3.5))*0.14;
-        grp.rotation.y=t*1.4;
-      }else{
-        // 대기: 부드럽게 부유 + 느린 회전
-        grp.position.y=cen.y+Math.sin(t*0.9)*0.05;
-        grp.rotation.y=t*0.28;
-      }
-      renderer.render(pScene,pCam);
-    }
-    pmAnimate();
-
-    EROMAP._playerStopAnim=()=>{running=false;};
-    EROMAP._playerRenderer=renderer;
-    EROMAP._playerScene=pScene;
-  }catch(e){
-    // WebGL 실패 시 이모지 폴백
-    const dot=document.createElement('div');dot.className='ero-pm-dot';dot.textContent='🏹';
-    container.appendChild(dot);
-  }
-  return container;
-}
-
-function _addOrMovePlayerMarker(){
-  if(!EROMAP.map||EROMAP.lat===null)return;
-  if(EROMAP.playerMarker){
-    EROMAP.playerMarker.setLngLat([EROMAP.lon,EROMAP.lat]);
-    return;
-  }
-  const el=_initPlayerMarker3D();
-  // pitchAlignment:'map' 으로 지형 표면에 고정, anchor:'bottom'으로 마커 하단이 땅에 닿게
-  // pitchAlignment:'viewport' — 마커가 항상 카메라를 향해 세워짐, 지형 아래 박힘 방지
-  EROMAP.playerMarker=new maplibregl.Marker({element:el,anchor:'bottom',pitchAlignment:'viewport',rotationAlignment:'viewport',offset:[0,-20]})
-    .setLngLat([EROMAP.lon,EROMAP.lat]).addTo(EROMAP.map);
-}
-
-function closeEroMap(){
-  if(!EROMAP.open)return;
-  EROMAP.open=false;
-  document.getElementById('eromap-ov').classList.remove('on');
-  if(EROMAP.watchId!=null){navigator.geolocation.clearWatch(EROMAP.watchId);EROMAP.watchId=null;}
-  if(EROMAP.timeInterval){clearInterval(EROMAP.timeInterval);EROMAP.timeInterval=null;}
-  // 나침반 핸들러 제거
-  if(EROMAP.orientationHandler){
-    window.removeEventListener('deviceorientationabsolute',EROMAP.orientationHandler);
-    window.removeEventListener('deviceorientation',EROMAP.orientationHandler);
-    EROMAP.orientationHandler=null;
-  }
-  // 이동 타이머 정리
-  if(EROMAP._moveTimer){clearTimeout(EROMAP._moveTimer);EROMAP._moveTimer=null;}
-  EROMAP.isMoving=false;
-  // 3D 플레이어 마커 정리 및 지도에서 제거
-  _destroyPlayerMarker3D();
-  if(EROMAP.playerMarker){EROMAP.playerMarker.remove();EROMAP.playerMarker=null;}
-  // 세로 방향 잠금 복원
-  _lockPortrait();
-  // 퍼즐 상태만 직접 정리 (endEroPuzzle 경유 금지 — openEroMap 재호출 루프 방지)
-  if(_eroPuzzleTimer){clearInterval(_eroPuzzleTimer);_eroPuzzleTimer=null;}
-  const _ph=document.getElementById('ero-puzzle-hud');
-  if(_ph)_ph.style.display='none';
-  _eroPuzzleArrow=null;
-  // 홈화면(메뉴)으로 복귀
-  phase='menu';
-  controls.autoRotate=true;controls.autoRotateSpeed=1.3;
-  showUI('menu');
-  initDemo();
-}
-
-function eroSimulate(){
-  EROMAP.lat=37.5665;EROMAP.lon=126.9780;
-  document.getElementById('eromap-gps').textContent='📍 시뮬레이션 모드 (서울)';
-  if(EROMAP.map&&EROMAP.map.loaded()){
-    EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:45,bearing:(EROMAP.heading||0),duration:1000});
-    _addOrMovePlayerMarker();spawnEroArrows();
-    setTimeout(()=>{_updateArrowVisibility();_updateBuildingTransparency();},800);
-  }
-}
-
-function eroGPSInit(pos){
-  EROMAP.lat=pos.coords.latitude;EROMAP.lon=pos.coords.longitude;
-  document.getElementById('eromap-gps').textContent=`📍 ${EROMAP.lat.toFixed(4)}°N, ${EROMAP.lon.toFixed(4)}°E`;
-  if(EROMAP.map&&EROMAP.map.loaded()){
-    EROMAP.map.flyTo({center:[EROMAP.lon,EROMAP.lat],zoom:18.5,pitch:45,bearing:(EROMAP.heading||0),duration:1200});
-    _addOrMovePlayerMarker();spawnEroArrows();
-  }
-  setTimeout(()=>{_updateArrowVisibility();_updateBuildingTransparency();},600);
-}
-
-function eroGPSUpdate(pos){
-  const prevLat=EROMAP.lat,prevLon=EROMAP.lon;
-  EROMAP.lat=pos.coords.latitude;EROMAP.lon=pos.coords.longitude;
-  document.getElementById('eromap-gps').textContent=`📍 ${EROMAP.lat.toFixed(4)}°N, ${EROMAP.lon.toFixed(4)}°E`;
-  // 이동 감지 — 3초간 GPS 변화 있으면 isMoving=true
-  const moved=prevLat!==null&&(Math.abs(EROMAP.lat-prevLat)>0.000003||Math.abs(EROMAP.lon-prevLon)>0.000003);
-  if(moved){
-    EROMAP.isMoving=true;
-    if(EROMAP._moveTimer)clearTimeout(EROMAP._moveTimer);
-    EROMAP._moveTimer=setTimeout(()=>{EROMAP.isMoving=false;},3000);
-  }
-  if(EROMAP.map){
-    // 플레이어 항상 화면 중앙 유지
-    EROMAP.map.easeTo({center:[EROMAP.lon,EROMAP.lat],bearing:(EROMAP.heading||0),duration:600});
-    _addOrMovePlayerMarker();
-  }
-  _updateArrowVisibility();
-  _updateBuildingTransparency();
-  // 자동수집 제거 — 탭해야만 퍼즐 열고 수집 가능
-  // checkEroCollection();
-}
-
-async function fetchEroWeather(){
-  if(EROMAP.lat===null)return;
-  try{
-    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${EROMAP.lat}&longitude=${EROMAP.lon}&current=temperature_2m,weather_code&timezone=auto`);
-    const d=await r.json();
-    const code=d.current?.weather_code??0,temp=Math.round(d.current?.temperature_2m??20);
-    const wi=getWInfo(code);
-    EROMAP.weather={code,temp,emoji:wi.emoji,name:wi.name};
-    document.getElementById('eromap-weather-txt').textContent=`${wi.emoji} ${wi.name} ${temp}°C`;
-  }catch{}
-}
-
-// ══════════════════════════════════════════════════
-// 에로맵 — 3D 모델 썸네일 렌더러 (솔로플레이 Three.js 모델 재사용)
-// ══════════════════════════════════════════════════
-const _arrowThumbCache={};
-
-function _renderArrowThumb(sk){
-  const cacheKey=sk.id;
-  if(_arrowThumbCache[cacheKey])return Promise.resolve(_arrowThumbCache[cacheKey]);
-  return new Promise(resolve=>{
-    try{
-      const SIZE=120;
-      const offCanvas=document.createElement('canvas');
-      offCanvas.width=SIZE;offCanvas.height=SIZE;
-      const offRenderer=new THREE.WebGLRenderer({canvas:offCanvas,antialias:true,alpha:true});
-      offRenderer.setSize(SIZE,SIZE);
-      offRenderer.setPixelRatio(1);
-      offRenderer.setClearColor(0x000000,0);
-      offRenderer.outputColorSpace=THREE.SRGBColorSpace;
-
-      const offScene=new THREE.Scene();
-      const offCamera=new THREE.PerspectiveCamera(38,1,0.01,100);
-
-      // 조명 설정
-      const aLight=new THREE.AmbientLight(0xffffff,0.65);
-      const dLight=new THREE.DirectionalLight(0xffffff,1.4);
-      dLight.position.set(1.5,3,2.5);
-      const fill=new THREE.DirectionalLight(0x8888ff,0.5);
-      fill.position.set(-2,-1,-1);
-      offScene.add(aLight,dLight,fill);
-
-      // 3D 모델 빌드 (솔로플레이와 동일한 함수 사용)
-      const col=typeof sk.c==='string'?sk.c:(sk.fc||'#4cc9f0');
-      const grp=new THREE.Group();
-      offScene.add(grp);
-      if(sk.shape==='car')buildCar(col,sk,grp);
-      else if(sk.shape==='rocket')buildRocket(col,sk,grp);
-      else if(sk.shape==='star')buildStar(col,sk,grp);
-      else if(sk.shape==='sword')buildSword(col,sk,grp);
-      else if(sk.shape==='mushroom')buildMushroom(col,sk,grp);
-      else if(sk.shape==='crystal2')buildCrystal2(col,sk,grp);
-      else if(sk.shape==='flame')buildFlame(col,sk,grp);
-      else if(sk.shape==='ice')buildIce(col,sk,grp);
-      else if(sk.shape==='thunder')buildThunder(col,sk,grp);
-      else if(sk.shape==='dragon')buildDragon(col,sk,grp);
-      else if(sk.shape==='rainbow')buildRainbow(col,sk,grp);
-      else if(sk.shape==='ghost')buildGhost(col,sk,grp);
-      else if(sk.shape==='lava')buildLava(col,sk,grp);
-      else if(sk.shape==='cosmic')buildCosmic(col,sk,grp);
-      else buildArrow(col,sk,grp,null);
-
-      // 바운딩 박스 기반으로 카메라 배치
-      const box=new THREE.Box3().setFromObject(grp);
-      const center=new THREE.Vector3();box.getCenter(center);
-      const sizeVec=new THREE.Vector3();box.getSize(sizeVec);
-      const maxDim=Math.max(sizeVec.x,sizeVec.y,sizeVec.z);
-      const dist=maxDim*2.1;
-      offCamera.position.set(center.x+dist*0.4,center.y+dist*0.5,center.z+dist*0.95);
-      offCamera.lookAt(center);
-
-      offRenderer.render(offScene,offCamera);
-      const dataURL=offCanvas.toDataURL('image/png');
-      _arrowThumbCache[cacheKey]=dataURL;
-
-      // 메모리 정리
-      offScene.traverse(obj=>{
-        if(obj.geometry)obj.geometry.dispose();
-        if(obj.material){
-          if(Array.isArray(obj.material))obj.material.forEach(m=>m.dispose());
-          else obj.material.dispose();
-        }
-      });
-      offRenderer.dispose();
-      resolve(dataURL);
-    }catch(err){
-      // 렌더 실패 시 이모지 fallback
-      resolve(null);
-    }
-  });
-}
-
-function spawnEroArrows(){
-  EROMAP.arrows.forEach(a=>{if(a.marker)a.marker.remove();});
-  EROMAP.arrows=[];
-  if(EROMAP.lat===null||!EROMAP.map)return;
-  const eroSkins=SKINS.filter(s=>s.gacha);
-  const pool=SKINS.filter(s=>!s.gacha);
-  for(let i=0;i<10;i++){
-    const angle=Math.random()*Math.PI*2,dist=8+Math.random()*60;
-    const dlat=dist*Math.cos(angle)/111000;
-    const dlon=dist*Math.sin(angle)/(111000*Math.cos(EROMAP.lat*Math.PI/180));
-    const skPool=(i<2&&eroSkins.length>0)?eroSkins:pool;
-    const sk=skPool[Math.floor(Math.random()*skPool.length)];
-    const arrow={id:i,skinId:sk.id,lat:EROMAP.lat+dlat,lon:EROMAP.lon+dlon,collected:false,marker:null,visible:false};
-    arrow.marker=_createArrowMarker(arrow,sk,false);
-    EROMAP.arrows.push(arrow);
-  }
-}
-
-function _createArrowMarker(arrow,sk,visible=true){
-  if(!EROMAP.map)return null;
-  const rc={common:'#aaa',rare:'#4cc9f0',epic:'#a855f7',legendary:'#FFD700'}[sk.rarity||'common'];
-  const el=document.createElement('div');
-  el.className='ero-arrow-marker';
-  el.style.setProperty('--rc',rc);
-  // 초기엔 이모지로 표시, 3D 렌더가 완료되면 교체
-  el.innerHTML=`<div class=ero-am-glow></div><div class=ero-am-shadow></div><div class=ero-am-emoji>${sk.emoji}</div>`;
-
-  // 3D 모델 렌더링 비동기 적용 (솔로플레이 Three.js 모델)
-  _renderArrowThumb(sk).then(dataURL=>{
-    if(!dataURL||!el.isConnected)return;
-    const emojiEl=el.querySelector('.ero-am-emoji');
-    if(emojiEl){
-      emojiEl.innerHTML=`<img class="ero-am-3d-img" src="${dataURL}" alt="${sk.name}">`;
-    }
-  });
-
-  // 거리 표시 레이블
-  const distLabel=document.createElement('div');
-  distLabel.className='ero-am-dist';
-  distLabel.textContent='';
-  el.appendChild(distLabel);
-
-  // 스킨명 표시
-  const nameLabel=document.createElement('div');
-  nameLabel.className='ero-am-name';
-  nameLabel.textContent=sk.name;
-  el.appendChild(nameLabel);
-
-  function _tap(e){
-    if(e.type==='touchend')e.preventDefault();
-    openEroPuzzle(arrow);
-  }
-  el.addEventListener('click',_tap);
-  el.addEventListener('touchend',_tap,{passive:false});
-  if(!visible)el.style.display='none';
-
-  // 마커 거리 주기적 업데이트
-  arrow._distInterval=setInterval(()=>{
-    if(!EROMAP.lat||!el.isConnected){clearInterval(arrow._distInterval);return;}
-    const dlat=(arrow.lat-EROMAP.lat)*111000;
-    const dlon=(arrow.lon-EROMAP.lon)*111000*Math.cos(EROMAP.lat*Math.PI/180);
-    const dist=Math.round(Math.sqrt(dlat*dlat+dlon*dlon));
-    distLabel.textContent=dist<1000?`${dist}m`:`${(dist/1000).toFixed(1)}km`;
-  },1500);
-
-  // pitchAlignment:'viewport' → 카메라를 향해 항상 수직으로 세워짐 (땅에 박히지 않음)
-  // offset: 화면 Y축으로 위로 띄움 (양수=아래, 음수=위)
-  return new maplibregl.Marker({element:el,anchor:'bottom',pitchAlignment:'viewport',rotationAlignment:'viewport',offset:[0,-10]})
-    .setLngLat([arrow.lon,arrow.lat]).addTo(EROMAP.map);
-}
-
-function checkEroCollection(){
-  if(!EROMAP.arrows.length||EROMAP.lat===null)return;
-  const R=EROMAP.COLLECT_R;
-  EROMAP.arrows.forEach(a=>{
-    if(a.collected)return;
-    const dlat=(a.lat-EROMAP.lat)*111000;
-    const dlon=(a.lon-EROMAP.lon)*111000*Math.cos(EROMAP.lat*Math.PI/180);
-    if(Math.sqrt(dlat*dlat+dlon*dlon)<R)collectEroArrow(a);
-  });
-}
-
-function collectEroArrow(a){
-  if(a.collected)return;
-  a.collected=true;
-  if(a._distInterval){clearInterval(a._distInterval);a._distInterval=null;}
-  playEroCollectSound();
-  if(a.marker){
-    a.marker.getElement().classList.add('ero-am-collected');
-    setTimeout(()=>{if(a.marker){a.marker.remove();a.marker=null;}},400);
-  }
-  const sk=SKINS.find(s=>s.id===a.skinId);
-  if(!sk)return;
-  const wasNew=!owned.has(sk.id);
-  if(wasNew){owned.add(sk.id);recordSkinDate(sk.id);doSave();showEroCollectBanner(`✨ 새 화살표 획득! ${sk.emoji} ${sk.name}`,'new');}
-  else{
-    const bonus=sk.rarity==='legendary'?200:sk.rarity==='epic'?80:sk.rarity==='rare'?40:20;
-    coins+=bonus;doSave();showEroCollectBanner(`${sk.emoji} 이미 보유! +${bonus} 💰`,'coin');
-  }
-  setTimeout(()=>respawnEroArrow(a),30000);
-}
-
-function respawnEroArrow(a){
-  a.collected=false;
-  if(a._distInterval){clearInterval(a._distInterval);a._distInterval=null;}
-  if(a.marker){a.marker.remove();a.marker=null;}
-  const angle=Math.random()*Math.PI*2,dist=10+Math.random()*50;
-  if(EROMAP.lat===null)return;
-  const dlat=dist*Math.cos(angle)/111000;
-  const dlon=dist*Math.sin(angle)/(111000*Math.cos(EROMAP.lat*Math.PI/180));
-  a.lat=EROMAP.lat+dlat;a.lon=EROMAP.lon+dlon;
-  const notOwned=SKINS.filter(s=>!owned.has(s.id)&&!s.gacha);
-  const pool=notOwned.length>0?notOwned:SKINS.filter(s=>!s.gacha);
-  a.skinId=pool[Math.floor(Math.random()*pool.length)].id;
-  const sk=SKINS.find(s=>s.id===a.skinId)||SKINS[0];
-  a.visible=false;
-  a.marker=_createArrowMarker(a,sk,false);
-}
-
-let eroBannerTimer=null;
-function showEroCollectBanner(msg,type){
-  const el=document.getElementById('eromap-collect-banner');
-  el.textContent=msg;
-  el.className='eromap-collect-banner '+(type==='new'?'ero-new':'ero-coin');
-  el.style.opacity='1';el.style.transform='translateY(0)';
-  if(eroBannerTimer)clearTimeout(eroBannerTimer);
-  eroBannerTimer=setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(-30px)';},2500);
-}
-
-function updateEroTime(){
-  const now=new Date();
-  const h=String(now.getHours()).padStart(2,'0');
-  const m=String(now.getMinutes()).padStart(2,'0');
-  const s=String(now.getSeconds()).padStart(2,'0');
-  const el=document.getElementById('eromap-time');
-  if(el)el.textContent=`${h}:${m}:${s}`;
-}
-
-
-
-// ══════════════════════════════════════════════════
-// 에로맵 — 나침반/방향 & 17m 가시성 시스템
-// ══════════════════════════════════════════════════
-
-// 화살표 가시성 업데이트 — 한 번 뜨면 사라지지 않음 (수집되지 않은 것은 항상 표시)
-function _updateArrowVisibility(){
-  if(!EROMAP.arrows.length)return;
-  EROMAP.arrows.forEach(a=>{
-    if(a.collected||!a.marker)return;
-    if(!a.visible){
-      a.visible=true;
-      const el=a.marker.getElement();
-      if(el)el.style.display='flex';
-    }
-  });
-}
-
-// 나침반 방향 핸들러 (에로맵 지도 시점 회전) — EMA 스무딩 적용
-let _eroSmoothHeading=null;
-function _eroOrientationHandler(e){
-  let heading=null;
-  if(typeof e.webkitCompassHeading==='number'){
-    // iOS — webkitCompassHeading is true magnetic heading (0=North)
-    heading=e.webkitCompassHeading;
-  }else if(e.absolute&&typeof e.alpha==='number'){
-    // Android absolute — alpha=0 means North facing
-    heading=(360-e.alpha)%360;
-  }else if(typeof e.alpha==='number'){
-    heading=(360-e.alpha)%360;
-  }
-  if(heading===null)return;
-  // EMA 스무딩: 급격한 방향 변화를 방지하고 안정적으로 유지
-  if(_eroSmoothHeading===null){
-    _eroSmoothHeading=heading;
-  }else{
-    // 각도 차이를 -180~180 범위로 정규화
-    let diff=((heading-_eroSmoothHeading+540)%360)-180;
-    _eroSmoothHeading=(_eroSmoothHeading+diff*0.18+360)%360;
-  }
-  EROMAP.heading=_eroSmoothHeading;
-  if(EROMAP.map){
-    // 플레이어를 항상 화면 중앙에 유지하면서 방향 회전
-    const jumpOpts={bearing:_eroSmoothHeading};
-    if(EROMAP.lat!==null)jumpOpts.center=[EROMAP.lon,EROMAP.lat];
-    EROMAP.map.jumpTo(jumpOpts);
-  }
-  // 나침반 UI 업데이트
-  const compassNeedle=document.getElementById('eromap-compass-needle');
-  if(compassNeedle)compassNeedle.style.transform=`rotate(${_eroSmoothHeading}deg)`;
-  // 방위 텍스트
-  const headingEl=document.getElementById('eromap-heading-txt');
-  if(headingEl){
-    const dirs=['N','NE','E','SE','S','SW','W','NW'];
-    const dir=dirs[Math.round(_eroSmoothHeading/45)%8];
-    headingEl.textContent=`${Math.round(_eroSmoothHeading)}° ${dir}`;
-  }
-}
-
-// 화면 방향 잠금/해제
-function _lockPortrait(){
-  try{
-    const p=screen.orientation.lock('portrait');
-    if(p&&p.catch)p.catch(()=>{});
-  }catch(e){}
-}
-function _unlockOrientation(){
-  try{screen.orientation.unlock();}catch(e){}
-}
-
-// ══════════════════════════════════════════════════
-// 에로맵 — 퍼즐 시스템 (솔로 플레이와 동일한 3D 퍼즐, 15초)
-// ══════════════════════════════════════════════════
-let _eroPuzzleTimer=null;
-let _eroPuzzleArrow=null;
-let _eroPuzzlePhaseWas='menu';
-
-function openEroPuzzle(arrow){
-  if(arrow.collected)return;
-  // 17m 이내인지 확인
-  if(EROMAP.lat!==null){
-    const dlat=(arrow.lat-EROMAP.lat)*111000;
-    const dlon=(arrow.lon-EROMAP.lon)*111000*Math.cos(EROMAP.lat*Math.PI/180);
-    const dist=Math.sqrt(dlat*dlat+dlon*dlon);
-    if(dist>EROMAP.COLLECT_R){
-      showEroCollectBanner('❗ 더 가까이 가야 해요! (17m 이내)','coin');
-      return;
-    }
-  }
-  startEroPuzzleGame(arrow);
-}
-
-function startEroPuzzleGame(arrow){
-  _eroPuzzleArrow=arrow;
-  _eroPuzzlePhaseWas=phase;
-  const sk=SKINS.find(s=>s.id===arrow.skinId)||SKINS[0];
-  // 희귀도 → 레벨 인덱스 (솔로 플레이 동일 레벨 사용)
-  const rarityLvl={common:0,rare:1,epic:2,legendary:3}[sk.rarity||'common']??0;
-
-  // 에로맵 오버레이 숨기기 + 메뉴/코인/기타 UI 모두 숨겨 홈화면이 노출되지 않도록
-  document.getElementById('eromap-ov').classList.remove('on');
-  document.getElementById('menu').classList.add('hidden');
-  document.getElementById('coin-pill').style.display='none';
-  document.getElementById('hud').style.display='none';
-  document.getElementById('win-ov').style.display='none';
-  document.getElementById('over-ov').style.display='none';
-  document.getElementById('exit-btn').style.display='none';
-  document.getElementById('shop').classList.remove('on');
-  const _upill=document.getElementById('user-pill');
-  if(_upill)_upill.style.display='none';
-
-  // 미니 레벨 생성 및 화살표 스폰 (솔로 플레이와 동일한 genLevel 사용)
-  const lv=genLevel(rarityLvl);
-  escaped=0;
-  spawnArrows(lv,activeSkin);
-  // 화살표 메시 하단이 Y=0(시각적 바닥) 아래로 내려가지 않도록 위로 올림
-  // 화살표 지오메트리 하단이 루트 기준 약 -0.32이므로 GRID(0.65)만큼 올리면 항상 땅 위에 위치
-  arrows.forEach(a=>{a.bp.y+=GRID;a.root.position.y=a.bp.y;});
-
-  // 카메라 위치 조정
-  const sp=Math.sqrt(lv.length)*GRID;
-  const cen=new THREE.Vector3();arrows.forEach(a=>cen.add(a.bp));cen.divideScalar(arrows.length);
-  const portrait=innerHeight>innerWidth*1.1;
-  camera.position.set(cen.x,cen.y+sp*.5,cen.z+(portrait?sp*2.5+5.5:sp*1.9+3.5));
-  controls.target.copy(cen);controls.update();
-  controls.autoRotate=false;
-
-  // 게임 페이즈 설정
-  phase='ero-puzzle';
-  selId=null;lastId=null;opening=false;
-
-  // 에로 퍼즐 HUD 표시
-  const hudEl=document.getElementById('ero-puzzle-hud');
-  if(hudEl){
-    document.getElementById('ero-ph-skin').textContent=`${sk.emoji} ${sk.name}`;
-    document.getElementById('ero-ph-count').textContent=`0 / ${lv.length}`;
-    const timerEl=document.getElementById('ero-ph-timer');
-    if(timerEl){timerEl.textContent='15';timerEl.style.color='#4cc9f0';}
-    hudEl.style.display='flex';
-  }
-  document.getElementById('launch-btn').style.display='none';
-  startOpening();
-
-  // 15초 타이머 시작
-  let timeLeft=15;
-  if(_eroPuzzleTimer)clearInterval(_eroPuzzleTimer);
-  _eroPuzzleTimer=setInterval(()=>{
-    timeLeft--;
-    const timerEl=document.getElementById('ero-ph-timer');
-    if(timerEl){timerEl.textContent=timeLeft;if(timeLeft<=5)timerEl.style.color='#ff4444';}
-    if(timeLeft<=0){clearInterval(_eroPuzzleTimer);_eroPuzzleTimer=null;endEroPuzzle(false);}
-  },1000);
-}
-
-function _updateEroPuzzleProgress(){
-  const el=document.getElementById('ero-ph-count');
-  if(el)el.textContent=`${escaped} / ${arrows.length}`;
-}
-
-function checkEroPuzzleWin(){
-  if(arrows.every(a=>a.state==='escaped')){
-    if(_eroPuzzleTimer){clearInterval(_eroPuzzleTimer);_eroPuzzleTimer=null;}
-    endEroPuzzle(true);
-  }
-}
-
-function endEroPuzzle(success){
-  if(_eroPuzzleTimer){clearInterval(_eroPuzzleTimer);_eroPuzzleTimer=null;}
-  const hudEl=document.getElementById('ero-puzzle-hud');
-  if(hudEl)hudEl.style.display='none';
-  document.getElementById('launch-btn').style.display='none';
-  selId=null;
-
-  // 메뉴/데모 상태로 복원
-  phase='menu';
-  controls.autoRotate=true;controls.autoRotateSpeed=1.3;
-  initDemo();
-  // 에로맵 재오픈
-  EROMAP.open=false;
-  setTimeout(()=>{
-    openEroMap();
-    if(success){
-      setTimeout(()=>{if(_eroPuzzleArrow)collectEroArrow(_eroPuzzleArrow);_eroPuzzleArrow=null;},700);
-    }else{
-      showEroCollectBanner('⏰ 시간 초과! 다시 도전하세요','coin');
-      _eroPuzzleArrow=null;
-    }
-  },400);
-}
-
-function closeEroPuzzle(){endEroPuzzle(false);}
-
-// ══════════════════════════════════════════════════
-// 에로맵 — 수집 효과음
-// ══════════════════════════════════════════════════
-function playEroCollectSound(){
-  try{
-    const ctx=_getSfxCtx();
-    const now=ctx.currentTime;
-    const comp=ctx.createDynamicsCompressor();
-    comp.threshold.value=-6;comp.knee.value=10;comp.ratio.value=4;
-    comp.connect(ctx.destination);
-    // 반짝이는 collect 사운드: 상승하는 3음
-    [[523,0,0.05],[659,0.08,0.05],[784,0.16,0.08],[1047,0.25,0.12]].forEach(([freq,delay,dur])=>{
-      const o=ctx.createOscillator(),g=ctx.createGain();
-      o.type='sine';o.frequency.value=freq;
-      o.connect(g);g.connect(comp);
-      g.gain.setValueAtTime(0,now+delay);
-      g.gain.linearRampToValueAtTime(0.22,now+delay+0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001,now+delay+dur+0.08);
-      o.start(now+delay);o.stop(now+delay+dur+0.12);
-    });
-    // 상위 shimmer
-    const o2=ctx.createOscillator(),g2=ctx.createGain();
-    o2.type='triangle';o2.frequency.setValueAtTime(1200,now+0.1);
-    o2.frequency.exponentialRampToValueAtTime(2400,now+0.45);
-    o2.connect(g2);g2.connect(comp);
-    g2.gain.setValueAtTime(0.07,now+0.1);g2.gain.exponentialRampToValueAtTime(0.0001,now+0.55);
-    o2.start(now+0.1);o2.stop(now+0.6);
-  }catch(e){}
-}
-
-// 에로맵 버튼 이벤트
-document.getElementById('btn-eromap')?.addEventListener('click',()=>{openEroMap();});
-document.getElementById('eromap-exit')?.addEventListener('click',()=>{
-  // history에 pushState된 상태라면 뒤로가기로 처리 (popstate가 closeEroMap 호출)
-  // 아니면 직접 닫기
-  if(EROMAP.open){history.back();}
-});
-// 안드로이드 하드웨어 뒤로가기 / 브라우저 뒤로가기 버튼 처리
-// iOS orientation unlock이 spurious popstate를 발화할 수 있으므로 카운터로 걸러냄
-window.addEventListener('popstate',()=>{
-  if(!EROMAP.open)return;
-  if(_eromapSpuriousPopstate>0){
-    // orientation unlock으로 인한 가짜 popstate — 네비게이션 상태 복구 후 무시
-    _eromapSpuriousPopstate--;
-    history.pushState({eromap:true},'');
-    return;
-  }
-  closeEroMap();
-});
 document.getElementById('sdm-close')?.addEventListener('click',()=>{document.getElementById('skin-detail-modal').style.display='none';});
-
-// 퍼즐 제출 이벤트
-
-
-// 초기 세로 방향 잠금 제거: 게임 시작 시 무조건 portrait 고정하면 기기 회전이 안 되는 문제가 있어 제거
-// (에로맵 열기/닫기에서만 lock/unlock 처리)
-
-
