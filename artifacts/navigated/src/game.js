@@ -233,11 +233,11 @@ const SKINS=[
   {id:'flame',    name:'불꽃',         desc:'타오르는 불꽃 화살',       price:400, emoji:'🔥',pc:'p-exp',   shape:'flame',   fc:'#FF4500',r:0.9,m:0,neon:true,  rarity:'rare'},
   {id:'ice',      name:'얼음',         desc:'차가운 얼음 화살',         price:400, emoji:'❄️',pc:'p-exp',   shape:'ice',     fc:'#C8F4FF',r:0,m:0.1,tr:true,op:1,crystal:true, rarity:'rare'},
   {id:'thunder',  name:'번개',         desc:'번쩍이는 번개 화살',       price:700, emoji:'⚡',pc:'p-exp',   shape:'thunder', fc:'#FFE600',r:1,m:0,neon:true,    rarity:'epic'},
-  {id:'dragon',   name:'드래곤',       desc:'전설의 드래곤 화살 · 에로맵 전용', price:0, emoji:'🐉',pc:'p-gacha', shape:'dragon', gacha:true, fc:'#1E6B3A',r:0.4,m:0.55, rarity:'legendary'},
+  {id:'dragon',   name:'드래곤',       desc:'전설의 드래곤 화살 · 크로시스 가챠 전용', price:0, emoji:'🐉',pc:'p-gacha', shape:'dragon', gacha:true, fc:'#1E6B3A',r:0.4,m:0.55, rarity:'legendary'},
   {id:'rainbow',  name:'무지개',       desc:'화려한 무지개 화살',       price:800, emoji:'🌈',pc:'p-exp',   shape:'rainbow', fc:'#FF6EFF',r:0.9,m:0,neon:true,  rarity:'epic'},
   {id:'ghost',    name:'유령',         desc:'투명한 유령 화살',         price:450, emoji:'👻',pc:'p-exp',   shape:'ghost',   fc:'#D8E4FF',r:0.3,m:0,tr:true,op:1, rarity:'rare'},
   {id:'lava',     name:'용암',         desc:'뜨거운 용암 화살',         price:900, emoji:'🌋',pc:'p-exp',   shape:'lava',    fc:'#1A1A1A',r:0.95,m:0.1,          rarity:'epic'},
-  {id:'cosmic',   name:'코스믹',       desc:'우주의 힘 · 에로맵 전용', price:0,   emoji:'🌟',pc:'p-gacha', shape:'cosmic', gacha:true, fc:'#1010AA',r:0,m:0.2,tr:true,op:1,crystal:true, rarity:'legendary'},
+  {id:'cosmic',   name:'코스믹',       desc:'우주의 힘 · 크로시스 가챠 전용', price:0,   emoji:'🌟',pc:'p-gacha', shape:'cosmic', gacha:true, fc:'#1010AA',r:0,m:0.2,tr:true,op:1,crystal:true, rarity:'legendary'},
 ];
 
 // ══════════════════════════════════════════════════
@@ -1804,7 +1804,7 @@ function renderShopGrid(){
     const rl=RARITY_LABEL[rv];
     const card=document.createElement('div');
     card.className='sk'+(eq?' eq':ow?' own':isGacha&&!ow?' gacha-locked':'');
-    card.innerHTML=`<span class="sk-ico">${s.emoji}</span><div class="sk-name">${s.name}</div><div class="sk-desc">${s.desc}</div><div class="sk-rarity-badge" style="color:${rc};font-size:9px;font-weight:900;margin-bottom:4px;letter-spacing:1px">${rl}</div><div class="sk-price ${s.pc}">${isGacha&&!ow?'에로맵 전용':s.price===0?'무료':s.price+' 💰'}</div>${eq?'<span class="sk-badge b-eq">장착중</span>':ow?'<span class="sk-badge b-own">보유</span>':isGacha?'<span class="sk-badge b-gacha">에로맵</span>':''}${(ow||eq)?`<button class="sk-info-btn" onclick="event.stopPropagation();openSkinDetail('${s.id}')">📅 정보</button>`:''}`;
+    card.innerHTML=`<span class="sk-ico">${s.emoji}</span><div class="sk-name">${s.name}</div><div class="sk-desc">${s.desc}</div><div class="sk-rarity-badge" style="color:${rc};font-size:9px;font-weight:900;margin-bottom:4px;letter-spacing:1px">${rl}</div><div class="sk-price ${s.pc}">${isGacha&&!ow?'크로시스 가챠 전용':s.price===0?'무료':s.price+' 💰'}</div>${eq?'<span class="sk-badge b-eq">장착중</span>':ow?'<span class="sk-badge b-own">보유</span>':isGacha?'<span class="sk-badge b-gacha">크로시스 가챠</span>':''}${(ow||eq)?`<button class="sk-info-btn" onclick="event.stopPropagation();openSkinDetail('${s.id}')">📅 정보</button>`:''}`;
     card.onclick=()=>skinTap(s.id);sg.appendChild(card);
   });
   const mg=document.getElementById('map-grid');mg.innerHTML='';
