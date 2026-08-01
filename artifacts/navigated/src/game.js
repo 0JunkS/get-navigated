@@ -1752,40 +1752,22 @@ function resetIdle(){
 let _hintT=0;
 function tickFreeHint(dt){
   _hintT+=dt;
-  const pulse=0.45+0.55*Math.sin(_hintT*2.8);
   arrows.forEach(a=>{
     if(a.state!=='idle')return;
     // 선택된 화살표는 setGlow가 완전히 관리 — 건드리지 않음
     if(a.id===selId)return;
     const isVertical=a.def.dir==='py'||a.def.dir==='ny';
-    let free,inJust;
+    let free;
     if(isVertical){
-      // 세로 화살표: 충돌만 없으면 항상 탈출 가능 — 타이밍 점멸 없음
       free=!blocked(a);
-      inJust=free; // 막히지 않으면 항상 PERFECT 구간으로 표시
     }else{
-      // 가로/깊이 화살표: 현재 회전 방향 기준으로 힌트 계산
       const spinDir=DV[a.def.dir].clone().applyEuler(new THREE.Euler(0,a.spinAngle||0,0)).normalize();
       free=!blockedInDirection(a,spinDir);
-      // PERFECT 구간: 원래 방향(0도) 또는 90도 부근에서 현재 방향이 막히지 않을 때 점멸
-      const cosA=Math.abs(DV[a.def.dir].dot(spinDir));
-      const at0=cosA>Math.cos(JUST_WINDOW);
-      const at90=cosA<Math.sin(JUST_WINDOW);
-      inJust=free&&(at0||at90);
     }
     a.parts.forEach(p=>{
       if(!p.material||!p.material.emissive)return;
-      if(inJust&&free){
-        // JUST/PERFECT 타이밍 구간: 밝게 점멸
-        p.material.emissiveIntensity=2.2;
-      }else if(inJust){
-        p.material.emissiveIntensity=1.2;
-      }else if(free){
-        // 탈출 가능: 부드러운 맥동
-        p.material.emissiveIntensity=0.15+pulse*0.55;
-      }else{
-        p.material.emissiveIntensity=0.0;
-      }
+      // 반짝임/맥동 없이 고정 밝기 — 탈출 가능이면 일정한 밝기, 막히면 어둡게
+      p.material.emissiveIntensity=free?0.7:0.0;
     });
     // ring은 setGlow만 제어 — 여기서는 항상 숨김 (선택 안 된 화살표)
     if(a.ring)a.ring.visible=false;
