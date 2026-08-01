@@ -1101,7 +1101,7 @@ function hitTest(cx,cy){
 // SELECT & LAUNCH
 // ══════════════════════════════════════════════════
 function selectArrow(id){
-  if(phase!=='playing'&&phase!=='multi-playing'&&phase!=='ero-puzzle')return;
+  if(phase!=='playing'&&phase!=='multi-playing')return;
   if(opening){opening=false;}
   const e=arrowMap[id];if(!e||e.state!=='idle')return;
   resetIdle();
@@ -1111,9 +1111,9 @@ function selectArrow(id){
   if(selId&&selId!==id){const p=arrowMap[selId];if(p)setGlow(p,false);}
   selId=id;lastId=id;lastT=Date.now();
   setGlow(e,true);showPreview(e);
-  if(phase==='playing'||phase==='ero-puzzle'){
+  if(phase==='playing'){
     document.getElementById('launch-btn').style.display='inline-block';
-    if(phase==='playing'){const hb=document.getElementById('hint-bar');hb.style.opacity='1';setTimeout(()=>{hb.style.opacity='0';},2500);}
+    const hb=document.getElementById('hint-bar');hb.style.opacity='1';setTimeout(()=>{hb.style.opacity='0';},2500);
   }
 }
 // ── COMBO SOUND SYSTEM (스킨별 콤보 사운드) ───────────────────────────────────
@@ -1430,7 +1430,7 @@ function launchArrow(id){
       e.launchRotY=0;e.state='moving';e.prog=0;
       popup('PERFECT!',innerWidth/2,innerHeight*.38,'#FFD700');
       playComboNote();
-      if(phase!=='ero-puzzle'&&typeof achieveState!=='undefined'){_achStat('totalArrows',1,true);_achStat('maxCombo',_comboIdx,false,true);_missionProg('arrows',1);}
+      if(typeof achieveState!=='undefined'){_achStat('totalArrows',1,true);_achStat('maxCombo',_comboIdx,false,true);_missionProg('arrows',1);}
       if(phase==='multi-playing'){multiEscape();}
     }
   }else{
@@ -1453,7 +1453,7 @@ function launchArrow(id){
       const is90=cosA<Math.sin(JUST_WINDOW);
       popup(is90?'PERFECT! ★':'PERFECT!',innerWidth/2,innerHeight*.38,'#FFD700');
       playComboNote();
-      if(phase!=='ero-puzzle'&&typeof achieveState!=='undefined'){_achStat('totalArrows',1,true);_achStat('maxCombo',_comboIdx,false,true);_missionProg('arrows',1);}
+      if(typeof achieveState!=='undefined'){_achStat('totalArrows',1,true);_achStat('maxCombo',_comboIdx,false,true);_missionProg('arrows',1);}
       if(phase==='multi-playing'){multiEscape();}
     }
   }
@@ -1486,7 +1486,7 @@ function tickArrow(a,dt){
     // Keep the rotation angle from the moment of launch so the arrow visually exits in the right direction
     a.root.rotation.y=a.launchRotY||0;
     a.prog+=dt*SPEED;
-    if(a.prog>=1){a.prog=1;a.state='escaped';if(phase==='playing'){escaped++;updateHUD();checkWin();}else if(phase==='ero-puzzle'){escaped++;_updateEroPuzzleProgress();checkEroPuzzleWin();}else if(phase==='multi-playing'){escaped++;if(multiMode==='blast-rank'){_blastArrowEscaped(a);}else{updateMultiHUD();checkMultiWin();}}}
+    if(a.prog>=1){a.prog=1;a.state='escaped';if(phase==='playing'){escaped++;updateHUD();checkWin();}else if(phase==='multi-playing'){escaped++;if(multiMode==='blast-rank'){_blastArrowEscaped(a);}else{updateMultiHUD();checkMultiWin();}}}
     const t=a.prog,e=t<.5?2*t*t:-1+(4-2*t)*t;
     a.root.position.copy(a.bp.clone().addScaledVector(a.dv,e*ESCAPE));
   }else if(a.state==='returning'){
@@ -1495,7 +1495,7 @@ function tickArrow(a,dt){
   }else{
     a.root.position.lerp(a.bp,0.2);
     // ── JUST system: continuously spin idle arrows ──
-    const spinning=(phase==='playing'||phase==='multi-playing'||phase==='ero-puzzle');
+    const spinning=(phase==='playing'||phase==='multi-playing');
     if(spinning){
       a.spinAngle=(a.spinAngle||0)+SPIN_SPEED*dt;
       a.root.rotation.y=a.spinAngle;
@@ -1746,7 +1746,7 @@ function popup(txt,cx,cy,col='#FFD700'){
 // ══════════════════════════════════════════════════
 function resetIdle(){
   idleT=0;
-  if(!hudOn&&(phase==='playing'||phase==='multi-playing'||phase==='ero-puzzle')){hudOn=true;if(phase!=='ero-puzzle'){document.getElementById('hud').style.opacity='1';document.getElementById('tap-restore').style.opacity='0';}controls.autoRotate=false;}
+  if(!hudOn&&(phase==='playing'||phase==='multi-playing')){hudOn=true;document.getElementById('hud').style.opacity='1';document.getElementById('tap-restore').style.opacity='0';controls.autoRotate=false;}
 }
 // Pulse arrows and show JUST window indicator
 let _hintT=0;
@@ -1777,7 +1777,7 @@ function tickFreeHint(dt){
 function tickIdle(dt){
   if(phase!=='playing'&&phase!=='multi-playing')return;
   idleT+=dt;
-  if(idleT>=5&&hudOn&&phase!=='ero-puzzle'&&(typeof _settings==='undefined'||_settings.hudAutoHide)){hudOn=false;document.getElementById('hud').style.opacity='0';document.getElementById('tap-restore').style.opacity='1';controls.autoRotate=true;controls.autoRotateSpeed=0.5;}
+  if(idleT>=5&&hudOn&&(typeof _settings==='undefined'||_settings.hudAutoHide)){hudOn=false;document.getElementById('hud').style.opacity='0';document.getElementById('tap-restore').style.opacity='1';controls.autoRotate=true;controls.autoRotateSpeed=0.5;}
 }
 
 // ══════════════════════════════════════════════════
@@ -3050,7 +3050,7 @@ loadFlightSave();
 // ══════════════════════════════════════════════════
 function onTap(cx,cy){
   resetIdle();
-  if(phase!=='playing'&&phase!=='multi-playing'&&phase!=='ero-puzzle')return;
+  if(phase!=='playing'&&phase!=='multi-playing')return;
   const id=hitTest(cx,cy);
   if(id)selectArrow(id);
 }
@@ -3196,7 +3196,7 @@ function loop(){
   const dt=Math.min(clk.getDelta(),0.05);
   if(shk>0){shk-=dt*3;const s=shk*0.07;camera.position.x+=(Math.random()-.5)*s;camera.position.y+=(Math.random()-.5)*s;}
   if(phase==='menu'||phase==='hub'){tickDemo(dt);}
-  else if(phase==='playing'||phase==='multi-playing'||phase==='ero-puzzle'){
+  else if(phase==='playing'||phase==='multi-playing'){
     if(opening){const el=Date.now()/1000-openT;let done=true;arrows.forEach(a=>{const t=(el-a.oDelay)/0.55;if(t<0){a.root.position.copy(a.oStart);done=false;}else if(t<1){const e=1-Math.pow(1-Math.min(t,1),3);a.root.position.lerpVectors(a.oStart,a.bp,e);done=false;}else{a.root.position.copy(a.bp);}});if(done)opening=false;}
     else{arrows.forEach(a=>tickArrow(a,dt));tickFreeHint(dt);}
     tickIdle(dt);
@@ -6887,7 +6887,6 @@ function plzInit(){
   document.getElementById('plz-npc-close').onclick=_plzCloseDlg;
   document.getElementById('plaza-ibtn').addEventListener('click',_plzInteract);
   document.getElementById('plz-btn-shop').onclick=()=>{closePlaza();setTimeout(()=>{phase='shop';showUI('shop');renderShopGrid();},200);};
-  document.getElementById('plz-btn-ero').onclick=()=>_plzOpenNpcById('ero');
   document.getElementById('plz-btn-quest').onclick=()=>{closePlaza();setTimeout(()=>{showUI('menu');if(typeof _openPanel==='function'&&typeof renderAchievements==='function'){_openPanel('modes-ov');renderAchievements();_openPanel('achieve-ov');}},200);};;
   document.getElementById('plaza-send').onclick=_plzSendChat;
   document.getElementById('plaza-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.stopPropagation();_plzSendChat();}});
