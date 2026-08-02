@@ -30,12 +30,19 @@ const bgm=new Audio('data:audio/mpeg;base64,//vQRAAE1S59vEkmTfCqT4dwPGmsWBX4+iwZ
 bgm.loop=true;
 bgm.volume=0.5;
 bgm.preload='auto';
+let _bgmStarted=false;
 function playBgm(){
-  bgm.play().catch(err=>console.warn('BGM 재생 실패:', err));
+  if(_bgmStarted)return;
+  bgm.play().then(()=>{
+    _bgmStarted=true;
+    window.removeEventListener('pointerdown',playBgm);
+    window.removeEventListener('keydown',playBgm);
+    window.removeEventListener('touchstart',playBgm);
+  }).catch(err=>console.warn('BGM 재생 실패, 재시도 대기:', err));
 }
-window.addEventListener('pointerdown',playBgm,{once:true});
-window.addEventListener('keydown',playBgm,{once:true});
-window.addEventListener('touchstart',playBgm,{once:true});
+window.addEventListener('pointerdown',playBgm);
+window.addEventListener('keydown',playBgm);
+window.addEventListener('touchstart',playBgm);
 
 // ══════════════════════════════════════════════════
 // SEEDED RANDOM (Mulberry32)
