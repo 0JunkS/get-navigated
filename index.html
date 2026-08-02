@@ -5,21 +5,37 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>NAVIGATED</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:none}
+/* ── 터치 이슈 글로벌 수정 ── */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:#06061a}
-body{font-family:'Inter','Apple SD Gothic Neo','Noto Sans KR',sans-serif;user-select:none;touch-action:none}
-canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!important}
+body{font-family:'Inter','Apple SD Gothic Neo','Noto Sans KR',sans-serif;user-select:none;touch-action:pan-x pan-y}
+/* Three.js 메인 캔버스만 touch-action:none (id="c") */
+canvas#c{display:block;position:fixed;inset:0;width:100%!important;height:100%!important;touch-action:none}
+/* 기타 캔버스는 touch-action 유지 */
+canvas:not(#c){touch-action:manipulation}
+/* 모든 버튼/링크 전역 터치 수정 */
+button,a,input,select,textarea,[role="button"]{
+  touch-action:manipulation!important;
+  -webkit-tap-highlight-color:transparent;
+  cursor:pointer;
+  pointer-events:auto;
+  -webkit-user-select:none;
+  user-select:none;
+}
+/* iOS 최소 44px 터치 타겟 */
+button{min-height:44px;min-width:44px;}
+input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 #ui{position:fixed;inset:0;pointer-events:none}
 
 /* ── MENU ────────────────────────────────────────── */
 #menu{position:absolute;inset:0;display:flex;flex-direction:column;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y!important;pointer-events:none;transition:opacity .5s}
-#menu *{touch-action:pan-y!important}
+#menu button,#menu a,#menu [role="button"],#menu input,#menu label,#menu select{touch-action:manipulation!important}
 #menu:not(.hidden){pointer-events:auto}
 #menu.hidden{opacity:0;pointer-events:none}#menu.hidden *{pointer-events:none!important}
 #menu-top{padding:52px 0 0;text-align:center;pointer-events:none;flex-shrink:0;margin-bottom:32px}
 #menu-top h1{color:#fff;font-size:32px;font-weight:900;letter-spacing:5px;text-shadow:0 0 32px rgba(76,201,240,0.7)}
 #menu-top .tag{color:rgba(170,170,220,0.7);font-size:12px;margin-top:6px;letter-spacing:2px}
-#menu-bottom{padding:0 28px 44px;display:flex;flex-direction:column;gap:10px;pointer-events:all;flex-shrink:0}
+#menu-bottom{padding:0 28px calc(44px + env(safe-area-inset-bottom, 0px));display:flex;flex-direction:column;gap:10px;pointer-events:all;flex-shrink:0}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:15px 32px;border-radius:50px;font-size:15px;font-weight:700;cursor:pointer;border:none;outline:none;color:#fff;transition:transform .12s,opacity .12s;width:100%}
 .btn:active{transform:scale(0.96);opacity:0.85}
 .btn-primary{background:linear-gradient(135deg,#4361ee,#4cc9f0);box-shadow:0 0 28px rgba(67,97,238,0.5)}
@@ -27,6 +43,8 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
 .btn-shop{background:linear-gradient(135deg,#f77f00,#d62828);box-shadow:0 0 22px rgba(247,127,0,0.4)}
 .btn-multi{background:linear-gradient(135deg,#7209b7,#f72585);box-shadow:0 0 28px rgba(247,37,133,0.45)}
 .btn-sm{width:auto;padding:11px 24px;font-size:14px}
+/* 솔로·멀티 버튼 터치 영역 확대 */
+#btn-start,#btn-multi{padding:22px 32px;font-size:18px;min-height:68px;letter-spacing:.3px}
 
 #coin-pill{position:absolute;top:18px;right:18px;background:rgba(10,10,35,0.8);border:1px solid rgba(255,215,0,0.35);border-radius:50px;padding:8px 16px;display:none;align-items:center;gap:6px;pointer-events:all;font-size:14px;font-weight:700;color:#FFD700;cursor:pointer;backdrop-filter:blur(10px)}
 
@@ -44,12 +62,13 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
 #level-txt{color:#5a5aaa;font-size:13px;font-weight:700}
 #coins-txt{color:#FFD700;font-size:13px;font-weight:700}
 #launch-wrap{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);pointer-events:all}
-#launch-btn{padding:15px 48px;border-radius:50px;font-size:16px;font-weight:700;cursor:pointer;border:none;color:#fff;background:linear-gradient(135deg,#4361ee,#4cc9f0);box-shadow:0 0 26px rgba(67,97,238,0.5);display:none;letter-spacing:1px}
+#launch-btn{padding:22px 60px;border-radius:50px;font-size:19px;font-weight:700;cursor:pointer;border:none;color:#fff;background:linear-gradient(135deg,#4361ee,#4cc9f0);box-shadow:0 0 26px rgba(67,97,238,0.5);display:none;letter-spacing:1px;min-width:200px;min-height:66px}
 #hint-bar{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);color:rgba(180,180,220,0.6);font-size:12px;white-space:nowrap;opacity:0;transition:opacity .4s;pointer-events:none}
 #blocked-flash{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);color:#ff6b6b;font-size:22px;font-weight:900;opacity:0;transition:opacity .25s;pointer-events:none;text-shadow:0 0 24px rgba(255,80,80,0.9)}
 #tap-restore{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.22);font-size:12px;pointer-events:none;white-space:nowrap}
 #pbar{position:absolute;top:0;left:0;right:0;height:3px}
 #pfill{height:3px;background:linear-gradient(90deg,#4361ee,#4cc9f0);width:0;transition:width .35s}
+#hud-timer{position:absolute;top:0;left:50%;transform:translateX(-50%);height:58px;display:flex;align-items:center;font-family:monospace;font-size:22px;font-weight:900;color:#4cc9f0;letter-spacing:1px;text-shadow:0 0 12px rgba(76,201,240,0.7);pointer-events:none;user-select:none}
 
 /* ── WIN / OVER ──────────────────────────────────── */
 .overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:all;background:rgba(0,0,0,0.35)}
@@ -67,7 +86,7 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
 #shop-hdr{display:flex;align-items:center;justify-content:space-between;padding:20px 18px 8px;flex-shrink:0}
 #shop-hdr h2{color:#fff;font-size:19px;font-weight:900}
 #shop-coins{color:#FFD700;font-size:15px;font-weight:700}
-#shop-x{background:rgba(255,255,255,0.1);border:none;color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#shop-x{background:rgba(255,255,255,0.1);border:none;color:#fff;border-radius:50%;width:44px;height:44px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 #shop-tabs{display:flex;gap:8px;padding:0 14px 10px;flex-shrink:0}
 .s-tab{flex:1;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);font-size:13px;font-weight:700;cursor:pointer;color:rgba(255,255,255,0.45);background:transparent;transition:all .2s}
 .s-tab.on{background:rgba(76,201,240,0.18);border-color:rgba(76,201,240,0.4);color:#4CC9F0}
@@ -95,14 +114,62 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
 /* ═══════════════════════ EROMAP ═══════════════════════ */
 #eromap-ov{display:none;position:fixed;inset:0;z-index:9800;flex-direction:column;pointer-events:all;background:#06061a;overflow:hidden}
 #eromap-ov.on{display:flex}
-#eromap-topbar{position:absolute;top:0;left:0;right:0;height:52px;z-index:10;background:linear-gradient(180deg,rgba(0,0,0,.75) 0%,transparent 100%);display:flex;align-items:center;padding:0 14px;gap:10px;pointer-events:none}
+#eromap-topbar{position:absolute;top:0;left:0;right:0;height:52px;z-index:10;background:linear-gradient(180deg,rgba(0,0,0,.75) 0%,transparent 100%);display:flex;align-items:center;padding:0 14px;gap:10px;pointer-events:auto}
 #eromap-exit{pointer-events:all;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:50px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
 #eromap-title{font-size:15px;font-weight:900;color:#4cc9f0;text-shadow:0 0 14px rgba(76,201,240,.6);flex:1;text-align:center;letter-spacing:2px}
 #eromap-weather-txt{font-size:13px;color:rgba(255,255,255,.8);white-space:nowrap}
-#eromap-canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
-#eromap-bottom{position:absolute;bottom:0;left:0;right:0;padding:12px 16px 24px;background:linear-gradient(0deg,rgba(0,0,0,.7) 0%,transparent 100%);pointer-events:none;display:flex;justify-content:space-between;align-items:flex-end}
-#eromap-time{font-size:22px;font-weight:900;color:#fff;font-family:monospace;text-shadow:0 0 12px rgba(76,201,240,.5)}
-#eromap-gps{font-size:10px;color:rgba(200,220,255,.6);text-align:right}
+#eromap-map{position:absolute;inset:0;width:100%;height:100%}
+/* 마커 CSS - 아래 AR 스타일 참고 */
+@keyframes eroPmPulse{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.8);opacity:0}}
+/* 에로맵 장식 오브 파티클 */
+.ero-map-orb{position:absolute;border-radius:50%;pointer-events:none;z-index:5;animation:eroOrbFloat var(--od,6s) ease-in-out infinite var(--odel,0s)}
+@keyframes eroOrbFloat{0%,100%{opacity:var(--oa,.25);transform:translate(0,0) scale(1)}40%{opacity:calc(var(--oa,.25)*1.6);transform:translate(var(--otx,8px),var(--oty,-12px)) scale(1.1)}70%{opacity:var(--oa,.18);transform:translate(var(--otx2,-5px),var(--oty2,6px)) scale(.92)}}
+/* 에로맵 수집반경 힌트 텍스트 */
+#eromap-radius-hint{position:absolute;top:64px;left:50%;transform:translateX(-50%);font-size:10px;color:rgba(76,201,240,.6);font-weight:700;letter-spacing:1px;pointer-events:none;white-space:nowrap;z-index:12;text-shadow:0 0 8px rgba(76,201,240,.4)}
+/* AR 게임 스타일 화살표 마커 */
+.ero-arrow-marker{position:relative;width:90px;height:100px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;filter:drop-shadow(0 6px 18px rgba(0,0,0,.7))}
+.ero-am-glow{position:absolute;top:4px;left:50%;transform:translateX(-50%);width:74px;height:74px;border-radius:50%;background:radial-gradient(circle,var(--rc,rgba(76,201,240,.6)) 0%,transparent 70%);animation:eroGlow 1.8s ease-in-out infinite;pointer-events:none}
+.ero-am-shadow{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:44px;height:8px;border-radius:50%;background:rgba(0,0,0,.5);filter:blur(4px);pointer-events:none}
+/* 이모지 기본 표시 (3D 렌더 전) */
+.ero-am-emoji{width:72px;height:72px;font-size:38px;z-index:1;display:flex;align-items:center;justify-content:center;animation:eroFloat 2.4s ease-in-out infinite;position:relative}
+/* 3D 모델 이미지 (렌더 완료 후) */
+.ero-am-3d-img{width:72px;height:72px;object-fit:contain;animation:eroFloat 2.4s ease-in-out infinite;filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));}
+/* 거리 표시 배지 */
+.ero-am-dist{position:absolute;bottom:0;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.75);border:1px solid var(--rc,rgba(76,201,240,.5));color:#fff;font-size:11px;font-weight:900;border-radius:50px;padding:2px 8px;white-space:nowrap;z-index:2;pointer-events:none;backdrop-filter:blur(4px)}
+/* 스킨명 표시 배지 */
+.ero-am-name{position:absolute;top:-20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:var(--rc,#4cc9f0);font-size:10px;font-weight:700;border-radius:50px;padding:2px 8px;white-space:nowrap;z-index:2;pointer-events:none;text-shadow:0 0 8px var(--rc,#4cc9f0);border:1px solid var(--rc,rgba(76,201,240,.3))}
+@keyframes eroGlow{0%,100%{opacity:.5;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.25)}}
+@keyframes eroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.ero-am-collected{animation:eroCollect .4s ease-out forwards!important}
+@keyframes eroCollect{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(2.5) translateY(-20px)}}
+/* 나침반 UI */
+#eromap-compass{position:absolute;top:60px;right:14px;width:52px;height:52px;z-index:15;pointer-events:none}
+#eromap-compass-bg{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.2);backdrop-filter:blur(8px)}
+#eromap-compass-needle{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;transition:transform 0.12s ease-out}
+#eromap-compass-needle::before{content:'N';position:absolute;top:5px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:900;color:#ff4444;text-shadow:0 0 6px #ff4444}
+#eromap-compass-needle::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-100%);width:3px;height:16px;background:linear-gradient(180deg,#ff4444 0%,transparent 100%);border-radius:2px}
+#eromap-heading-txt{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#4cc9f0;font-size:11px;font-weight:900;border-radius:50px;padding:4px 12px;white-space:nowrap;z-index:15;pointer-events:none;border:1px solid rgba(76,201,240,.3);letter-spacing:1px;backdrop-filter:blur(8px)}
+/* 플레이어 마커 */
+.ero-player-marker{position:relative;width:52px;height:52px;display:flex;align-items:center;justify-content:center;pointer-events:none;transform-origin:50% 50%}
+.ero-pm-ring{position:absolute;width:52px;height:52px;border-radius:50%;border:3px solid rgba(76,201,240,.7);animation:eroPmPulse 1.8s ease-out infinite}
+.ero-pm-dot{font-size:22px;z-index:1;filter:drop-shadow(0 0 10px rgba(76,201,240,.9));position:relative}
+/* 3D 플레이어 마커 */
+.ero-pm-3d{width:80px;height:86px;align-items:flex-end}
+.ero-pm-3d .ero-pm-ring{width:60px;height:60px;top:auto;bottom:8px;left:50%;transform:translateX(-50%);position:absolute}
+.ero-pm-canvas{width:80px;height:80px;z-index:2;position:relative;filter:drop-shadow(0 6px 16px rgba(0,0,0,.7)) drop-shadow(0 0 12px rgba(76,201,240,.5))}
+.ero-pm-shadow3d{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:42px;height:7px;border-radius:50%;background:rgba(0,0,0,.5);filter:blur(5px);z-index:1;pointer-events:none}
+@keyframes eroPlayerRun{0%,100%{transform:translateY(0) scale(1)}25%{transform:translateY(-6px) scale(1.04)}75%{transform:translateY(-3px) scale(1.02)}}
+#eromap-bottom{position:absolute;bottom:0;left:0;right:0;padding:10px 14px calc(20px + env(safe-area-inset-bottom,0px));background:linear-gradient(0deg,rgba(0,0,6,.88) 0%,rgba(0,0,10,.5) 60%,transparent 100%);pointer-events:auto;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;border-top:1px solid rgba(76,201,240,.08)}
+#eromap-left-info{display:flex;flex-direction:column;gap:4px;min-width:0}
+#eromap-time{font-size:20px;font-weight:900;color:#fff;font-family:monospace;text-shadow:0 0 14px rgba(76,201,240,.6);letter-spacing:1px}
+#eromap-collected-stat{font-size:12px;font-weight:700;color:#4cc9f0;letter-spacing:.5px;display:flex;align-items:center;gap:5px}
+#eromap-collected-bar{width:80px;height:4px;background:rgba(76,201,240,.2);border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle}
+#eromap-collected-fill{height:100%;background:linear-gradient(90deg,#4cc9f0,#7b2ff7);border-radius:4px;transition:width .4s;width:0%}
+#eromap-right-info{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}
+#eromap-gps{font-size:10px;color:rgba(200,220,255,.6);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+#eromap-session-coins{font-size:13px;font-weight:900;color:#FFD700;text-shadow:0 0 8px rgba(255,215,0,.5);letter-spacing:.5px}
+#eromap-gps-retry{display:none;margin-top:6px;padding:6px 14px;border-radius:20px;border:1px solid rgba(76,201,240,.6);background:rgba(76,201,240,.12);color:#4cc9f0;font-size:11px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;pointer-events:all}
+#eromap-gps-guide{display:none;margin-top:4px;font-size:9px;color:rgba(200,220,255,.45);line-height:1.5;text-align:right}
 .eromap-collect-banner{position:absolute;top:64px;left:50%;transform:translateX(-50%) translateY(-30px);z-index:20;padding:10px 22px;border-radius:50px;font-size:14px;font-weight:700;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
 .ero-new{background:linear-gradient(135deg,#7209b7,#4cc9f0);color:#fff;box-shadow:0 0 24px rgba(76,201,240,.5)}
 .ero-coin{background:rgba(255,215,0,.2);border:1px solid rgba(255,215,0,.5);color:#FFD700}
@@ -110,7 +177,7 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
 /* ── 스킨 상세 모달 ── */
 #skin-detail-modal{display:none;position:fixed;inset:0;z-index:9900;background:rgba(0,0,0,.75);align-items:center;justify-content:center;pointer-events:all;backdrop-filter:blur(6px)}
 .sdm-card{background:linear-gradient(155deg,rgba(8,8,30,.97),rgba(20,10,50,.97));border:1px solid rgba(100,100,255,.3);border-radius:22px;padding:32px 28px;width:82%;max-width:300px;text-align:center;position:relative}
-#sdm-close{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.1);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:15px;cursor:pointer}
+#sdm-close{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.1);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:17px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 #sdm-emoji{font-size:56px;margin-bottom:8px}
 #sdm-name{color:#fff;font-size:20px;font-weight:900;margin-bottom:8px}
 #sdm-rarity{font-size:13px;font-weight:900;letter-spacing:2px;margin-bottom:12px}
@@ -148,7 +215,7 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
 #ls-empty{display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;color:rgba(255,255,255,0.25);font-size:14px;gap:12px;padding-bottom:60px}
 #ls-empty .em-ico{font-size:48px;opacity:0.5}
 #ls-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
-#ls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:4px 12px 40px;}
+#ls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:4px 12px calc(40px + env(safe-area-inset-bottom, 0px));}
 .lv-card{background:rgba(18,18,46,0.9);border:2px solid rgba(70,70,170,0.2);border-radius:14px;padding:14px 6px 12px;text-align:center;cursor:pointer;transition:transform .12s,border-color .2s;position:relative;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;}
 .lv-card.lvc-cleared{background:rgba(25,18,0,0.9);border-color:rgba(255,200,0,0.45)}
 .lv-card.lvc-cleared:active{transform:scale(0.94)}
@@ -174,7 +241,9 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
 #multi-screen{
   position:absolute;inset:0;display:none;flex-direction:column;
   background:rgba(4,4,18,0.98);pointer-events:all;z-index:30;
-  align-items:center;justify-content:center;
+  align-items:center;justify-content:flex-start;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:24px 0 48px;
 }
 #multi-screen.on{display:flex}
 .multi-mode-card{max-width:380px;background:linear-gradient(160deg,rgba(11,16,44,.97),rgba(19,8,40,.97));overflow:hidden}
@@ -339,8 +408,9 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
 @media(max-width:620px){.game-grid{grid-template-columns:1fr}.game-card{min-height:188px}.hub-title{margin-bottom:16px}.flight-top{top:10px;left:10px;right:10px}.flight-chip{min-width:70px;padding:7px 8px}.flight-chip b{font-size:15px}.flight-energy{top:112px;left:10px;right:10px}.flight-bottom{left:10px;right:10px;bottom:10px;grid-template-columns:1fr 1fr}.flight-start{grid-column:1/3;min-height:48px}.flight-back{padding:9px 10px}}
 
 /* == DIFFICULTY OVERLAY == */
-#diff-ov{position:fixed;inset:0;background:rgba(4,4,20,.92);backdrop-filter:blur(18px);z-index:210;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .3s;opacity:0;pointer-events:none}
-#diff-ov.on{opacity:1;pointer-events:all}
+#diff-ov{position:fixed;inset:0;background:rgba(4,4,20,.92);backdrop-filter:blur(18px);z-index:210;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#diff-ov.on{display:flex;pointer-events:all;animation:diffFadeIn .25s ease}
+@keyframes diffFadeIn{from{opacity:0}to{opacity:1}}
 .diff-title{color:#fff;font-size:22px;font-weight:900;letter-spacing:3px;margin-bottom:4px}
 .diff-sub{color:rgba(180,180,240,.7);font-size:13px;margin-bottom:8px}
 .diff-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(340px,92vw)}
@@ -452,13 +522,11 @@ canvas{display:block;position:fixed;inset:0;width:100%!important;height:100%!imp
   document.addEventListener('touchmove', function(e){
     if(e.touches.length >= 2){ e.preventDefault(); return; }
   }, {passive: false});
-  // Block double-tap zoom
+  // Block double-tap zoom (non-interactive areas only)
   var _lastTap = 0;
   document.addEventListener('touchend', function(e){
     var now = Date.now();
-    if(now - _lastTap < 300){
-      e.preventDefault();
-    }
+    if(now - _lastTap < 300){ e.preventDefault(); }
     _lastTap = now;
   }, {passive: false});
   // Block gesturestart / gesturechange (iOS Safari pinch)
@@ -489,9 +557,9 @@ window._FB_CFG={
 #auth-ov{position:fixed;inset:0;z-index:9999;background:rgba(6,6,26,0.97);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:14px;padding:40px 28px 40px;overflow-y:auto;transition:opacity .4s;pointer-events:all}
 #auth-ov h2{color:#fff;font-size:28px;font-weight:900;letter-spacing:5px;text-shadow:0 0 32px rgba(76,201,240,0.7);text-align:center}
 #auth-ov .auth-sub{color:rgba(170,170,220,0.7);font-size:14px;text-align:center;line-height:1.75;max-width:300px}
-.btn-ggl{background:#fff;color:#1a1a2e;display:flex;align-items:center;gap:10px;padding:15px 28px;border-radius:50px;font-size:15px;font-weight:700;cursor:pointer;border:none;width:100%;max-width:300px;justify-content:center;box-shadow:0 4px 22px rgba(0,0,0,0.35);transition:transform .12s}
+.btn-ggl{background:#fff;color:#1a1a2e;display:flex;align-items:center;gap:10px;padding:15px 28px;border-radius:50px;font-size:15px;font-weight:700;cursor:pointer;border:none;width:100%;max-width:300px;justify-content:center;box-shadow:0 4px 22px rgba(0,0,0,0.35);transition:transform .12s;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent}
 .btn-ggl:active{transform:scale(0.96)}
-.btn-gst{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.65);padding:13px 28px;border-radius:50px;font-size:14px;font-weight:600;cursor:pointer;width:100%;max-width:300px;text-align:center;transition:transform .12s}
+.btn-gst{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.65);padding:13px 28px;border-radius:50px;font-size:14px;font-weight:600;cursor:pointer;width:100%;max-width:300px;text-align:center;transition:transform .12s;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent}
 .btn-gst:active{transform:scale(0.96)}
 #auth-loading{color:rgba(76,201,240,0.7);font-size:13px;display:none;letter-spacing:1px}
 #user-pill{position:absolute;bottom:20px;left:14px;background:rgba(10,10,35,0.85);border:1px solid rgba(255,255,255,0.14);border-radius:50px;padding:6px 14px 6px 8px;display:none;align-items:center;gap:8px;pointer-events:all;cursor:pointer;backdrop-filter:blur(10px);z-index:200}
@@ -506,8 +574,8 @@ window._FB_CFG={
 .am-name{color:#fff;font-size:18px;font-weight:800}
 .am-email{color:rgba(170,170,220,0.55);font-size:12px}
 .am-sync-box{background:rgba(76,201,240,0.08);border:1px solid rgba(76,201,240,0.2);border-radius:12px;padding:10px 16px;color:rgba(76,201,240,0.85);font-size:13px;text-align:center;width:100%;line-height:1.5}
-.btn-lo{background:rgba(255,100,100,0.12);border:1px solid rgba(255,100,100,0.3);color:#ff6b6b;padding:13px;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;width:100%}
-.btn-cam{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);padding:12px;border-radius:50px;font-size:14px;cursor:pointer;width:100%}
+.btn-lo{background:rgba(255,100,100,0.12);border:1px solid rgba(255,100,100,0.3);color:#ff6b6b;padding:13px;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;width:100%;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent}
+.btn-cam{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);padding:12px;border-radius:50px;font-size:14px;cursor:pointer;width:100%;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent}
 
 /* ── ZOOM BLOCK: scrollable elements use pan-y ── */
 #shop-body,
@@ -523,6 +591,8 @@ window._FB_CFG={
 #mode-select-ov{overflow-y:auto!important;}
 #char-grid{overflow-y:auto!important;}
 .nf-ov.on{overflow-y:auto!important;}
+/* iOS touch fix: buttons inside pan-y containers must override with manipulation */
+#auth-ov button,.am-card button,.nf-ov button,.overlay button,.game-card,.diff-btn,.btn-back,.nf-back,.hub-btn,#shop-x,#sdm-close,.sdm-close-btn,#eromap-exit,#ero-ph-cancel,#settings-close,.settings-close-btn,.cg-close-btn,#eromap-exit,#btn-cam,.btn-cam,#diff-back-btn,#flight-back,.flight-back{touch-action:manipulation!important;-webkit-tap-highlight-color:transparent;pointer-events:auto!important}
 </style>
 <style>
 /* ── NEW FEATURE PANELS ──────────────────────────────────────────────────────*/
@@ -609,7 +679,10 @@ window._FB_CFG={
 /* ── 설정창 ── */
 #settings-ov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
 #settings-ov.on{opacity:1;pointer-events:all}
-.settings-card{background:linear-gradient(160deg,#0d0d2e,#1a1a4e);border:1px solid rgba(100,100,255,.3);border-radius:20px;padding:24px 20px;width:min(360px,92vw);max-height:85vh;overflow-y:auto}
+/* 설정창 닫혀 있을 때 내부 요소가 pointer-events:auto!important로 터치를 가로채는 문제 방지 */
+#settings-ov:not(.on) *{pointer-events:none!important}
+.settings-card{background:linear-gradient(160deg,#0d0d2e,#1a1a4e);border:1px solid rgba(100,100,255,.3);border-radius:20px;padding:0;width:min(360px,92vw);max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+.settings-scroll{padding:24px 20px 12px;overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1}
 .settings-card h2{color:#fff;font-size:16px;font-weight:700;margin:0 0 20px;text-align:center}
 .settings-group{margin-bottom:18px}
 .settings-label{color:rgba(180,180,255,.8);font-size:12px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between}
@@ -625,7 +698,7 @@ window._FB_CFG={
 .settings-toggle input:checked+.settings-toggle-track{background:#5555ff}
 .settings-toggle-track::after{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
 .settings-toggle input:checked+.settings-toggle-track::after{transform:translateX(20px)}
-.settings-close-btn{width:100%;padding:12px;background:linear-gradient(135deg,#333399,#1a1a6e);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px}
+.settings-close-btn{width:100%;padding:14px;background:linear-gradient(135deg,#333399,#1a1a6e);border:none;border-radius:0 0 20px 20px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;display:block;touch-action:manipulation}
 /* ── 설정 버튼 ── */
 #btn-settings{background:linear-gradient(135deg,#1a1a3e,#222260);border:1px solid rgba(100,100,255,.35);font-size:14px;padding:13px}
 
@@ -799,6 +872,14 @@ window._FB_CFG={
 }
 #story-tap.ready{animation:stBlink .6s step-end infinite;opacity:1;}
 @keyframes stBlink{0%,49%{opacity:1}50%,100%{opacity:0}}
+#story-skip{
+  position:absolute;top:8px;right:10px;
+  background:rgba(0,0,0,.18);border:1.5px solid rgba(0,0,0,.25);border-radius:6px;
+  color:#444;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  white-space:nowrap;letter-spacing:.03em;
+}
+#story-skip:active{background:rgba(0,0,0,.35);}
 /* 선택지: story-box 위에 고정 (오른쪽) */
 #story-choices{
   position:fixed;right:14px;bottom:115px;z-index:9600;
@@ -985,14 +1066,27 @@ window._FB_CFG={
   opacity:0;transition:opacity .3s;z-index:12;white-space:nowrap;
 }
 #plz-inthint.show{opacity:1;}
+
+/* ═══════════════════════ 에로 퍼즐 HUD ═══════════════════════ */
+#ero-puzzle-hud{display:none;position:fixed;top:0;left:0;right:0;z-index:9950;pointer-events:all;flex-direction:column;gap:0}
+#ero-ph-top{background:linear-gradient(180deg,rgba(0,0,26,.92) 0%,rgba(0,0,26,.7) 100%);padding:14px 18px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(76,201,240,.2)}
+#ero-ph-skin{color:#fff;font-size:14px;font-weight:900;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ero-ph-count{color:#4cc9f0;font-size:14px;font-weight:900;white-space:nowrap}
+#ero-ph-sep{color:rgba(255,255,255,.3);margin:0 4px}
+.ero-ph-timer-wrap{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.ero-ph-timer-label{color:rgba(200,220,255,.55);font-size:11px;font-weight:700}
+#ero-ph-timer{font-size:22px;font-weight:900;color:#4cc9f0;font-family:monospace;text-shadow:0 0 10px rgba(76,201,240,.6);min-width:2ch;text-align:right;transition:color .3s}
+#ero-ph-cancel{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:50px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+#ero-ph-banner{background:rgba(76,201,240,.12);border-bottom:1px solid rgba(76,201,240,.15);padding:7px 18px;text-align:center;color:rgba(200,230,255,.65);font-size:11px;font-weight:700;letter-spacing:1px}
 </style>
-  <script type="module" crossorigin src="/assets/index-QNYMqjaA.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script type="module" crossorigin src="/assets/index-MG0QHaxH.js"></script>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="ui">
   <!-- AUTH OVERLAY -->
-  <div id="auth-ov">
+<div id="auth-ov">
     <h2>3D ESCAPE</h2>
     <p class="auth-sub">Google 계정으로 로그인하면 랭크·기록·진행상황이<br>클라우드에 저장됩니다.</p>
     <button class="btn-ggl" id="btn-ggl">
@@ -1000,19 +1094,20 @@ window._FB_CFG={
       Google 계정으로 로그인
     </button>
     <button class="btn-gst" id="btn-gst">게스트로 시작 (저장 없음)</button>
-    <div id="auth-loading">로그인 중...</div>
-  </div>
-  <!-- ACCOUNT MODAL -->
-  <div id="am-ov">
-    <div class="am-card">
+<div id="auth-loading">로그인 중...</div>
+</div>
+<!-- ACCOUNT MODAL -->
+<div id="am-ov">
+<div class="am-card">
       <img id="am-avatar" src="" alt="avatar">
-      <div class="am-name" id="am-name"></div>
-      <div class="am-email" id="am-email"></div>
-      <div class="am-sync-box" id="am-sync-info">☁️ 랭크·기록·진행상황이 클라우드에 저장됩니다.</div>
+    <div class="am-name" id="am-name"></div>
+    <div class="am-email" id="am-email"></div>
+    <div class="am-sync-box" id="am-sync-info">☁️ 랭크·기록·진행상황이 클라우드에 저장됩니다.</div>
       <button class="btn-lo" id="btn-lo">로그아웃</button>
       <button class="btn-cam" id="btn-cam">닫기</button>
     </div>
-  </div>
+</div>
+<div id="ui">
   <!-- MINI GAME SELECT -->
   <div id="game-select">
     <div class="hub-shell">
@@ -1119,6 +1214,7 @@ window._FB_CFG={
   <!-- HUD -->
   <div id="hud">
     <div id="pbar"><div id="pfill"></div></div>
+    <div id="hud-timer">0.00s</div>
     <div id="hud-top">
       <div id="lives-txt"></div>
       <div id="level-txt"></div>
@@ -1138,6 +1234,7 @@ window._FB_CFG={
       <h2>레벨 클리어!</h2>
       <div class="r-stars" id="w-stars"></div>
       <div class="r-coins" id="w-coins"></div>
+      <div id="w-time" style="font-family:monospace;font-size:20px;font-weight:900;color:#4cc9f0;margin:6px 0 2px;text-shadow:0 0 10px rgba(76,201,240,0.6);display:none"></div>
       <p class="r-sub" id="w-sub"></p>
       <div class="r-row">
         <button class="btn btn-primary btn-sm" id="btn-next">다음 ▶</button>
@@ -1505,33 +1602,35 @@ window._FB_CFG={
   <!-- SETTINGS -->
   <div id="settings-ov">
     <div class="settings-card">
-      <h2>⚙️ 설정</h2>
-      <div class="settings-group">
-        <div class="settings-label">🎵 BGM 볼륨 <span id="bgm-vol-val">50%</span></div>
-        <input type="range" class="settings-slider" id="bgm-vol-slider" min="0" max="100" value="50">
-      </div>
-      <div class="settings-group">
-        <div class="settings-label">🔔 효과음(음계) 볼륨 <span id="sfx-vol-val">100%</span></div>
-        <input type="range" class="settings-slider" id="sfx-vol-slider" min="0" max="100" value="100">
-      </div>
-      <hr class="settings-divider">
-      <div class="settings-toggle-row">
-        <span class="settings-toggle-lbl">💤 HUD 자동 숨김</span>
-        <label class="settings-toggle"><input type="checkbox" id="set-hud-hide" checked><span class="settings-toggle-track"></span></label>
-      </div>
-      <div class="settings-toggle-row" style="margin-top:8px">
-        <span class="settings-toggle-lbl">📳 진동 피드백 (모바일)</span>
-        <label class="settings-toggle"><input type="checkbox" id="set-vibration" checked><span class="settings-toggle-track"></span></label>
-      </div>
-      <hr class="settings-divider">
-      <div class="settings-group">
-        <div class="settings-label" style="justify-content:flex-start;margin-bottom:6px">👤 내 닉네임</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div id="nick-display" style="flex:1;padding:9px 12px;background:rgba(30,30,80,.5);border:1px solid rgba(100,100,255,.2);border-radius:10px;color:#fff;font-size:14px;font-weight:700"></div>
-          <button id="nick-change-btn" style="background:linear-gradient(135deg,#f72585,#7209b7);border:none;color:#fff;padding:9px 12px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap">변경 500💰</button>
+      <div class="settings-scroll">
+        <h2>⚙️ 설정</h2>
+        <div class="settings-group">
+          <div class="settings-label">🎵 BGM 볼륨 <span id="bgm-vol-val">50%</span></div>
+          <input type="range" class="settings-slider" id="bgm-vol-slider" min="0" max="100" value="50">
         </div>
-        <input id="set-nickname" type="text" maxlength="12" placeholder="새 닉네임 입력 (한글/영문, 최대 12자)" style="display:none;margin-top:8px;width:100%;padding:9px 12px;background:rgba(30,30,80,.7);border:1px solid rgba(247,37,133,.5);border-radius:10px;color:#fff;font-size:14px;box-sizing:border-box">
-        <div id="nick-change-hint" style="display:none;font-size:11px;margin-top:5px;color:rgba(255,150,150,.8)"></div>
+        <div class="settings-group">
+          <div class="settings-label">🔔 효과음(음계) 볼륨 <span id="sfx-vol-val">100%</span></div>
+          <input type="range" class="settings-slider" id="sfx-vol-slider" min="0" max="100" value="100">
+        </div>
+        <hr class="settings-divider">
+        <div class="settings-toggle-row">
+          <span class="settings-toggle-lbl">💤 HUD 자동 숨김</span>
+          <label class="settings-toggle"><input type="checkbox" id="set-hud-hide" checked><span class="settings-toggle-track"></span></label>
+        </div>
+        <div class="settings-toggle-row" style="margin-top:8px">
+          <span class="settings-toggle-lbl">📳 진동 피드백 (모바일)</span>
+          <label class="settings-toggle"><input type="checkbox" id="set-vibration" checked><span class="settings-toggle-track"></span></label>
+        </div>
+        <hr class="settings-divider">
+        <div class="settings-group">
+          <div class="settings-label" style="justify-content:flex-start;margin-bottom:6px">👤 내 닉네임</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div id="nick-display" style="flex:1;padding:9px 12px;background:rgba(30,30,80,.5);border:1px solid rgba(100,100,255,.2);border-radius:10px;color:#fff;font-size:14px;font-weight:700"></div>
+            <button id="nick-change-btn" style="background:linear-gradient(135deg,#f72585,#7209b7);border:none;color:#fff;padding:9px 12px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap">변경 500💰</button>
+          </div>
+          <input id="set-nickname" type="text" maxlength="12" placeholder="새 닉네임 입력 (한글/영문, 최대 12자)" style="display:none;margin-top:8px;width:100%;padding:9px 12px;background:rgba(30,30,80,.7);border:1px solid rgba(247,37,133,.5);border-radius:10px;color:#fff;font-size:14px;box-sizing:border-box">
+          <div id="nick-change-hint" style="display:none;font-size:11px;margin-top:5px;color:rgba(255,150,150,.8)"></div>
+        </div>
       </div>
       <button class="settings-close-btn" id="settings-close">저장 & 닫기</button>
     </div>
@@ -1724,19 +1823,48 @@ window._FB_CFG={
 <!-- ═══════════════ EROMAP OVERLAY ═══════════════ -->
 <div id="eromap-ov">
   <div id="eromap-topbar">
-    <button id="eromap-exit">← 뒤로</button>
+    <button id="eromap-exit" style="min-width:60px;min-height:44px;font-size:14px;font-weight:900;padding:0 16px;">← 뒤로</button>
     <div id="eromap-title">🗺️ 에로맵</div>
     <div id="eromap-weather-txt">☀️ 날씨 로딩...</div>
   </div>
-  <canvas id="eromap-canvas"></canvas>
+  <div id="eromap-map"></div>
+  <!-- 나침반 UI -->
+  <div id="eromap-compass" aria-hidden="true">
+    <div id="eromap-compass-bg"></div>
+    <div id="eromap-compass-needle"></div>
+  </div>
+  <!-- 방위각 표시 -->
+  <div id="eromap-heading-txt">0° N</div>
+  <div id="eromap-orbs"></div>
+  <div id="eromap-radius-hint">● 수집 반경 17m</div>
   <div id="eromap-bottom">
-    <div id="eromap-time">00:00:00</div>
-    <div id="eromap-gps">📍 GPS 확인 중...</div>
+    <div id="eromap-left-info">
+      <div id="eromap-time">00:00:00</div>
+      <div id="eromap-collected-stat">🏹 <span id="eromap-col-count">0</span>/<span id="eromap-col-total">10</span> 수집 &nbsp;<span id="eromap-collected-bar"><span id="eromap-collected-fill"></span></span></div>
+    </div>
+    <div id="eromap-right-info">
+      <div id="eromap-session-coins">💰 +0</div>
+      <div id="eromap-gps">📍 GPS 확인 중...</div>
+      <button id="eromap-gps-retry" onclick="eroRetryGPS()" style="pointer-events:all">📍 위치 권한 다시 요청</button>
+      <div id="eromap-gps-guide"></div>
+    </div>
   </div>
   <div id="eromap-collect-banner" class="eromap-collect-banner"></div>
 </div>
 
 <!-- ═══════════════ 스킨 상세 모달 ═══════════════ -->
+<div id="ero-puzzle-hud">
+  <div id="ero-ph-top">
+    <div id="ero-ph-skin">🎯 화살표</div>
+    <div id="ero-ph-count">0 / 6</div>
+    <div class="ero-ph-timer-wrap">
+      <div class="ero-ph-timer-label">⏱</div>
+      <div id="ero-ph-timer">15</div>
+    </div>
+    <button id="ero-ph-cancel" onclick="endEroPuzzle(false)">포기</button>
+  </div>
+  <div id="ero-ph-banner">🧩 화살표를 모두 탈출시켜 화살표를 획득하세요!</div>
+</div>
 <div id="skin-detail-modal">
   <div class="sdm-card">
     <button id="sdm-close">✕</button>
@@ -1804,6 +1932,7 @@ window._FB_CFG={
       <div id="story-text"></div>
       <div id="story-tap">▼</div>
     </div>
+    <button id="story-skip">건너뛰기</button>
   </div>
 </div>
 <div id="story-choices"></div>
