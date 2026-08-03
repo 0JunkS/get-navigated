@@ -35,7 +35,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 #menu-top{padding:52px 0 0;text-align:center;pointer-events:none;flex-shrink:0;margin-bottom:32px}
 #menu-top h1{color:#fff;font-size:32px;font-weight:900;letter-spacing:5px;text-shadow:0 0 32px rgba(76,201,240,0.7)}
 #menu-top .tag{color:rgba(170,170,220,0.7);font-size:12px;margin-top:6px;letter-spacing:2px}
-#menu-bottom{padding:0 28px 44px;display:flex;flex-direction:column;gap:10px;pointer-events:all;flex-shrink:0}
+#menu-bottom{padding:0 28px calc(44px + env(safe-area-inset-bottom, 0px));display:flex;flex-direction:column;gap:10px;pointer-events:all;flex-shrink:0}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:15px 32px;border-radius:50px;font-size:15px;font-weight:700;cursor:pointer;border:none;outline:none;color:#fff;transition:transform .12s,opacity .12s;width:100%}
 .btn:active{transform:scale(0.96);opacity:0.85}
 .btn-primary{background:linear-gradient(135deg,#4361ee,#4cc9f0);box-shadow:0 0 28px rgba(67,97,238,0.5)}
@@ -68,6 +68,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 #tap-restore{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.22);font-size:12px;pointer-events:none;white-space:nowrap}
 #pbar{position:absolute;top:0;left:0;right:0;height:3px}
 #pfill{height:3px;background:linear-gradient(90deg,#4361ee,#4cc9f0);width:0;transition:width .35s}
+#hud-timer{position:absolute;top:0;left:50%;transform:translateX(-50%);height:58px;display:flex;align-items:center;font-family:monospace;font-size:22px;font-weight:900;color:#4cc9f0;letter-spacing:1px;text-shadow:0 0 12px rgba(76,201,240,0.7);pointer-events:none;user-select:none}
 
 /* ── WIN / OVER ──────────────────────────────────── */
 .overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:all;background:rgba(0,0,0,0.35)}
@@ -120,6 +121,11 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 #eromap-map{position:absolute;inset:0;width:100%;height:100%}
 /* 마커 CSS - 아래 AR 스타일 참고 */
 @keyframes eroPmPulse{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.8);opacity:0}}
+/* 에로맵 장식 오브 파티클 */
+.ero-map-orb{position:absolute;border-radius:50%;pointer-events:none;z-index:5;animation:eroOrbFloat var(--od,6s) ease-in-out infinite var(--odel,0s)}
+@keyframes eroOrbFloat{0%,100%{opacity:var(--oa,.25);transform:translate(0,0) scale(1)}40%{opacity:calc(var(--oa,.25)*1.6);transform:translate(var(--otx,8px),var(--oty,-12px)) scale(1.1)}70%{opacity:var(--oa,.18);transform:translate(var(--otx2,-5px),var(--oty2,6px)) scale(.92)}}
+/* 에로맵 수집반경 힌트 텍스트 */
+#eromap-radius-hint{position:absolute;top:64px;left:50%;transform:translateX(-50%);font-size:10px;color:rgba(76,201,240,.6);font-weight:700;letter-spacing:1px;pointer-events:none;white-space:nowrap;z-index:12;text-shadow:0 0 8px rgba(76,201,240,.4)}
 /* AR 게임 스타일 화살표 마커 */
 .ero-arrow-marker{position:relative;width:90px;height:100px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;filter:drop-shadow(0 6px 18px rgba(0,0,0,.7))}
 .ero-am-glow{position:absolute;top:4px;left:50%;transform:translateX(-50%);width:74px;height:74px;border-radius:50%;background:radial-gradient(circle,var(--rc,rgba(76,201,240,.6)) 0%,transparent 70%);animation:eroGlow 1.8s ease-in-out infinite;pointer-events:none}
@@ -153,9 +159,17 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 .ero-pm-canvas{width:80px;height:80px;z-index:2;position:relative;filter:drop-shadow(0 6px 16px rgba(0,0,0,.7)) drop-shadow(0 0 12px rgba(76,201,240,.5))}
 .ero-pm-shadow3d{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:42px;height:7px;border-radius:50%;background:rgba(0,0,0,.5);filter:blur(5px);z-index:1;pointer-events:none}
 @keyframes eroPlayerRun{0%,100%{transform:translateY(0) scale(1)}25%{transform:translateY(-6px) scale(1.04)}75%{transform:translateY(-3px) scale(1.02)}}
-#eromap-bottom{position:absolute;bottom:0;left:0;right:0;padding:12px 16px 24px;background:linear-gradient(0deg,rgba(0,0,0,.7) 0%,transparent 100%);pointer-events:auto;display:flex;justify-content:space-between;align-items:flex-end}
-#eromap-time{font-size:22px;font-weight:900;color:#fff;font-family:monospace;text-shadow:0 0 12px rgba(76,201,240,.5)}
-#eromap-gps{font-size:10px;color:rgba(200,220,255,.6);text-align:right}
+#eromap-bottom{position:absolute;bottom:0;left:0;right:0;padding:10px 14px calc(20px + env(safe-area-inset-bottom,0px));background:linear-gradient(0deg,rgba(0,0,6,.88) 0%,rgba(0,0,10,.5) 60%,transparent 100%);pointer-events:auto;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;border-top:1px solid rgba(76,201,240,.08)}
+#eromap-left-info{display:flex;flex-direction:column;gap:4px;min-width:0}
+#eromap-time{font-size:20px;font-weight:900;color:#fff;font-family:monospace;text-shadow:0 0 14px rgba(76,201,240,.6);letter-spacing:1px}
+#eromap-collected-stat{font-size:12px;font-weight:700;color:#4cc9f0;letter-spacing:.5px;display:flex;align-items:center;gap:5px}
+#eromap-collected-bar{width:80px;height:4px;background:rgba(76,201,240,.2);border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle}
+#eromap-collected-fill{height:100%;background:linear-gradient(90deg,#4cc9f0,#7b2ff7);border-radius:4px;transition:width .4s;width:0%}
+#eromap-right-info{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}
+#eromap-gps{font-size:10px;color:rgba(200,220,255,.6);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+#eromap-session-coins{font-size:13px;font-weight:900;color:#FFD700;text-shadow:0 0 8px rgba(255,215,0,.5);letter-spacing:.5px}
+#eromap-gps-retry{display:none;margin-top:6px;padding:6px 14px;border-radius:20px;border:1px solid rgba(76,201,240,.6);background:rgba(76,201,240,.12);color:#4cc9f0;font-size:11px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;pointer-events:all}
+#eromap-gps-guide{display:none;margin-top:4px;font-size:9px;color:rgba(200,220,255,.45);line-height:1.5;text-align:right}
 .eromap-collect-banner{position:absolute;top:64px;left:50%;transform:translateX(-50%) translateY(-30px);z-index:20;padding:10px 22px;border-radius:50px;font-size:14px;font-weight:700;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
 .ero-new{background:linear-gradient(135deg,#7209b7,#4cc9f0);color:#fff;box-shadow:0 0 24px rgba(76,201,240,.5)}
 .ero-coin{background:rgba(255,215,0,.2);border:1px solid rgba(255,215,0,.5);color:#FFD700}
@@ -201,7 +215,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 #ls-empty{display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;color:rgba(255,255,255,0.25);font-size:14px;gap:12px;padding-bottom:60px}
 #ls-empty .em-ico{font-size:48px;opacity:0.5}
 #ls-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
-#ls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:4px 12px 40px;}
+#ls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:4px 12px calc(40px + env(safe-area-inset-bottom, 0px));}
 .lv-card{background:rgba(18,18,46,0.9);border:2px solid rgba(70,70,170,0.2);border-radius:14px;padding:14px 6px 12px;text-align:center;cursor:pointer;transition:transform .12s,border-color .2s;position:relative;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;}
 .lv-card.lvc-cleared{background:rgba(25,18,0,0.9);border-color:rgba(255,200,0,0.45)}
 .lv-card.lvc-cleared:active{transform:scale(0.94)}
@@ -227,7 +241,9 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 #multi-screen{
   position:absolute;inset:0;display:none;flex-direction:column;
   background:rgba(4,4,18,0.98);pointer-events:all;z-index:30;
-  align-items:center;justify-content:center;
+  align-items:center;justify-content:flex-start;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:24px 0 48px;
 }
 #multi-screen.on{display:flex}
 .multi-mode-card{max-width:380px;background:linear-gradient(160deg,rgba(11,16,44,.97),rgba(19,8,40,.97));overflow:hidden}
@@ -392,8 +408,9 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 @media(max-width:620px){.game-grid{grid-template-columns:1fr}.game-card{min-height:188px}.hub-title{margin-bottom:16px}.flight-top{top:10px;left:10px;right:10px}.flight-chip{min-width:70px;padding:7px 8px}.flight-chip b{font-size:15px}.flight-energy{top:112px;left:10px;right:10px}.flight-bottom{left:10px;right:10px;bottom:10px;grid-template-columns:1fr 1fr}.flight-start{grid-column:1/3;min-height:48px}.flight-back{padding:9px 10px}}
 
 /* == DIFFICULTY OVERLAY == */
-#diff-ov{position:fixed;inset:0;background:rgba(4,4,20,.92);backdrop-filter:blur(18px);z-index:210;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .3s;opacity:0;pointer-events:none}
-#diff-ov.on{opacity:1;pointer-events:all}
+#diff-ov{position:fixed;inset:0;background:rgba(4,4,20,.92);backdrop-filter:blur(18px);z-index:210;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#diff-ov.on{display:flex;pointer-events:all;animation:diffFadeIn .25s ease}
+@keyframes diffFadeIn{from{opacity:0}to{opacity:1}}
 .diff-title{color:#fff;font-size:22px;font-weight:900;letter-spacing:3px;margin-bottom:4px}
 .diff-sub{color:rgba(180,180,240,.7);font-size:13px;margin-bottom:8px}
 .diff-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(340px,92vw)}
@@ -855,6 +872,14 @@ window._FB_CFG={
 }
 #story-tap.ready{animation:stBlink .6s step-end infinite;opacity:1;}
 @keyframes stBlink{0%,49%{opacity:1}50%,100%{opacity:0}}
+#story-skip{
+  position:absolute;top:8px;right:10px;
+  background:rgba(0,0,0,.18);border:1.5px solid rgba(0,0,0,.25);border-radius:6px;
+  color:#444;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  white-space:nowrap;letter-spacing:.03em;
+}
+#story-skip:active{background:rgba(0,0,0,.35);}
 /* 선택지: story-box 위에 고정 (오른쪽) */
 #story-choices{
   position:fixed;right:14px;bottom:115px;z-index:9600;
@@ -1188,6 +1213,7 @@ window._FB_CFG={
   <!-- HUD -->
   <div id="hud">
     <div id="pbar"><div id="pfill"></div></div>
+    <div id="hud-timer">0.00s</div>
     <div id="hud-top">
       <div id="lives-txt"></div>
       <div id="level-txt"></div>
@@ -1207,6 +1233,7 @@ window._FB_CFG={
       <h2>레벨 클리어!</h2>
       <div class="r-stars" id="w-stars"></div>
       <div class="r-coins" id="w-coins"></div>
+      <div id="w-time" style="font-family:monospace;font-size:20px;font-weight:900;color:#4cc9f0;margin:6px 0 2px;text-shadow:0 0 10px rgba(76,201,240,0.6);display:none"></div>
       <p class="r-sub" id="w-sub"></p>
       <div class="r-row">
         <button class="btn btn-primary btn-sm" id="btn-next">다음 ▶</button>
@@ -1808,9 +1835,19 @@ window._FB_CFG={
   </div>
   <!-- 방위각 표시 -->
   <div id="eromap-heading-txt">0° N</div>
+  <div id="eromap-orbs"></div>
+  <div id="eromap-radius-hint">● 수집 반경 17m</div>
   <div id="eromap-bottom">
-    <div id="eromap-time">00:00:00</div>
-    <div id="eromap-gps">📍 GPS 확인 중...</div>
+    <div id="eromap-left-info">
+      <div id="eromap-time">00:00:00</div>
+      <div id="eromap-collected-stat">🏹 <span id="eromap-col-count">0</span>/<span id="eromap-col-total">10</span> 수집 &nbsp;<span id="eromap-collected-bar"><span id="eromap-collected-fill"></span></span></div>
+    </div>
+    <div id="eromap-right-info">
+      <div id="eromap-session-coins">💰 +0</div>
+      <div id="eromap-gps">📍 GPS 확인 중...</div>
+      <button id="eromap-gps-retry" onclick="eroRetryGPS()" style="pointer-events:all">📍 위치 권한 다시 요청</button>
+      <div id="eromap-gps-guide"></div>
+    </div>
   </div>
   <div id="eromap-collect-banner" class="eromap-collect-banner"></div>
 </div>
@@ -1895,6 +1932,7 @@ window._FB_CFG={
       <div id="story-text"></div>
       <div id="story-tap">▼</div>
     </div>
+    <button id="story-skip">건너뛰기</button>
   </div>
 </div>
 <div id="story-choices"></div>

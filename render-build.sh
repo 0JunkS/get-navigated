@@ -4,7 +4,7 @@ set -e
 echo "=== Using npx pnpm@9 (no global install needed) ==="
 npx --yes pnpm@9 --version
 
-echo "=== Installing dependencies ==="
+echo "=== Installing dependencies (hoisted linker) ==="
 npx pnpm@9 install --no-frozen-lockfile
 
 echo "=== Building navigated app ==="
