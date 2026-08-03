@@ -1949,5 +1949,55 @@ window._FB_CFG={
 <div id="boss-shuffle-warn">⚡ 배열 변경!</div>
 <canvas id="boss-glitch-canvas"></canvas>
 
+
+<script>
+  // 게임 UI가 렌더링된 후 강제로 레이아웃 및 에로맵 삭제 적용
+  const applyCRKUI = () => {
+    // 1. 에로맵 관련 모든 텍스트와 버튼 찾아서 완전 삭제
+    document.querySelectorAll('button, div, span, p, h1, h2, h3, h4, h5, h6').forEach(el => {
+      if (el.textContent && el.textContent.includes('에로맵')) {
+        el.style.display = 'none';
+        el.remove(); // DOM에서 완전히 제거
+      }
+    });
+
+    // 2. 메인 메뉴 버튼 배치 최적화
+    const buttons = Array.from(document.querySelectorAll('button'));
+    
+    // '게임 시작' 버튼 찾기 (가장 크게 만들기)
+    const startBtn = buttons.find(b => b.textContent.includes('게임 시작'));
+    if (startBtn) {
+      startBtn.style.width = '100%';
+      startBtn.style.padding = '24px 0';
+      startBtn.style.fontSize = '1.5rem';
+      startBtn.style.marginBottom = '15px';
+      startBtn.style.background = "linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.1) 40%, rgba(0,0,0,0.15) 100%), linear-gradient(180deg, #f59e0b, #d97706) !important"; // 골드 색상
+    }
+
+    // 3. 버튼들을 2열 그리드로 자동 재배치 (메인 메뉴 패널 내부)
+    const menuPanel = document.querySelector('#main-menu') || document.querySelector('[class*="bg-card"]');
+    if (menuPanel) {
+      menuPanel.style.display = 'flex';
+      menuPanel.style.flexDirection = 'column';
+      menuPanel.style.gap = '12px';
+      menuPanel.style.maxWidth = '450px';
+      menuPanel.style.margin = '0 auto';
+    }
+  };
+
+  // DOM 변경 감지하여 지속적으로 적용 (게임 로딩 후에도 유지)
+  const observer = new MutationObserver((mutations) => {
+    applyCRKUI();
+  });
+
+  // 페이지 로드 직후 및 DOM 변경 시 실행
+  document.addEventListener('DOMContentLoaded', () => {
+    applyCRKUI();
+    observer.observe(document.body, { childList: true, subtree: true });
+    
+    // 1초 후 한번 더 실행 (게임 에셋 로딩 완료 시점 대비)
+    setTimeout(applyCRKUI, 1000);
+  });
+</script>
 </body>
 </html>
