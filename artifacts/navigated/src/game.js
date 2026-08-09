@@ -8309,16 +8309,18 @@ document.getElementById('sdm-close')?.addEventListener('click',()=>{document.get
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x06061a);
 
-    camera = new THREE.PerspectiveCamera(45, containerEl.clientWidth / containerEl.clientHeight, 0.1, 1000);
+    let initialW = containerEl.clientWidth || window.innerWidth;
+    let initialH = containerEl.clientHeight || window.innerHeight;
+    camera = new THREE.PerspectiveCamera(45, initialW / initialH, 0.1, 1000);
     camera.position.set(6, 7, 9);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(containerEl.clientWidth, containerEl.clientHeight);
+    renderer.setSize(initialW, initialH);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     containerEl.appendChild(renderer.domElement);
 
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.maxPolarAngle = Math.PI / 2 + 0.1;
@@ -8343,9 +8345,11 @@ document.getElementById('sdm-close')?.addEventListener('click',()=>{document.get
 
   function onWindowResize() {
     if(!containerEl || !camera || !renderer) return;
-    camera.aspect = containerEl.clientWidth / containerEl.clientHeight;
+    let w = containerEl.clientWidth || window.innerWidth;
+    let h = containerEl.clientHeight || window.innerHeight;
+    camera.aspect = w / h;
     camera.updateProjectionMatrix();
-    renderer.setSize(containerEl.clientWidth, containerEl.clientHeight);
+    renderer.setSize(w, h);
   }
 
   function renderTargetGrid() {
@@ -8625,6 +8629,12 @@ document.getElementById('sdm-close')?.addEventListener('click',()=>{document.get
     initThreeScene();
     startReverseStage(reverseLevel);
     animateReverse();
+    requestAnimationFrame(() => {
+      onWindowResize();
+    });
+    setTimeout(() => {
+      onWindowResize();
+    }, 100);
   }
 
   function closeReverseGame() {

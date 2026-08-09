@@ -1007,6 +1007,167 @@ window._FB_CFG={
 
 
 </style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Pretendard:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ── GLOBAL FONT APPLICATION ── */
+*, *::before, *::after {
+  font-family: 'Outfit', 'Plus Jakarta Sans', 'Noto Sans KR', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* ── MOTION GRAPHICS & GLASSMORPHISM FOR ALL BUTTONS ── */
+button, .btn, [role="button"], input[type="button"], input[type="submit"], .rev-ctrl-btn, .plz-sbtn, .sdm-close-btn, .btn-xs, .chest-card {
+  position: relative !important;
+  overflow: hidden !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(20px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 1px 0 rgba(255, 255, 255, 0.45) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              background 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+button::before, .btn::before, [role="button"]::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 65%) !important;
+  pointer-events: none !important;
+  border-radius: inherit !important;
+  z-index: 1 !important;
+}
+
+button:hover, .btn:hover, [role="button"]:hover {
+  transform: translateY(-3px) scale(1.025) !important;
+  box-shadow: 0 16px 42px 0 rgba(0, 0, 0, 0.55), inset 0 1px 2px 0 rgba(255, 255, 255, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  filter: brightness(1.18) !important;
+}
+
+button:active, .btn:active, [role="button"]:active {
+  transform: translateY(1px) scale(0.95) !important;
+  box-shadow: 0 4px 18px 0 rgba(0, 0, 0, 0.45), inset 0 1px 1px 0 rgba(255, 255, 255, 0.25) !important;
+  filter: brightness(0.92) !important;
+}
+
+/* Translucent Glass Colors */
+.btn-primary {
+  background: linear-gradient(135deg, rgba(58, 134, 255, 0.55) 0%, rgba(76, 201, 240, 0.45) 100%) !important;
+  border-color: rgba(120, 210, 255, 0.6) !important;
+  box-shadow: 0 10px 32px -4px rgba(58, 134, 255, 0.55), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+.btn-reverse {
+  background: linear-gradient(135deg, rgba(114, 9, 183, 0.55) 0%, rgba(247, 37, 133, 0.45) 100%) !important;
+  border-color: rgba(247, 37, 133, 0.6) !important;
+  box-shadow: 0 10px 32px -4px rgba(247, 37, 133, 0.55), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+.btn-shop {
+  background: linear-gradient(135deg, rgba(255, 159, 28, 0.55) 0%, rgba(255, 64, 0, 0.45) 100%) !important;
+  border-color: rgba(255, 180, 60, 0.6) !important;
+  box-shadow: 0 10px 32px -4px rgba(255, 100, 0, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+.btn-multi {
+  background: linear-gradient(135deg, rgba(67, 97, 238, 0.55) 0%, rgba(114, 9, 183, 0.45) 100%) !important;
+  border-color: rgba(180, 100, 255, 0.6) !important;
+  box-shadow: 0 10px 32px -4px rgba(114, 9, 183, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+/* ── RAINBOW RIPPLE TOUCH EFFECT ── */
+.rainbow-ripple {
+  position: absolute !important;
+  border-radius: 50% !important;
+  pointer-events: none !important;
+  z-index: 999999 !important;
+  transform: translate(-50%, -50%) scale(0);
+  background: radial-gradient(circle, 
+    rgba(255, 0, 96, 0.95) 0%, 
+    rgba(255, 154, 0, 0.95) 18%, 
+    rgba(255, 221, 0, 0.95) 36%, 
+    rgba(0, 230, 118, 0.95) 54%, 
+    rgba(0, 200, 255, 0.95) 72%, 
+    rgba(180, 0, 255, 0.95) 88%,
+    transparent 100%) !important;
+  box-shadow: 0 0 35px rgba(255, 255, 255, 0.95), 0 0 70px rgba(0, 229, 255, 0.85) !important;
+  animation: rainbowExpand 0.65s cubic-bezier(0.1, 0.8, 0.2, 1) forwards !important;
+}
+
+@keyframes rainbowExpand {
+  0% {
+    width: 0px;
+    height: 0px;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    filter: brightness(1.5) hue-rotate(0deg);
+  }
+  50% {
+    opacity: 0.95;
+    filter: brightness(1.9) hue-rotate(180deg);
+  }
+  100% {
+    width: 380px;
+    height: 380px;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.8) rotate(360deg);
+    filter: brightness(1.2) hue-rotate(360deg);
+  }
+}
+</style>
+<script>
+(function(){
+  function triggerRainbowRipple(e) {
+    var btn = e.target.closest('button, .btn, [role="button"], input[type="button"], input[type="submit"], .rev-ctrl-btn, .plz-sbtn, .btn-xs, .chest-card');
+    if(!btn) return;
+
+    var rect = btn.getBoundingClientRect();
+    var clientX = e.clientX;
+    var clientY = e.clientY;
+
+    if((!clientX && clientX !== 0) && e.touches && e.touches[0]){
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    }
+    if((!clientX && clientX !== 0) && e.changedTouches && e.changedTouches[0]){
+      clientX = e.changedTouches[0].clientX;
+      clientY = e.changedTouches[0].clientY;
+    }
+    if(!clientX && clientX !== 0) {
+      clientX = rect.left + rect.width / 2;
+      clientY = rect.top + rect.height / 2;
+    }
+
+    var x = clientX - rect.left;
+    var y = clientY - rect.top;
+
+    var ripple = document.createElement('span');
+    ripple.className = 'rainbow-ripple';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+
+    btn.appendChild(ripple);
+
+    setTimeout(function(){
+      if(ripple && ripple.parentNode) {
+        ripple.parentNode.removeChild(ripple);
+      }
+    }, 700);
+  }
+
+  document.addEventListener('pointerdown', triggerRainbowRipple, { passive: true });
+})();
+</script>
+
 </head>
 <body>
 <canvas id="c"></canvas>
