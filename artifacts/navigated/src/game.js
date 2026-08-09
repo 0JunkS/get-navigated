@@ -4287,15 +4287,32 @@ document.getElementById('diff-start-btn').addEventListener('click',function(){
 });
 document.getElementById('diff-back-btn').addEventListener('click',_closeDiffSelect);
 
-// Intercept btn-cont and btn-next to show difficulty first
+// Rollback btn-cont to load current progress directly without difficulty selection
 (function(){
-  document.getElementById('btn-cont').onclick=function(){_openDiffSelect(progress);};
-  document.getElementById('btn-next').onclick=function(){
-    if(typeof lvIdx!=='undefined')_openDiffSelect(lvIdx+1);
-  };
-  document.getElementById('btn-retry').onclick=function(){
-    if(typeof lvIdx!=='undefined')_openDiffSelect(lvIdx);
-  };
+  var btnCont = document.getElementById('btn-cont');
+  if(btnCont){
+    btnCont.onclick = function(){
+      if(typeof loadLevel === 'function' && typeof progress !== 'undefined'){
+        loadLevel(progress);
+      }
+    };
+  }
+  var btnNext = document.getElementById('btn-next');
+  if(btnNext){
+    btnNext.onclick = function(){
+      if(typeof loadLevel === 'function' && typeof lvIdx !== 'undefined'){
+        loadLevel(lvIdx + 1);
+      }
+    };
+  }
+  var btnRetry = document.getElementById('btn-retry');
+  if(btnRetry){
+    btnRetry.onclick = function(){
+      if(typeof loadLevel === 'function' && typeof lvIdx !== 'undefined'){
+        loadLevel(lvIdx);
+      }
+    };
+  }
 })();
 
 // Difficulty-aware score multiplier: multiply coins earned by diff multiplier
@@ -8110,3 +8127,553 @@ window.closePlaza=closePlaza;
 
 
 document.getElementById('sdm-close')?.addEventListener('click',()=>{document.getElementById('skin-detail-modal').style.display='none';});
+
+
+// ============================================================================
+// 3D REVERSE NAVIGATED (리버스 네비게이티드) MINIGAME ENGINE
+// ============================================================================
+(function(){
+  let reverseLevel = 1;
+  let currentGridSize = { w: 3, h: 3, d: 2 };
+  let targetCells = [];
+  let candidatePieces = [];
+  let placedPieces = [];
+  let selectedPieceId = null;
+  let activeRot = { rx: 0, ry: 0, rz: 0 };
+  
+  let scene, camera, renderer, controls;
+  let containerEl = null;
+  let gridMeshGroup = null;
+  let raycaster, mouse;
+  let isReverseActive = false;
+
+  const PALETTE = [
+    0x3a86ff, 0x4cc9f0, 0x7209b7, 0xf72585,
+    0xff9f1c, 0xff0054, 0x06d6a0, 0x118ab2
+  ];
+
+  function loadReverseProgress(){
+    try {
+      const saved = localStorage.getItem('e3_reverse_lvl');
+      if(saved) reverseLevel = parseInt(saved, 10) || 1;
+    } catch(e){}
+  }
+  function saveReverseProgress(){
+    try {
+      localStorage.setItem('e3_reverse_lvl', reverseLevel.toString());
+    } catch(e){}
+  }
+
+  // 100% Solvability Guaranteed Procedural 3D Level Generator (Carving Algorithm)
+  function generateSolvableReverseLevel(stage) {
+    let w = 3, h = 3, d = 2;
+    if(stage >= 2 && stage < 4) { w = 3; h = 3; d = 3; }
+    else if(stage >= 4 && stage < 7) { w = 4; h = 3; d = 3; }
+    else if(stage >= 7 && stage < 10) { w = 4; h = 4; d = 3; }
+    else if(stage >= 10) { w = 4; h = 4; d = 4; }
+
+    currentGridSize = { w, h, d };
+
+    let grid = Array.from({length: w}, () => 
+      Array.from({length: h}, () => 
+        Array(d).fill(false)
+      )
+    );
+
+    let emptyCells = [];
+    for(let x=0; x<w; x++){
+      for(let y=0; y<h; y++){
+        for(let z=0; z<d; z++){
+          emptyCells.push({x, y, z});
+        }
+      }
+    }
+    targetCells = [...emptyCells];
+
+    let pieces = [];
+    let pieceIdCounter = 1;
+
+    while(emptyCells.length > 0) {
+      let seedIdx = Math.floor(Math.random() * emptyCells.length);
+      let seed = emptyCells[seedIdx];
+
+      let targetLen = Math.floor(Math.random() * 3) + 2;
+      let pieceBlocks = [ {x: seed.x, y: seed.y, z: seed.z} ];
+      grid[seed.x][seed.y][seed.z] = true;
+      emptyCells.splice(seedIdx, 1);
+
+      const DIRS = [
+        {x: 1, y: 0, z: 0}, {x: -1, y: 0, z: 0},
+        {x: 0, y: 1, z: 0}, {x: 0, y: -1, z: 0},
+        {x: 0, y: 0, z: 1}, {x: 0, y: 0, z: -1}
+      ];
+
+      let curr = { ...seed };
+      let currDir = DIRS[Math.floor(Math.random() * DIRS.length)];
+
+      for(let len=1; len<targetLen; len++){
+        if(Math.random() < 0.4 || len === 1){
+          currDir = DIRS[Math.floor(Math.random() * DIRS.length)];
+        }
+        let nx = curr.x + currDir.x;
+        let ny = curr.y + currDir.y;
+        let nz = curr.z + currDir.z;
+
+        if(nx >= 0 && nx < w && ny >= 0 && ny < h && nz >= 0 && nz < d && !grid[nx][ny][nz]) {
+          grid[nx][ny][nz] = true;
+          pieceBlocks.push({x: nx, y: ny, z: nz});
+          curr = {x: nx, y: ny, z: nz};
+          let idxInEmpty = emptyCells.findIndex(c => c.x === nx && c.y === ny && c.z === nz);
+          if(idxInEmpty !== -1) emptyCells.splice(idxInEmpty, 1);
+        } else {
+          let validDirs = DIRS.filter(d => {
+            let vx = curr.x + d.x, vy = curr.y + d.y, vz = curr.z + d.z;
+            return vx >= 0 && vx < w && vy >= 0 && vy < h && vz >= 0 && vz < d && !grid[vx][vy][vz];
+          });
+          if(validDirs.length > 0){
+            let d = validDirs[Math.floor(Math.random() * validDirs.length)];
+            let vx = curr.x + d.x, vy = curr.y + d.y, vz = curr.z + d.z;
+            grid[vx][vy][vz] = true;
+            pieceBlocks.push({x: vx, y: vy, z: vz});
+            curr = {x: vx, y: vy, z: vz};
+            let idxInEmpty = emptyCells.findIndex(c => c.x === vx && c.y === vy && c.z === vz);
+            if(idxInEmpty !== -1) emptyCells.splice(idxInEmpty, 1);
+          } else {
+            break;
+          }
+        }
+      }
+
+      let origin = pieceBlocks[0];
+      let relBlocks = pieceBlocks.map(b => ({
+        x: b.x - origin.x,
+        y: b.y - origin.y,
+        z: b.z - origin.z
+      }));
+
+      let headDir = {x: 1, y: 0, z: 0};
+      if(pieceBlocks.length >= 2){
+        let last = pieceBlocks[pieceBlocks.length - 1];
+        let prev = pieceBlocks[pieceBlocks.length - 2];
+        headDir = {
+          x: Math.sign(last.x - prev.x),
+          y: Math.sign(last.y - prev.y),
+          z: Math.sign(last.z - prev.z)
+        };
+      }
+
+      pieces.push({
+        id: pieceIdCounter++,
+        blocks: relBlocks,
+        solutionPos: { ...origin },
+        color: PALETTE[(pieceIdCounter - 1) % PALETTE.length],
+        headDir: headDir
+      });
+    }
+
+    pieces.sort(() => Math.random() - 0.5);
+    return pieces;
+  }
+
+  function rotate3DPoint(pt, rx, ry, rz) {
+    let {x, y, z} = pt;
+
+    let stepsX = ((rx % 4) + 4) % 4;
+    for(let i=0; i<stepsX; i++){
+      let temp = y; y = -z; z = temp;
+    }
+    let stepsY = ((ry % 4) + 4) % 4;
+    for(let i=0; i<stepsY; i++){
+      let temp = x; x = z; z = -temp;
+    }
+    let stepsZ = ((rz % 4) + 4) % 4;
+    for(let i=0; i<stepsZ; i++){
+      let temp = x; x = -y; y = temp;
+    }
+
+    return { x: Math.round(x), y: Math.round(y), z: Math.round(z) };
+  }
+
+  function getRotatedBlocks(piece, rot) {
+    return piece.blocks.map(b => {
+      let r = rotate3DPoint(b, rot.rx, rot.ry, rot.rz);
+      return {x: r.x, y: r.y, z: r.z};
+    });
+  }
+
+  function initThreeScene() {
+    containerEl = document.getElementById('reverse-canvas-container');
+    if(!containerEl) return;
+    containerEl.innerHTML = '';
+
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x06061a);
+
+    camera = new THREE.PerspectiveCamera(45, containerEl.clientWidth / containerEl.clientHeight, 0.1, 1000);
+    camera.position.set(6, 7, 9);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(containerEl.clientWidth, containerEl.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    containerEl.appendChild(renderer.domElement);
+
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.maxPolarAngle = Math.PI / 2 + 0.1;
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    scene.add(ambientLight);
+
+    const dirLight1 = new THREE.DirectionalLight(0x4cc9f0, 1.2);
+    dirLight1.position.set(10, 15, 10);
+    scene.add(dirLight1);
+
+    const dirLight2 = new THREE.DirectionalLight(0xf72585, 0.8);
+    dirLight2.position.set(-10, -10, -5);
+    scene.add(dirLight2);
+
+    raycaster = new THREE.Raycaster();
+    mouse = new THREE.Vector2();
+
+    window.addEventListener('resize', onWindowResize);
+    renderer.domElement.addEventListener('pointerdown', onPointerDown);
+  }
+
+  function onWindowResize() {
+    if(!containerEl || !camera || !renderer) return;
+    camera.aspect = containerEl.clientWidth / containerEl.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(containerEl.clientWidth, containerEl.clientHeight);
+  }
+
+  function renderTargetGrid() {
+    if(gridMeshGroup) scene.remove(gridMeshGroup);
+    gridMeshGroup = new THREE.Group();
+
+    let {w, h, d} = currentGridSize;
+    let offsetX = (w - 1) / 2;
+    let offsetY = (h - 1) / 2;
+    let offsetZ = (d - 1) / 2;
+
+    targetCells.forEach(cell => {
+      let geom = new THREE.BoxGeometry(0.95, 0.95, 0.95);
+      let edges = new THREE.EdgesGeometry(geom);
+      let lineMat = new THREE.LineBasicMaterial({ color: 0x4cc9f0, transparent: true, opacity: 0.35 });
+      let wireframe = new THREE.LineSegments(edges, lineMat);
+
+      let fillMat = new THREE.MeshPhongMaterial({
+        color: 0x14183c,
+        transparent: true,
+        opacity: 0.25,
+        shininess: 80
+      });
+      let fillMesh = new THREE.Mesh(geom, fillMat);
+      fillMesh.userData = { isGridSlot: true, gridPos: {x: cell.x, y: cell.y, z: cell.z} };
+
+      let cellGroup = new THREE.Group();
+      cellGroup.position.set(cell.x - offsetX, cell.y - offsetY, cell.z - offsetZ);
+      cellGroup.add(fillMesh);
+      cellGroup.add(wireframe);
+
+      gridMeshGroup.add(cellGroup);
+    });
+
+    scene.add(gridMeshGroup);
+
+    let maxDim = Math.max(w, h, d);
+    camera.position.set(maxDim * 1.8, maxDim * 2.0, maxDim * 2.4);
+    controls.target.set(0, 0, 0);
+    controls.update();
+  }
+
+  function createPieceMeshGroup(piece, rot, color) {
+    let group = new THREE.Group();
+    let rotatedBlocks = getRotatedBlocks(piece, rot);
+
+    let mat = new THREE.MeshStandardMaterial({
+      color: color,
+      roughness: 0.3,
+      metalness: 0.4,
+      emissive: color,
+      emissiveIntensity: 0.15
+    });
+
+    rotatedBlocks.forEach((b, idx) => {
+      let geom = new THREE.BoxGeometry(0.92, 0.92, 0.92);
+      let mesh = new THREE.Mesh(geom, mat);
+      mesh.position.set(b.x, b.y, b.z);
+      group.add(mesh);
+
+      if(idx === rotatedBlocks.length - 1) {
+        let rotDir = rotate3DPoint(piece.headDir, rot.rx, rot.ry, rot.rz);
+        let coneGeom = new THREE.ConeGeometry(0.35, 0.6, 16);
+        let coneMat = new THREE.MeshStandardMaterial({
+          color: 0xffffff,
+          roughness: 0.1,
+          metalness: 0.8,
+          emissive: 0xffffff,
+          emissiveIntensity: 0.4
+        });
+        let cone = new THREE.Mesh(coneGeom, coneMat);
+
+        let dirVec = new THREE.Vector3(rotDir.x, rotDir.y, rotDir.z).normalize();
+        let upVec = new THREE.Vector3(0, 1, 0);
+        cone.quaternion.setFromUnitVectors(upVec, dirVec);
+        cone.position.set(b.x + rotDir.x * 0.45, b.y + rotDir.y * 0.45, b.z + rotDir.z * 0.45);
+        group.add(cone);
+      }
+    });
+
+    return group;
+  }
+
+  function updatePieceRackUI() {
+    let rackEl = document.getElementById('reverse-piece-rack');
+    if(!rackEl) return;
+    rackEl.innerHTML = '';
+
+    candidatePieces.forEach(piece => {
+      let isPlaced = placedPieces.some(p => p.id === piece.id);
+      if(isPlaced) return;
+
+      let card = document.createElement('div');
+      card.className = `rev-piece-card ${selectedPieceId === piece.id ? 'selected' : ''}`;
+      card.dataset.id = piece.id;
+
+      let label = document.createElement('div');
+      label.className = 'rev-piece-label';
+      label.textContent = `${piece.blocks.length}칸 화살표`;
+
+      let icon = document.createElement('div');
+      icon.style.fontSize = '32px';
+      icon.style.filter = 'drop-shadow(0 0 8px rgba(255,255,255,0.6))';
+      icon.textContent = piece.blocks.length >= 4 ? '🏹' : piece.blocks.length === 3 ? '🎯' : '↗️';
+
+      card.appendChild(icon);
+      card.appendChild(label);
+
+      card.addEventListener('click', () => {
+        if(selectedPieceId === piece.id) {
+          selectedPieceId = null;
+        } else {
+          selectedPieceId = piece.id;
+        }
+        updatePieceRackUI();
+      });
+
+      rackEl.appendChild(card);
+    });
+  }
+
+  function canPlacePiece(piece, rot, gx, gy, gz) {
+    let {w, h, d} = currentGridSize;
+    let rotatedBlocks = getRotatedBlocks(piece, rot);
+
+    for(let b of rotatedBlocks) {
+      let targetX = gx + b.x;
+      let targetY = gy + b.y;
+      let targetZ = gz + b.z;
+
+      if(targetX < 0 || targetX >= w || targetY < 0 || targetY >= h || targetZ < 0 || targetZ >= d) {
+        return false;
+      }
+
+      for(let placed of placedPieces) {
+        let placedRotated = getRotatedBlocks(placed.piece, placed.rot);
+        for(let pb of placedRotated) {
+          let px = placed.gridPos.x + pb.x;
+          let py = placed.gridPos.y + pb.y;
+          let pz = placed.gridPos.z + pb.z;
+
+          if(targetX === px && targetY === py && targetZ === pz) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  function onPointerDown(e) {
+    if(!isReverseActive || !selectedPieceId) return;
+
+    let rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    let intersects = raycaster.intersectObjects(scene.children, true);
+
+    for(let hit of intersects) {
+      if(hit.object.userData && hit.object.userData.isGridSlot) {
+        let gridPos = hit.object.userData.gridPos;
+        let piece = candidatePieces.find(p => p.id === selectedPieceId);
+        if(!piece) return;
+
+        if(canPlacePiece(piece, activeRot, gridPos.x, gridPos.y, gridPos.z)) {
+          placePieceInGrid(piece, activeRot, gridPos);
+          selectedPieceId = null;
+          updatePieceRackUI();
+          checkReverseWinCondition();
+        } else {
+          let flash = document.getElementById('blocked-flash');
+          if(flash){
+            flash.textContent = '조각이 들어가지 않습니다! 💥';
+            flash.style.opacity = '1';
+            setTimeout(() => { flash.style.opacity = '0'; }, 1000);
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  function placePieceInGrid(piece, rot, gridPos) {
+    let {w, h, d} = currentGridSize;
+    let offsetX = (w - 1) / 2;
+    let offsetY = (h - 1) / 2;
+    let offsetZ = (d - 1) / 2;
+
+    let meshGroup = createPieceMeshGroup(piece, rot, piece.color);
+    meshGroup.position.set(gridPos.x - offsetX, gridPos.y - offsetY, gridPos.z - offsetZ);
+    scene.add(meshGroup);
+
+    placedPieces.push({
+      id: piece.id,
+      piece: piece,
+      rot: { ...rot },
+      gridPos: { ...gridPos },
+      meshGroup: meshGroup
+    });
+  }
+
+  function recallLastPiece() {
+    if(placedPieces.length === 0) return;
+    let last = placedPieces.pop();
+    if(last && last.meshGroup) {
+      scene.remove(last.meshGroup);
+    }
+    updatePieceRackUI();
+  }
+
+  function checkReverseWinCondition() {
+    let totalPlacedPieces = placedPieces.length;
+    if(totalPlacedPieces === candidatePieces.length) {
+      setTimeout(() => {
+        onReverseLevelWin();
+      }, 400);
+    }
+  }
+
+  function onReverseLevelWin() {
+    let winOv = document.getElementById('reverse-win-ov');
+    let winCoinsEl = document.getElementById('rev-win-coins');
+    let coinsEarned = 100 + reverseLevel * 20;
+
+    if(winCoinsEl) winCoinsEl.textContent = coinsEarned.toString();
+
+    if(typeof coins !== 'undefined') {
+      coins += coinsEarned;
+      if(typeof updateHUD === 'function') updateHUD();
+    }
+
+    if(winOv) winOv.style.display = 'flex';
+  }
+
+  function startReverseStage(stageNum) {
+    reverseLevel = stageNum;
+    saveReverseProgress();
+
+    let lvlNumEl = document.getElementById('rev-lvl-num');
+    if(lvlNumEl) lvlNumEl.textContent = reverseLevel.toString();
+
+    placedPieces.forEach(p => { if(p.meshGroup) scene.remove(p.meshGroup); });
+    placedPieces = [];
+    selectedPieceId = null;
+    activeRot = { rx: 0, ry: 0, rz: 0 };
+
+    candidatePieces = generateSolvableReverseLevel(reverseLevel);
+    renderTargetGrid();
+    updatePieceRackUI();
+
+    let winOv = document.getElementById('reverse-win-ov');
+    if(winOv) winOv.style.display = 'none';
+  }
+
+  function animateReverse() {
+    if(!isReverseActive) return;
+    requestAnimationFrame(animateReverse);
+
+    if(controls) controls.update();
+    if(renderer && scene && camera) {
+      renderer.render(scene, camera);
+    }
+  }
+
+  function openReverseGame() {
+    loadReverseProgress();
+    isReverseActive = true;
+
+    let ov = document.getElementById('reverse-ov');
+    if(ov) ov.classList.add('on');
+
+    let menu = document.getElementById('menu');
+    if(menu) menu.classList.add('hidden');
+
+    initThreeScene();
+    startReverseStage(reverseLevel);
+    animateReverse();
+  }
+
+  function closeReverseGame() {
+    isReverseActive = false;
+
+    let ov = document.getElementById('reverse-ov');
+    if(ov) ov.classList.remove('on');
+
+    let menu = document.getElementById('menu');
+    if(menu) menu.classList.remove('hidden');
+
+    if(renderer && renderer.domElement) {
+      renderer.domElement.remove();
+    }
+  }
+
+  function bindReverseUI() {
+    let btnReverse = document.getElementById('btn-reverse');
+    if(btnReverse) btnReverse.onclick = () => openReverseGame();
+
+    let btnExit = document.getElementById('reverse-exit');
+    if(btnExit) btnExit.onclick = () => closeReverseGame();
+
+    let btnNext = document.getElementById('rev-btn-next');
+    if(btnNext) btnNext.onclick = () => startReverseStage(reverseLevel + 1);
+
+    let btnMenu = document.getElementById('rev-btn-menu');
+    if(btnMenu) btnMenu.onclick = () => {
+      let winOv = document.getElementById('reverse-win-ov');
+      if(winOv) winOv.style.display = 'none';
+      closeReverseGame();
+    };
+
+    let btnRotX = document.getElementById('rev-rot-x');
+    if(btnRotX) btnRotX.onclick = () => { activeRot.rx = (activeRot.rx + 1) % 4; updatePieceRackUI(); };
+
+    let btnRotY = document.getElementById('rev-rot-y');
+    if(btnRotY) btnRotY.onclick = () => { activeRot.ry = (activeRot.ry + 1) % 4; updatePieceRackUI(); };
+
+    let btnRotZ = document.getElementById('rev-rot-z');
+    if(btnRotZ) btnRotZ.onclick = () => { activeRot.rz = (activeRot.rz + 1) % 4; updatePieceRackUI(); };
+
+    let btnRecall = document.getElementById('rev-recall-btn');
+    if(btnRecall) btnRecall.onclick = () => recallLastPiece();
+  }
+
+  if(document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindReverseUI);
+  } else {
+    bindReverseUI();
+  }
+})();

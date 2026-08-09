@@ -4,11 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>NAVIGATED</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ── 터치 이슈 글로벌 수정 ── */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:#06061a}
-body{font-family:'Inter','Apple SD Gothic Neo','Noto Sans KR',sans-serif;user-select:none;touch-action:pan-x pan-y}
+body{font-family:'Outfit','Plus Jakarta Sans','Noto Sans KR','Apple SD Gothic Neo',sans-serif;user-select:none;touch-action:pan-x pan-y}
 /* Three.js 메인 캔버스만 touch-action:none (id="c") */
 canvas#c{display:block;position:fixed;inset:0;width:100%!important;height:100%!important;touch-action:none}
 /* 기타 캔버스는 touch-action 유지 */
@@ -32,21 +35,143 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 #menu button,#menu a,#menu [role="button"],#menu input,#menu label,#menu select{touch-action:manipulation!important}
 #menu:not(.hidden){pointer-events:auto}
 #menu.hidden{opacity:0;pointer-events:none}#menu.hidden *{pointer-events:none!important}
-#menu-top{padding:52px 0 0;text-align:center;pointer-events:none;flex-shrink:0;margin-bottom:32px}
-#menu-top h1{color:#fff;font-size:32px;font-weight:900;letter-spacing:5px;text-shadow:0 0 32px rgba(76,201,240,0.7)}
-#menu-top .tag{color:rgba(170,170,220,0.7);font-size:12px;margin-top:6px;letter-spacing:2px}
-#menu-bottom{padding:0 28px calc(44px + env(safe-area-inset-bottom, 0px));display:flex;flex-direction:column;gap:10px;pointer-events:all;flex-shrink:0}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:15px 32px;border-radius:50px;font-size:15px;font-weight:700;cursor:pointer;border:none;outline:none;color:#fff;transition:transform .12s,opacity .12s;width:100%}
-.btn:active{transform:scale(0.96);opacity:0.85}
-.btn-primary{background:linear-gradient(135deg,#4361ee,#4cc9f0);box-shadow:0 0 28px rgba(67,97,238,0.5)}
-.btn-secondary{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);backdrop-filter:blur(8px)}
-.btn-shop{background:linear-gradient(135deg,#f77f00,#d62828);box-shadow:0 0 22px rgba(247,127,0,0.4)}
-.btn-multi{background:linear-gradient(135deg,#7209b7,#f72585);box-shadow:0 0 28px rgba(247,37,133,0.45)}
-.btn-sm{width:auto;padding:11px 24px;font-size:14px}
-/* 솔로·멀티 버튼 터치 영역 확대 */
-#btn-start,#btn-multi{padding:22px 32px;font-size:18px;min-height:68px;letter-spacing:.3px}
+#menu-top{padding:44px 0 0;text-align:center;pointer-events:none;flex-shrink:0;margin-bottom:24px}
+#menu-top h1{color:#fff;font-size:38px;font-weight:900;letter-spacing:6px;text-shadow:0 0 30px rgba(76,201,240,0.8),0 0 60px rgba(67,97,238,0.4);font-family:'Outfit',sans-serif;}
+#menu-top .tag{color:rgba(170,190,255,0.75);font-size:12px;margin-top:4px;letter-spacing:4px;font-weight:700;}
+#menu-bottom{padding:0 22px calc(36px + env(safe-area-inset-bottom, 0px));display:flex;flex-direction:column;gap:12px;pointer-events:all;flex-shrink:0;max-width:440px;margin:0 auto;width:100%;}
 
-#coin-pill{position:absolute;top:18px;right:18px;background:rgba(10,10,35,0.8);border:1px solid rgba(255,215,0,0.35);border-radius:50px;padding:8px 16px;display:none;align-items:center;gap:6px;pointer-events:all;font-size:14px;font-weight:700;color:#FFD700;cursor:pointer;backdrop-filter:blur(10px)}
+/* ── ULTRASLEEK BUTTON DESIGN ── */
+.btn{
+  position:relative;
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  padding:16px 28px;border-radius:18px;font-size:16px;font-weight:800;
+  cursor:pointer;border:1px solid rgba(255,255,255,0.15);outline:none;color:#fff;
+  transition:all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  width:100%;letter-spacing:0.4px;
+  background:rgba(20,24,55,0.75);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 8px 24px -6px rgba(0,0,0,0.5), inset 0 1px 0 0 rgba(255,255,255,0.2);
+  overflow:hidden;
+}
+.btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+  pointer-events:none;border-radius:inherit;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px -4px rgba(0,0,0,0.6), inset 0 1px 0 0 rgba(255,255,255,0.3);}
+.btn:active{transform:translateY(1px) scale(0.97);opacity:0.9;}
+
+.btn-primary{
+  background:linear-gradient(135deg, #3a86ff 0%, #4cc9f0 100%);
+  border-color:rgba(120,210,255,0.5);
+  box-shadow:0 10px 30px -4px rgba(58,134,255,0.55), inset 0 1px 0 0 rgba(255,255,255,0.35);
+  text-shadow:0 2px 8px rgba(0,20,80,0.4);
+}
+.btn-reverse{
+  background:linear-gradient(135deg, #7209b7 0%, #f72585 100%);
+  border-color:rgba(247,37,133,0.5);
+  box-shadow:0 10px 30px -4px rgba(247,37,133,0.5), inset 0 1px 0 0 rgba(255,255,255,0.35);
+  text-shadow:0 2px 8px rgba(50,0,60,0.4);
+}
+.btn-secondary{
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.18);
+  backdrop-filter:blur(12px);
+}
+.btn-shop{
+  background:linear-gradient(135deg, #ff9f1c 0%, #ff4000 100%);
+  border-color:rgba(255,180,60,0.5);
+  box-shadow:0 10px 26px -4px rgba(255,100,0,0.45);
+}
+.btn-multi{
+  background:linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
+  border-color:rgba(180,100,255,0.4);
+  box-shadow:0 10px 28px -4px rgba(114,9,183,0.45);
+}
+.btn-sm{width:auto;padding:12px 22px;font-size:14px;border-radius:14px;}
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;}
+
+/* 버튼 내 뱃지 */
+.btn-badge{
+  background:#f72585;color:#fff;font-size:10px;font-weight:900;
+  padding:2px 8px;border-radius:50px;letter-spacing:1px;
+  box-shadow:0 0 10px rgba(247,37,133,0.8);animation:badgePulse 1.5s ease-in-out infinite;
+}
+@keyframes badgePulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+
+#btn-start,#btn-reverse{padding:20px 28px;font-size:18px;border-radius:20px;letter-spacing:0.5px;}
+
+#coin-pill{position:absolute;top:18px;right:18px;background:rgba(10,10,35,0.85);border:1px solid rgba(255,215,0,0.4);border-radius:50px;padding:8px 18px;display:none;align-items:center;gap:8px;pointer-events:all;font-size:14px;font-weight:800;color:#FFD700;cursor:pointer;backdrop-filter:blur(12px);box-shadow:0 0 20px rgba(255,215,0,0.2);}
+
+/* ── REVERSE NAVIGATED OVERLAY STYLING ── */
+#reverse-ov{
+  position:fixed;inset:0;z-index:9000;display:none;flex-direction:column;
+  background:#06061a;overflow:hidden;pointer-events:all;user-select:none;
+}
+#reverse-ov.on{display:flex;}
+#reverse-topbar{
+  position:absolute;top:0;left:0;right:0;height:64px;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;padding:0 18px;
+  background:linear-gradient(180deg, rgba(6,6,26,0.9) 0%, transparent 100%);
+  pointer-events:auto;
+}
+#reverse-exit{
+  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);
+  color:#fff;border-radius:50px;padding:8px 18px;font-size:13px;font-weight:800;
+  cursor:pointer;backdrop-filter:blur(10px);transition:transform 0.12s;
+}
+#reverse-exit:active{transform:scale(0.94);}
+#reverse-title{
+  font-size:18px;font-weight:900;color:#f72585;
+  text-shadow:0 0 16px rgba(247,37,133,0.7);letter-spacing:1px;
+}
+#reverse-level-badge{
+  background:rgba(76,201,240,0.15);border:1px solid rgba(76,201,240,0.4);
+  color:#4cc9f0;font-size:13px;font-weight:800;padding:6px 14px;border-radius:50px;
+}
+
+#reverse-canvas-container{position:absolute;inset:0;width:100%;height:100%;}
+
+/* 하단 3D 조각 트레이 및 조작 바 */
+#reverse-bottom-panel{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:14px 18px calc(18px + env(safe-area-inset-bottom,0px));
+  background:linear-gradient(0deg, rgba(6,6,26,0.95) 0%, rgba(6,6,26,0.7) 80%, transparent 100%);
+  display:flex;flex-direction:column;gap:12px;pointer-events:auto;z-index:10;
+}
+#reverse-controls-row{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.rev-ctrl-btn{
+  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);
+  color:#fff;font-size:13px;font-weight:800;padding:10px 16px;border-radius:14px;
+  backdrop-filter:blur(10px);cursor:pointer;transition:all 0.15s;
+}
+.rev-ctrl-btn:hover{background:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.4);}
+.rev-ctrl-btn:active{transform:scale(0.95);}
+.rev-ctrl-btn.active-rot{background:rgba(247,37,133,0.3);border-color:#f72585;color:#fff;box-shadow:0 0 14px rgba(247,37,133,0.4);}
+
+#reverse-piece-rack{
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  overflow-x:auto;padding:8px 4px;min-height:96px;
+}
+.rev-piece-card{
+  width:88px;height:88px;border-radius:16px;
+  background:rgba(20,24,60,0.8);border:2px solid rgba(100,120,255,0.25);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;transition:all 0.2s cubic-bezier(0.2,0.8,0.2,1);
+  box-shadow:0 4px 14px rgba(0,0,0,0.4);flex-shrink:0;
+}
+.rev-piece-card:hover{transform:translateY(-4px);border-color:rgba(76,201,240,0.6);}
+.rev-piece-card.selected{
+  border-color:#f72585;background:rgba(247,37,133,0.18);
+  box-shadow:0 0 20px rgba(247,37,133,0.5), inset 0 0 10px rgba(247,37,133,0.3);
+  transform:translateY(-6px) scale(1.04);
+}
+.rev-piece-card canvas{width:76px;height:76px;pointer-events:none;}
+.rev-piece-label{
+  position:absolute;bottom:4px;font-size:10px;font-weight:800;color:rgba(255,255,255,0.7);
+}
 
 /* ── EXIT ────────────────────────────────────────── */
 #exit-btn{position:absolute;top:18px;left:18px;background:rgba(8,8,28,0.78);border:1px solid rgba(255,255,255,0.14);border-radius:50px;padding:9px 18px;color:rgba(255,255,255,0.85);font-size:13px;font-weight:700;cursor:pointer;pointer-events:all;backdrop-filter:blur(10px);display:none;z-index:50;transition:opacity .15s}
@@ -1175,20 +1300,67 @@ window._FB_CFG={
     </div>
     <div id="menu-bottom">
       <button class="btn btn-primary" id="btn-start">▶ 게임 시작</button>
+      <button class="btn btn-reverse" id="btn-reverse">🔄 리버스 네비게이티드 <span class="btn-badge">NEW 3D</span></button>
       <button class="btn btn-secondary" id="btn-cont" style="display:none">↩ 이어하기</button>
       <button class="btn" id="btn-plaza" style="display:none;background:linear-gradient(135deg,#1a4a1a,#2a7a2a);border:1px solid rgba(80,200,80,.4)">🏙️ 애로우 광장</button>
-      <button class="btn btn-multi" id="btn-multi">⚡ 멀티플레이</button>
-      <button class="btn btn-shop" id="btn-shop">🛒 상점</button>
-      <button class="btn" id="btn-eromap" style="background:linear-gradient(135deg,#0a9396,#4cc9f0);box-shadow:0 0 24px rgba(10,147,150,.45)">🗺️ 에로맵</button>
-      <button class="btn btn-xs" id="btn-modes" style="background:linear-gradient(135deg,#1a1a4e,#2d2d80);border:1px solid rgba(100,100,255,.35);font-size:14px;padding:13px">🎮 게임 모드 &amp; 컨텐츠</button>
-      <button class="btn btn-xs" id="btn-settings">⚙️ 설정</button>
-      <div class="btn-friend-wrap" style="position:relative">
-        <button class="btn btn-secondary" id="btn-friend">👥 친구</button>
-        <span id="friend-badge" style="position:absolute;top:-4px;right:-4px;background:#f72585;color:#fff;font-size:10px;font-weight:900;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center">0</span>
+      
+      <div class="btn-grid">
+        <button class="btn btn-multi" id="btn-multi">⚡ 멀티플레이</button>
+        <button class="btn" id="btn-eromap" style="background:linear-gradient(135deg,#0a9396,#4cc9f0);box-shadow:0 0 24px rgba(10,147,150,.45)">🗺️ 에로맵</button>
       </div>
-      <div class="btn-bp-wrap" style="position:relative">
-        <button class="btn" id="btn-battlepass" style="background:linear-gradient(135deg,#7209b7,#f72585);box-shadow:0 0 24px rgba(114,9,183,.45)">🎖️ 배틀패스</button>
-        <span id="bp-badge" style="position:absolute;top:-4px;right:-4px;background:#f72585;color:#fff;font-size:10px;font-weight:900;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center">!</span>
+
+      <button class="btn btn-secondary" id="btn-modes">🎮 게임 모드 &amp; 컨텐츠</button>
+
+      <div class="btn-grid">
+        <button class="btn btn-shop" id="btn-shop">🛒 상점</button>
+        <div class="btn-friend-wrap" style="position:relative">
+          <button class="btn btn-secondary" id="btn-friend" style="width:100%">👥 친구</button>
+          <span id="friend-badge" style="position:absolute;top:-4px;right:-4px;background:#f72585;color:#fff;font-size:10px;font-weight:900;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center">0</span>
+        </div>
+      </div>
+
+      <div class="btn-grid">
+        <div class="btn-bp-wrap" style="position:relative;width:100%">
+          <button class="btn" id="btn-battlepass" style="width:100%;background:linear-gradient(135deg,#7209b7,#f72585);box-shadow:0 0 24px rgba(114,9,183,.45)">🎖️ 배틀패스</button>
+          <span id="bp-badge" style="position:absolute;top:-4px;right:-4px;background:#f72585;color:#fff;font-size:10px;font-weight:900;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center">!</span>
+        </div>
+        <button class="btn btn-secondary" id="btn-settings">⚙️ 설정</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVERSE NAVIGATED (3D BLOCK BLAST MINIGAME) OVERLAY -->
+  <div id="reverse-ov">
+    <div id="reverse-topbar">
+      <button id="reverse-exit">← 메뉴</button>
+      <div id="reverse-title">🔄 리버스 네비게이티드</div>
+      <div id="reverse-level-badge">STAGE <span id="rev-lvl-num">1</span></div>
+    </div>
+    <div id="reverse-canvas-container"></div>
+    <div id="reverse-bottom-panel">
+      <div id="reverse-controls-row">
+        <button class="rev-ctrl-btn" id="rev-rot-x">↻ X축 회전</button>
+        <button class="rev-ctrl-btn" id="rev-rot-y">↻ Y축 회전</button>
+        <button class="rev-ctrl-btn" id="rev-rot-z">↻ Z축 회전</button>
+        <button class="rev-ctrl-btn" id="rev-recall-btn" style="background:rgba(255,100,100,0.2);border-color:rgba(255,100,100,0.4)">↩ 조각 회수</button>
+      </div>
+      <div id="reverse-piece-rack">
+        <!-- 3D 조각 카드들이 동적으로 생성됨 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- REVERSE NAVIGATED WIN OVERLAY -->
+  <div class="overlay" id="reverse-win-ov" style="z-index:9100">
+    <div class="r-card">
+      <div class="r-emoji">💎</div>
+      <h2>3D 그리드 완성!</h2>
+      <div class="r-stars">⭐⭐⭐</div>
+      <div class="r-coins">💰 +<span id="rev-win-coins">100</span></div>
+      <p class="r-sub">모든 3D 화살표 조각을 완벽하게 맞추셨습니다!</p>
+      <div class="r-row">
+        <button class="btn btn-primary btn-sm" id="rev-btn-next">다음 스테이지 ▶</button>
+        <button class="btn btn-secondary btn-sm" id="rev-btn-menu">메뉴</button>
       </div>
     </div>
   </div>
