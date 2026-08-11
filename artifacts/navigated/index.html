@@ -67,12 +67,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
   box-shadow:0 10px 30px -4px rgba(58,134,255,0.55), inset 0 1px 0 0 rgba(255,255,255,0.35);
   text-shadow:0 2px 8px rgba(0,20,80,0.4);
 }
-.btn-reverse{
-  background:linear-gradient(135deg, #7209b7 0%, #f72585 100%);
-  border-color:rgba(247,37,133,0.5);
-  box-shadow:0 10px 30px -4px rgba(247,37,133,0.5), inset 0 1px 0 0 rgba(255,255,255,0.35);
-  text-shadow:0 2px 8px rgba(50,0,60,0.4);
-}
+
 .btn-secondary{
   background:rgba(255,255,255,0.08);
   border:1px solid rgba(255,255,255,0.18);
@@ -99,79 +94,11 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 }
 @keyframes badgePulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
 
-#btn-start,#btn-reverse{padding:20px 28px;font-size:18px;border-radius:20px;letter-spacing:0.5px;}
+#btn-start{padding:20px 28px;font-size:18px;border-radius:20px;letter-spacing:0.5px;}
 
 #coin-pill{position:absolute;top:18px;right:18px;background:rgba(10,10,35,0.85);border:1px solid rgba(255,215,0,0.4);border-radius:50px;padding:8px 18px;display:none;align-items:center;gap:8px;pointer-events:all;font-size:14px;font-weight:800;color:#FFD700;cursor:pointer;backdrop-filter:blur(12px);box-shadow:0 0 20px rgba(255,215,0,0.2);}
 
-/* ── REVERSE NAVIGATED OVERLAY STYLING ── */
-#reverse-ov{
-  position:fixed;inset:0;z-index:9000;display:none;flex-direction:column;
-  background:#06061a;overflow:hidden;pointer-events:all;user-select:none;
-}
-#reverse-ov.on{display:flex;}
-#reverse-topbar{
-  position:absolute;top:0;left:0;right:0;height:64px;z-index:10;
-  display:flex;align-items:center;justify-content:space-between;padding:0 18px;
-  background:linear-gradient(180deg, rgba(6,6,26,0.9) 0%, transparent 100%);
-  pointer-events:auto;
-}
-#reverse-exit{
-  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);
-  color:#fff;border-radius:50px;padding:8px 18px;font-size:13px;font-weight:800;
-  cursor:pointer;backdrop-filter:blur(10px);transition:transform 0.12s;
-}
-#reverse-exit:active{transform:scale(0.94);}
-#reverse-title{
-  font-size:18px;font-weight:900;color:#f72585;
-  text-shadow:0 0 16px rgba(247,37,133,0.7);letter-spacing:1px;
-}
-#reverse-level-badge{
-  background:rgba(76,201,240,0.15);border:1px solid rgba(76,201,240,0.4);
-  color:#4cc9f0;font-size:13px;font-weight:800;padding:6px 14px;border-radius:50px;
-}
 
-#reverse-canvas-container{position:absolute;inset:0;width:100%;height:100%;}
-
-/* 하단 3D 조각 트레이 및 조작 바 */
-#reverse-bottom-panel{
-  position:absolute;bottom:0;left:0;right:0;
-  padding:14px 18px calc(18px + env(safe-area-inset-bottom,0px));
-  background:linear-gradient(0deg, rgba(6,6,26,0.95) 0%, rgba(6,6,26,0.7) 80%, transparent 100%);
-  display:flex;flex-direction:column;gap:12px;pointer-events:auto;z-index:10;
-}
-#reverse-controls-row{
-  display:flex;align-items:center;justify-content:center;gap:10px;
-}
-.rev-ctrl-btn{
-  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);
-  color:#fff;font-size:13px;font-weight:800;padding:10px 16px;border-radius:14px;
-  backdrop-filter:blur(10px);cursor:pointer;transition:all 0.15s;
-}
-.rev-ctrl-btn:hover{background:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.4);}
-.rev-ctrl-btn:active{transform:scale(0.95);}
-.rev-ctrl-btn.active-rot{background:rgba(247,37,133,0.3);border-color:#f72585;color:#fff;box-shadow:0 0 14px rgba(247,37,133,0.4);}
-
-#reverse-piece-rack{
-  display:flex;align-items:center;justify-content:center;gap:14px;
-  overflow-x:auto;padding:8px 4px;min-height:96px;
-}
-.rev-piece-card{
-  width:88px;height:88px;border-radius:16px;
-  background:rgba(20,24,60,0.8);border:2px solid rgba(100,120,255,0.25);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  cursor:pointer;position:relative;transition:all 0.2s cubic-bezier(0.2,0.8,0.2,1);
-  box-shadow:0 4px 14px rgba(0,0,0,0.4);flex-shrink:0;
-}
-.rev-piece-card:hover{transform:translateY(-4px);border-color:rgba(76,201,240,0.6);}
-.rev-piece-card.selected{
-  border-color:#f72585;background:rgba(247,37,133,0.18);
-  box-shadow:0 0 20px rgba(247,37,133,0.5), inset 0 0 10px rgba(247,37,133,0.3);
-  transform:translateY(-6px) scale(1.04);
-}
-.rev-piece-card canvas{width:76px;height:76px;pointer-events:none;}
-.rev-piece-label{
-  position:absolute;bottom:4px;font-size:10px;font-weight:800;color:rgba(255,255,255,0.7);
-}
 
 /* ── EXIT ────────────────────────────────────────── */
 #exit-btn{position:absolute;top:18px;left:18px;background:rgba(8,8,28,0.78);border:1px solid rgba(255,255,255,0.14);border-radius:50px;padding:9px 18px;color:rgba(255,255,255,0.85);font-size:13px;font-weight:700;cursor:pointer;pointer-events:all;backdrop-filter:blur(10px);display:none;z-index:50;transition:opacity .15s}
@@ -232,72 +159,10 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 .b-own{background:rgba(90,200,90,0.25);color:#90ee90}
 .b-gacha{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff}
 .sk.gacha-locked{position:relative}
-.sk.gacha-locked::after{content:'🎴 에로맵 전용';position:absolute;inset:0;border-radius:inherit;background:rgba(15,5,30,0.72);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#c084fc;letter-spacing:1px;backdrop-filter:blur(1px)}
+.sk.gacha-locked::after{content:'🎴 가챠 전용';position:absolute;inset:0;border-radius:inherit;background:rgba(15,5,30,0.72);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#c084fc;letter-spacing:1px;backdrop-filter:blur(1px)}
 .sk-info-btn{margin-top:6px;width:100%;padding:4px 0;background:rgba(76,201,240,0.12);border:1px solid rgba(76,201,240,0.3);border-radius:8px;color:#4cc9f0;font-size:10px;font-weight:700;cursor:pointer;pointer-events:all}
 .sk-info-btn:active{background:rgba(76,201,240,0.25)}
 
-/* ═══════════════════════ EROMAP ═══════════════════════ */
-#eromap-ov{display:none;position:fixed;inset:0;z-index:9800;flex-direction:column;pointer-events:all;background:#06061a;overflow:hidden}
-#eromap-ov.on{display:flex}
-#eromap-topbar{position:absolute;top:0;left:0;right:0;height:52px;z-index:10;background:linear-gradient(180deg,rgba(0,0,0,.75) 0%,transparent 100%);display:flex;align-items:center;padding:0 14px;gap:10px;pointer-events:auto}
-#eromap-exit{pointer-events:all;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:50px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
-#eromap-title{font-size:15px;font-weight:900;color:#4cc9f0;text-shadow:0 0 14px rgba(76,201,240,.6);flex:1;text-align:center;letter-spacing:2px}
-#eromap-weather-txt{font-size:13px;color:rgba(255,255,255,.8);white-space:nowrap}
-#eromap-map{position:absolute;inset:0;width:100%;height:100%}
-/* 마커 CSS - 아래 AR 스타일 참고 */
-@keyframes eroPmPulse{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.8);opacity:0}}
-/* 에로맵 장식 오브 파티클 */
-.ero-map-orb{position:absolute;border-radius:50%;pointer-events:none;z-index:5;animation:eroOrbFloat var(--od,6s) ease-in-out infinite var(--odel,0s)}
-@keyframes eroOrbFloat{0%,100%{opacity:var(--oa,.25);transform:translate(0,0) scale(1)}40%{opacity:calc(var(--oa,.25)*1.6);transform:translate(var(--otx,8px),var(--oty,-12px)) scale(1.1)}70%{opacity:var(--oa,.18);transform:translate(var(--otx2,-5px),var(--oty2,6px)) scale(.92)}}
-/* 에로맵 수집반경 힌트 텍스트 */
-#eromap-radius-hint{position:absolute;top:64px;left:50%;transform:translateX(-50%);font-size:10px;color:rgba(76,201,240,.6);font-weight:700;letter-spacing:1px;pointer-events:none;white-space:nowrap;z-index:12;text-shadow:0 0 8px rgba(76,201,240,.4)}
-/* AR 게임 스타일 화살표 마커 */
-.ero-arrow-marker{position:relative;width:90px;height:100px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;filter:drop-shadow(0 6px 18px rgba(0,0,0,.7))}
-.ero-am-glow{position:absolute;top:4px;left:50%;transform:translateX(-50%);width:74px;height:74px;border-radius:50%;background:radial-gradient(circle,var(--rc,rgba(76,201,240,.6)) 0%,transparent 70%);animation:eroGlow 1.8s ease-in-out infinite;pointer-events:none}
-.ero-am-shadow{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:44px;height:8px;border-radius:50%;background:rgba(0,0,0,.5);filter:blur(4px);pointer-events:none}
-/* 이모지 기본 표시 (3D 렌더 전) */
-.ero-am-emoji{width:72px;height:72px;font-size:38px;z-index:1;display:flex;align-items:center;justify-content:center;animation:eroFloat 2.4s ease-in-out infinite;position:relative}
-/* 3D 모델 이미지 (렌더 완료 후) */
-.ero-am-3d-img{width:72px;height:72px;object-fit:contain;animation:eroFloat 2.4s ease-in-out infinite;filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));}
-/* 거리 표시 배지 */
-.ero-am-dist{position:absolute;bottom:0;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.75);border:1px solid var(--rc,rgba(76,201,240,.5));color:#fff;font-size:11px;font-weight:900;border-radius:50px;padding:2px 8px;white-space:nowrap;z-index:2;pointer-events:none;backdrop-filter:blur(4px)}
-/* 스킨명 표시 배지 */
-.ero-am-name{position:absolute;top:-20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:var(--rc,#4cc9f0);font-size:10px;font-weight:700;border-radius:50px;padding:2px 8px;white-space:nowrap;z-index:2;pointer-events:none;text-shadow:0 0 8px var(--rc,#4cc9f0);border:1px solid var(--rc,rgba(76,201,240,.3))}
-@keyframes eroGlow{0%,100%{opacity:.5;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.25)}}
-@keyframes eroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-.ero-am-collected{animation:eroCollect .4s ease-out forwards!important}
-@keyframes eroCollect{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(2.5) translateY(-20px)}}
-/* 나침반 UI */
-#eromap-compass{position:absolute;top:60px;right:14px;width:52px;height:52px;z-index:15;pointer-events:none}
-#eromap-compass-bg{position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.2);backdrop-filter:blur(8px)}
-#eromap-compass-needle{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;transition:transform 0.12s ease-out}
-#eromap-compass-needle::before{content:'N';position:absolute;top:5px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:900;color:#ff4444;text-shadow:0 0 6px #ff4444}
-#eromap-compass-needle::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-100%);width:3px;height:16px;background:linear-gradient(180deg,#ff4444 0%,transparent 100%);border-radius:2px}
-#eromap-heading-txt{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#4cc9f0;font-size:11px;font-weight:900;border-radius:50px;padding:4px 12px;white-space:nowrap;z-index:15;pointer-events:none;border:1px solid rgba(76,201,240,.3);letter-spacing:1px;backdrop-filter:blur(8px)}
-/* 플레이어 마커 */
-.ero-player-marker{position:relative;width:52px;height:52px;display:flex;align-items:center;justify-content:center;pointer-events:none;transform-origin:50% 50%}
-.ero-pm-ring{position:absolute;width:52px;height:52px;border-radius:50%;border:3px solid rgba(76,201,240,.7);animation:eroPmPulse 1.8s ease-out infinite}
-.ero-pm-dot{font-size:22px;z-index:1;filter:drop-shadow(0 0 10px rgba(76,201,240,.9));position:relative}
-/* 3D 플레이어 마커 */
-.ero-pm-3d{width:80px;height:86px;align-items:flex-end}
-.ero-pm-3d .ero-pm-ring{width:60px;height:60px;top:auto;bottom:8px;left:50%;transform:translateX(-50%);position:absolute}
-.ero-pm-canvas{width:80px;height:80px;z-index:2;position:relative;filter:drop-shadow(0 6px 16px rgba(0,0,0,.7)) drop-shadow(0 0 12px rgba(76,201,240,.5))}
-.ero-pm-shadow3d{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:42px;height:7px;border-radius:50%;background:rgba(0,0,0,.5);filter:blur(5px);z-index:1;pointer-events:none}
-@keyframes eroPlayerRun{0%,100%{transform:translateY(0) scale(1)}25%{transform:translateY(-6px) scale(1.04)}75%{transform:translateY(-3px) scale(1.02)}}
-#eromap-bottom{position:absolute;bottom:0;left:0;right:0;padding:10px 14px calc(20px + env(safe-area-inset-bottom,0px));background:linear-gradient(0deg,rgba(0,0,6,.88) 0%,rgba(0,0,10,.5) 60%,transparent 100%);pointer-events:auto;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;border-top:1px solid rgba(76,201,240,.08)}
-#eromap-left-info{display:flex;flex-direction:column;gap:4px;min-width:0}
-#eromap-time{font-size:20px;font-weight:900;color:#fff;font-family:monospace;text-shadow:0 0 14px rgba(76,201,240,.6);letter-spacing:1px}
-#eromap-collected-stat{font-size:12px;font-weight:700;color:#4cc9f0;letter-spacing:.5px;display:flex;align-items:center;gap:5px}
-#eromap-collected-bar{width:80px;height:4px;background:rgba(76,201,240,.2);border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle}
-#eromap-collected-fill{height:100%;background:linear-gradient(90deg,#4cc9f0,#7b2ff7);border-radius:4px;transition:width .4s;width:0%}
-#eromap-right-info{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0}
-#eromap-gps{font-size:10px;color:rgba(200,220,255,.6);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
-#eromap-session-coins{font-size:13px;font-weight:900;color:#FFD700;text-shadow:0 0 8px rgba(255,215,0,.5);letter-spacing:.5px}
-#eromap-gps-retry{display:none;margin-top:6px;padding:6px 14px;border-radius:20px;border:1px solid rgba(76,201,240,.6);background:rgba(76,201,240,.12);color:#4cc9f0;font-size:11px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;pointer-events:all}
-#eromap-gps-guide{display:none;margin-top:4px;font-size:9px;color:rgba(200,220,255,.45);line-height:1.5;text-align:right}
-.eromap-collect-banner{position:absolute;top:64px;left:50%;transform:translateX(-50%) translateY(-30px);z-index:20;padding:10px 22px;border-radius:50px;font-size:14px;font-weight:700;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
-.ero-new{background:linear-gradient(135deg,#7209b7,#4cc9f0);color:#fff;box-shadow:0 0 24px rgba(76,201,240,.5)}
-.ero-coin{background:rgba(255,215,0,.2);border:1px solid rgba(255,215,0,.5);color:#FFD700}
 
 /* ── 스킨 상세 모달 ── */
 #skin-detail-modal{display:none;position:fixed;inset:0;z-index:9900;background:rgba(0,0,0,.75);align-items:center;justify-content:center;pointer-events:all;backdrop-filter:blur(6px)}
@@ -717,7 +582,7 @@ window._FB_CFG={
 #char-grid{overflow-y:auto!important;}
 .nf-ov.on{overflow-y:auto!important;}
 /* iOS touch fix: buttons inside pan-y containers must override with manipulation */
-#auth-ov button,.am-card button,.nf-ov button,.overlay button,.game-card,.diff-btn,.btn-back,.nf-back,.hub-btn,#shop-x,#sdm-close,.sdm-close-btn,#eromap-exit,#ero-ph-cancel,#settings-close,.settings-close-btn,.cg-close-btn,#eromap-exit,#btn-cam,.btn-cam,#diff-back-btn,#flight-back,.flight-back{touch-action:manipulation!important;-webkit-tap-highlight-color:transparent;pointer-events:auto!important}
+#auth-ov button,.am-card button,.nf-ov button,.overlay button,.game-card,.diff-btn,.btn-back,.nf-back,.hub-btn,#shop-x,#sdm-close,.sdm-close-btn,#settings-close,.settings-close-btn,.cg-close-btn,#btn-cam,.btn-cam,#diff-back-btn,#flight-back,.flight-back{touch-action:manipulation!important;-webkit-tap-highlight-color:transparent;pointer-events:auto!important}
 </style>
 <style>
 /* ── NEW FEATURE PANELS ──────────────────────────────────────────────────────*/
@@ -1192,30 +1057,10 @@ window._FB_CFG={
 }
 #plz-inthint.show{opacity:1;}
 
-/* ═══════════════════════ 에로 퍼즐 HUD ═══════════════════════ */
-#ero-puzzle-hud{display:none;position:fixed;top:0;left:0;right:0;z-index:9950;pointer-events:all;flex-direction:column;gap:0}
-#ero-ph-top{background:linear-gradient(180deg,rgba(0,0,26,.92) 0%,rgba(0,0,26,.7) 100%);padding:14px 18px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(76,201,240,.2)}
-#ero-ph-skin{color:#fff;font-size:14px;font-weight:900;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#ero-ph-count{color:#4cc9f0;font-size:14px;font-weight:900;white-space:nowrap}
-#ero-ph-sep{color:rgba(255,255,255,.3);margin:0 4px}
-.ero-ph-timer-wrap{display:flex;align-items:center;gap:6px;white-space:nowrap}
-.ero-ph-timer-label{color:rgba(200,220,255,.55);font-size:11px;font-weight:700}
-#ero-ph-timer{font-size:22px;font-weight:900;color:#4cc9f0;font-family:monospace;text-shadow:0 0 10px rgba(76,201,240,.6);min-width:2ch;text-align:right;transition:color .3s}
-#ero-ph-cancel{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:50px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
-#ero-ph-banner{background:rgba(76,201,240,.12);border-bottom:1px solid rgba(76,201,240,.15);padding:7px 18px;text-align:center;color:rgba(200,230,255,.65);font-size:11px;font-weight:700;letter-spacing:1px}
-</style>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Pretendard:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-/* ── GLOBAL FONT APPLICATION ── */
-*, *::before, *::after {
-  font-family: 'Outfit', 'Plus Jakarta Sans', 'Noto Sans KR', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif !important;
-}
 
 /* ── MOTION GRAPHICS & GLASSMORPHISM FOR ALL BUTTONS ── */
-button, .btn, [role="button"], input[type="button"], input[type="submit"], .rev-ctrl-btn, .plz-sbtn, .sdm-close-btn, .btn-xs, .chest-card {
+button, .btn, [role="button"], input[type="button"], input[type="submit"], .plz-sbtn, .sdm-close-btn, .btn-xs, .chest-card {
   position: relative !important;
   overflow: hidden !important;
   background: rgba(255, 255, 255, 0.1) !important;
@@ -1261,11 +1106,7 @@ button:active, .btn:active, [role="button"]:active {
   border-color: rgba(120, 210, 255, 0.6) !important;
   box-shadow: 0 10px 32px -4px rgba(58, 134, 255, 0.55), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
-.btn-reverse {
-  background: linear-gradient(135deg, rgba(114, 9, 183, 0.55) 0%, rgba(247, 37, 133, 0.45) 100%) !important;
-  border-color: rgba(247, 37, 133, 0.6) !important;
-  box-shadow: 0 10px 32px -4px rgba(247, 37, 133, 0.55), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5) !important;
-}
+
 .btn-secondary {
   background: rgba(255, 255, 255, 0.12) !important;
   border-color: rgba(255, 255, 255, 0.3) !important;
@@ -1324,7 +1165,7 @@ button:active, .btn:active, [role="button"]:active {
 <script>
 (function(){
   function triggerRainbowRipple(e) {
-    var btn = e.target.closest('button, .btn, [role="button"], input[type="button"], input[type="submit"], .rev-ctrl-btn, .plz-sbtn, .btn-xs, .chest-card');
+    var btn = e.target.closest('button, .btn, [role="button"], input[type="button"], input[type="submit"], .plz-sbtn, .btn-xs, .chest-card');
     if(!btn) return;
 
     var rect = btn.getBoundingClientRect();
@@ -1459,7 +1300,7 @@ button:active, .btn:active, [role="button"]:active {
     </div>
     <div id="menu-bottom">
       <button class="btn btn-primary" id="btn-start">▶ 게임 시작</button>
-      <button class="btn btn-reverse" id="btn-reverse">🔄 리버스 네비게이티드 <span class="btn-badge">NEW 3D</span></button>
+
       <button class="btn btn-secondary" id="btn-cont" style="display:none">↩ 이어하기</button>
       <button class="btn" id="btn-plaza" style="display:none;background:linear-gradient(135deg,#1a4a1a,#2a7a2a);border:1px solid rgba(80,200,80,.4)">🏙️ 애로우 광장</button>
       
@@ -1481,42 +1322,6 @@ button:active, .btn:active, [role="button"]:active {
           <span id="bp-badge" style="position:absolute;top:-4px;right:-4px;background:#f72585;color:#fff;font-size:10px;font-weight:900;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center">!</span>
         </div>
         <button class="btn btn-secondary" id="btn-settings">⚙️ 설정</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- REVERSE NAVIGATED (3D BLOCK BLAST MINIGAME) OVERLAY -->
-  <div id="reverse-ov">
-    <div id="reverse-topbar">
-      <button id="reverse-exit">← 메뉴</button>
-      <div id="reverse-title">🔄 리버스 네비게이티드</div>
-      <div id="reverse-level-badge">STAGE <span id="rev-lvl-num">1</span></div>
-    </div>
-    <div id="reverse-canvas-container"></div>
-    <div id="reverse-bottom-panel">
-      <div id="reverse-controls-row">
-        <button class="rev-ctrl-btn" id="rev-rot-x">↻ X축 회전</button>
-        <button class="rev-ctrl-btn" id="rev-rot-y">↻ Y축 회전</button>
-        <button class="rev-ctrl-btn" id="rev-rot-z">↻ Z축 회전</button>
-        <button class="rev-ctrl-btn" id="rev-recall-btn" style="background:rgba(255,100,100,0.2);border-color:rgba(255,100,100,0.4)">↩ 조각 회수</button>
-      </div>
-      <div id="reverse-piece-rack">
-        <!-- 3D 조각 카드들이 동적으로 생성됨 -->
-      </div>
-    </div>
-  </div>
-
-  <!-- REVERSE NAVIGATED WIN OVERLAY -->
-  <div class="overlay" id="reverse-win-ov" style="z-index:9100">
-    <div class="r-card">
-      <div class="r-emoji">💎</div>
-      <h2>3D 그리드 완성!</h2>
-      <div class="r-stars">⭐⭐⭐</div>
-      <div class="r-coins">💰 +<span id="rev-win-coins">100</span></div>
-      <p class="r-sub">모든 3D 화살표 조각을 완벽하게 맞추셨습니다!</p>
-      <div class="r-row">
-        <button class="btn btn-primary btn-sm" id="rev-btn-next">다음 스테이지 ▶</button>
-        <button class="btn btn-secondary btn-sm" id="rev-btn-menu">메뉴</button>
       </div>
     </div>
   </div>
@@ -2148,39 +1953,7 @@ button:active, .btn:active, [role="button"]:active {
 
 
 </div>
-<!-- ═══════════════ EROMAP OVERLAY ═══════════════ -->
-<!-- 방위각 표시 -->
-  <div id="eromap-heading-txt">0° N</div>
-  <div id="eromap-orbs"></div>
-  <div id="eromap-radius-hint">● 수집 반경 17m</div>
-  <div id="eromap-bottom">
-    <div id="eromap-left-info">
-      <div id="eromap-time">00:00:00</div>
-      <div id="eromap-collected-stat">🏹 <span id="eromap-col-count">0</span>/<span id="eromap-col-total">10</span> 수집 &nbsp;<span id="eromap-collected-bar"><span id="eromap-collected-fill"></span></span></div>
-    </div>
-    <div id="eromap-right-info">
-      <div id="eromap-session-coins">💰 +0</div>
-      <div id="eromap-gps">📍 GPS 확인 중...</div>
-      <button id="eromap-gps-retry" onclick="eroRetryGPS()" style="pointer-events:all">📍 위치 권한 다시 요청</button>
-      <div id="eromap-gps-guide"></div>
-    </div>
-  </div>
-  <div id="eromap-collect-banner" class="eromap-collect-banner"></div>
-</div>
 
-<!-- ═══════════════ 스킨 상세 모달 ═══════════════ -->
-<div id="ero-puzzle-hud">
-  <div id="ero-ph-top">
-    <div id="ero-ph-skin">🎯 화살표</div>
-    <div id="ero-ph-count">0 / 6</div>
-    <div class="ero-ph-timer-wrap">
-      <div class="ero-ph-timer-label">⏱</div>
-      <div id="ero-ph-timer">15</div>
-    </div>
-    <button id="ero-ph-cancel" onclick="endEroPuzzle(false)">포기</button>
-  </div>
-  <div id="ero-ph-banner">🧩 화살표를 모두 탈출시켜 화살표를 획득하세요!</div>
-</div>
 <div id="skin-detail-modal">
   <div class="sdm-card">
     <button id="sdm-close">✕</button>
@@ -2209,7 +1982,6 @@ button:active, .btn:active, [role="button"]:active {
   <!-- side buttons -->
   <div id="plaza-side">
     <button class="plz-sbtn" id="plz-btn-shop">🛒 상점</button>
-    <button class="plz-sbtn" id="plz-btn-ero">💬 에로</button>
     <button class="plz-sbtn" id="plz-btn-quest">📋 퀘스트</button>
   </div>
   <!-- interaction hint -->
