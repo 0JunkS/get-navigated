@@ -61,14 +61,14 @@ jobs:
           pnpm add -D @capacitor/cli @capacitor/core @capacitor/android
 
       # ----------------------------------------
-      # 7. Java 17
+      # 7. Java 21
       # ----------------------------------------
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: "17"
-          distribution: "temurin"
-
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
       # ----------------------------------------
       # 8. Add Android platform
       # ----------------------------------------
@@ -89,7 +89,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x artifacts/navigated/android/gradlew
 
-      # ----------------------------------------
+      # ----------------- -----------------------
       # 11. Build APK
       # ----------------------------------------
       - name: Build debug APK
