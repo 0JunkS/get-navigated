@@ -45,7 +45,6 @@ const LB_FILE    = join(DATA_DIR, "leaderboard.json");
 const HIST_FILE  = join(DATA_DIR, "msghistory.json");
 const QUEUE_FILE = join(DATA_DIR, "offlinequeue.json");
 const USERS_FILE = join(DATA_DIR, "users.json"); // 가입한 유저 닉네임 목록
-const PLAZA_FILE = join(DATA_DIR, "plaza-chat.json"); // 소통 라운지 최근 대화
 
 function loadJSON(path, fallback) {
   try {
@@ -132,9 +131,6 @@ function cleanupRoom(code, ws) {
 // ── Social state ─────────────────────────────────────────────────────────────
 // nickname → WebSocket  (사용자별 상시 연결)
 const users = new Map();
-const plazaMembers = new Set();
-const savedPlazaChat = loadJSON(PLAZA_FILE, []);
-const plazaChatHistory = Array.isArray(savedPlazaChat) ? savedPlazaChat.slice(-100) : [];
 
 // 대화 키: 두 닉네임 정렬 후 ":"로 연결
 function convKey(a, b) { return [a, b].sort().join(":"); }
@@ -437,58 +433,28 @@ wss.on("connection", (ws) => {
     
     // ── PLAZA: global chat broadcast ────────────────────────────────────────────
     if (msg.type === "plaza_chat") {
-      if (!myNick || !plazaMembers.has(ws)) return;
+      if (!myNick) return;
       const text = String(msg.text || "").trim().slice(0, 150);
       if (!text) return;
-      const entry = {
-        type: "plaza_chat",
-        from: myNick,
-        text,
-        at: Date.now(),
-        admin: myNick === "Sedon",
-      };
-      plazaChatHistory.push(entry);
-      while (plazaChatHistory.length > 100) plazaChatHistory.shift();
-      saveJSON(PLAZA_FILE, plazaChatHistory);
-      for (const member of plazaMembers) {
-        if (member.readyState === WebSocket.OPEN) safeSend(member, entry);
-      }
+      const bcast = { type: "plaza_chat", from: myNick, text, at: Date.now() };
+      for (const [, uw] of users) { if(uw.readyState===WebSocket.OPEN) safeSend(uw,bcast); }
       return;
     }
     // ── PLAZA: position sync ───────────────────────────────────────────────────
     if (msg.type === "plaza_pos") {
-      if (!myNick || !plazaMembers.has(ws)) return;
-      const bcast = {
-        type: "plaza_pos",
-        from: myNick,
-        x: msg.x,
-        y: msg.y,
-        d: msg.d,
-        skin: msg.skin,
-        title: myNick === "Sedon" ? "👑 관리자" : "",
-      };
-      for (const member of plazaMembers) {
-        if (member !== ws && member.readyState === WebSocket.OPEN) safeSend(member, bcast);
+      if (!myNick) return;
+      const bcast = { type:"plaza_pos", from:myNick, x:msg.x, y:msg.y, d:msg.d, skin:msg.skin };
+      for (const [nick, uw] of users) {
+        if(nick!==myNick && uw.readyState===WebSocket.OPEN) safeSend(uw,bcast);
       }
       return;
     }
     // ── PLAZA: join / leave ────────────────────────────────────────────────────
-    if (msg.type === "plaza_join") {
+    if (msg.type === "plaza_join" || msg.type === "plaza_leave") {
       if (!myNick) return;
-      plazaMembers.add(ws);
-      safeSend(ws, { type: "plaza_history", messages: plazaChatHistory });
-      const bcast = { type: "plaza_join", from: myNick, admin: myNick === "Sedon" };
-      for (const member of plazaMembers) {
-        if (member !== ws && member.readyState === WebSocket.OPEN) safeSend(member, bcast);
-      }
-      return;
-    }
-    if (msg.type === "plaza_leave") {
-      if (!myNick) return;
-      plazaMembers.delete(ws);
-      const bcast = { type: "plaza_leave", from: myNick };
-      for (const member of plazaMembers) {
-        if (member.readyState === WebSocket.OPEN) safeSend(member, bcast);
+      const bcast = { type:msg.type, from:myNick };
+      for (const [nick, uw] of users) {
+        if(nick!==myNick && uw.readyState===WebSocket.OPEN) safeSend(uw,bcast);
       }
       return;
     }
@@ -504,13 +470,11 @@ wss.on("connection", (ws) => {
 
   ws.on("close", () => {
     if (assignedCode) cleanupRoom(assignedCode, ws);
-    plazaMembers.delete(ws);
     if (myNick && users.get(myNick) === ws) users.delete(myNick);
   });
 
   ws.on("error", () => {
     if (assignedCode) cleanupRoom(assignedCode, ws);
-    plazaMembers.delete(ws);
     if (myNick && users.get(myNick) === ws) users.delete(myNick);
   });
 });
