@@ -1459,13 +1459,15 @@ function launchArrow(id){
       const cosA=Math.abs(DV[e.def.dir].dot(spinDir));
       const is90=cosA<Math.sin(JUST_WINDOW);
       popup(is90?'PERFECT! ★':'PERFECT!',innerWidth/2,innerHeight*.38,'#FFD700');
+      _vibrate(24);
       playComboNote();
       if(typeof achieveState!=='undefined'){_achStat('totalArrows',1,true);_achStat('maxCombo',_comboIdx,false,true);_missionProg('arrows',1);}
       if(phase==='multi-playing'){multiEscape();}
     }
   }
 }
-function flashBlock(){const el=document.getElementById('blocked-flash');el.style.opacity='1';setTimeout(()=>{el.style.opacity='0';},900);if(typeof _settings!=='undefined'&&_settings.vibration&&navigator.vibrate)navigator.vibrate([80,30,80]);}
+function _vibrate(pattern){if(typeof _settings!=='undefined'&&_settings.vibration&&navigator.vibrate)navigator.vibrate(pattern);}
+function flashBlock(){const el=document.getElementById('blocked-flash');el.style.opacity='1';setTimeout(()=>{el.style.opacity='0';},900);_vibrate([80,30,80]);}
 
 // ══════════════════════════════════════════════════
 // OPENING ANIM
@@ -1925,6 +1927,8 @@ let multiBlockCount=0;
 let multiLives=5;
 let rankBotTimer=null;
 let rankBotTargetTime=null;
+let rankBotPlan=[];
+let rankBotPlanIndex=0;
 
 const RANK_SAVE_KEY='three-d-escape-rank-v1';
 const RANK_TIERS=[
@@ -2168,23 +2172,26 @@ function startRankMatch(){
 
 function clearRankBot(){
   if(rankBotTimer){clearInterval(rankBotTimer);rankBotTimer=null;}
+  rankBotPlan=[];
+  rankBotPlanIndex=0;
 }
 
-// Per-tier AI speed (seconds). Index 0=Bronze … 5=Crossis.
-// Lower = faster AI. Bronze is the current starting difficulty.
-const RANK_BOT_BASES  =[130,110, 95, 80, 68, 58]; // base clear-time per tier (nerfed — much slower AI)
-const RANK_BOT_JITTER =[ 20, 16, 14, 12, 10,  8]; // ±half random variance
+// Per-tier AI clear speed (seconds). Index 0=Bronze … 5=Crossis.
+// The bot uses a solve plan below instead of a slow linear progress bar:
+// it opens quickly, solves in short bursts, and becomes more consistent per tier.
+const RANK_BOT_BASES  =[58, 51, 45, 40, 35, 31];
+const RANK_BOT_JITTER =[  8,  7,  6,  5,  4,  3];
 
 function getRankBotTargetTime(){
   if(multiMode==='general-ai'){
-    // General AI: fixed mid-range difficulty, independent of rank
-    return Math.max(40,Math.round((105+Math.random()*25-8)*100)/100);
+    // General AI: a capable opponent without rank-tier scaling.
+    return Math.max(32,Math.round((52+Math.random()*10-5)*100)/100);
   }
   const tierIndex=Math.max(0,Math.min(5,RANK_TIERS.findIndex(t=>t.id===getRankTier().id)));
   if(!rankState.placed){
-    // Placement matches: moderate, gently increases as games progress
-    const base=120-Math.min(rankState.placements,4)*5; // 120→100 over 5 games
-    return Math.max(60,Math.round((base+Math.random()*20-8)*100)/100);
+    // Placement matches ramp up gently so new players get a fair first game.
+    const base=64-Math.min(rankState.placements,4)*3; // 64→52 over 5 games
+    return Math.max(42,Math.round((base+Math.random()*10-5)*100)/100);
   }
   const base  =RANK_BOT_BASES [tierIndex];
   const jitter=RANK_BOT_JITTER[tierIndex];
@@ -2204,6 +2211,16 @@ function startRankBot(){
   if(multiMode!=='rank'&&multiMode!=='general-ai')return;
   clearRankBot();
   rankBotTargetTime=getRankBotTargetTime();
+  rankBotPlan=[];
+  rankBotPlanIndex=0;
+  const step=rankBotTargetTime/Math.max(1,multiTotal);
+  for(let i=0;i<multiTotal;i++){
+    // Small human-like variance, while keeping the final completion time exact.
+    const variance=step*(0.72+Math.random()*0.5);
+    const previous=rankBotPlan[i-1]||0;
+    rankBotPlan.push(Math.min(rankBotTargetTime,previous+variance));
+  }
+  rankBotPlan[rankBotPlan.length-1]=rankBotTargetTime;
   const started=Date.now();
   rankBotTimer=setInterval(()=>{
     if(phase!=='multi-playing'&&phase!=='multi-done'){clearRankBot();return;}
@@ -2214,13 +2231,22 @@ function startRankBot(){
       multiOpDone=true;
       clearRankBot();
       updateMultiHUD();
-      if(multiMyFinishTime!==null)showMultiResult();
-      else popup('AI 완료! 서둘러!',innerWidth/2,innerHeight*.38,'#f72585');
+      // An AI finish is a decided race. Show the result even when the player
+      // has not finished yet so losses always go through RP settlement.
+      if(phase==='multi-playing'){
+        phase='multi-done';
+        showMultiResult();
+      }else if(multiMyFinishTime!==null){
+        showMultiResult();
+      }
       return;
     }
-    multiOpEscaped=Math.min(multiTotal-1,Math.floor(elapsed/rankBotTargetTime*multiTotal));
+    while(rankBotPlanIndex<rankBotPlan.length&&elapsed>=rankBotPlan[rankBotPlanIndex]){
+      rankBotPlanIndex++;
+    }
+    multiOpEscaped=Math.min(multiTotal-1,rankBotPlanIndex);
     updateMultiHUD();
-  },400);
+  },120);
 }
 
 function getRankDelta(won,myT,opT){
@@ -2545,6 +2571,15 @@ function multiLiveOut(){
   if(phase==='multi-done'||phase!=='multi-playing')return;
   phase='multi-done';
   if(typeof clearRankBot==='function')clearRankBot();
+  // A ranked loss from running out of lives must use the ranked result path.
+  // Previously this only showed a generic defeat screen, so RP never changed.
+  if(multiMode==='rank'){
+    multiMyFinishTime=null;
+    multiOpFinishTime=multiOpFinishTime!==null?multiOpFinishTime:rankBotTargetTime;
+    multiOpDone=true;
+    showRankResult();
+    return;
+  }
   document.getElementById('multi-hud').classList.remove('on');
   document.getElementById('pbar').style.display='block';
   document.getElementById('mr-emoji').textContent='💔';
@@ -2653,7 +2688,9 @@ function showGeneralAiResult(){
 const BLAST_RANK_SAVE_KEY='three-d-escape-blast-rank-v1';
 const BLAST_TIME_LIMITS=[20,20,20,20,20,20]; // bronze→crossis 초
 const BLAST_ARROW_POOLS=[10,12,16,20,25,30]; // 티어별 동시 화살표 수
-const BLAST_AI_TARGETS=[[2,3],[3,5],[5,7],[7,9],[10,13],[14,17]]; // 티어별 AI 목표 점수 [min,max] (nerfed)
+// Targets are tuned against the respawning arrow pools. The old values let
+// Bronze AI score only 2–3 points in a 20-second round.
+const BLAST_AI_TARGETS=[[8,11],[10,14],[14,18],[18,24],[24,31],[30,38]];
 
 let blastRankState=null;
 let _blastTimerId=null;
@@ -4109,6 +4146,12 @@ function _closeSettings(){
   _settings.hudAutoHide=document.getElementById('set-hud-hide').checked;
   _settings.vibration=document.getElementById('set-vibration').checked;
   _saveSettings();
+  if(!_settings.hudAutoHide&&phase==='playing'&&!hudOn){
+    hudOn=true;
+    document.getElementById('hud').style.opacity='1';
+    document.getElementById('tap-restore').style.opacity='0';
+    controls.autoRotate=false;
+  }
   if(rankState.placed)_upsertLeaderboard(_settings.nickname,rankState.points);
   // 설정창 닫을 때 반드시 포커스 해제 → 키보드가 게임 중에 올라오는 현상 방지
   if(document.activeElement&&document.activeElement!==document.body){
@@ -6896,6 +6939,8 @@ function plzInit(){
   plzCtx=plzCvs.getContext('2d');
   plzMM=document.getElementById('plz-minimap');
   plzMMCtx=plzMM.getContext('2d');
+  const messageList=document.getElementById('plaza-msgs');
+  if(messageList)messageList.replaceChildren();
   plzIsMobile='ontouchstart' in window;
   // spawn player at map center
   plzPx=(18.5)*TILE; plzPy=(13.5)*TILE;
@@ -6921,7 +6966,7 @@ function plzInit(){
     document.getElementById('plaza-ibtn').style.display='flex';
     document.getElementById('plz-kbhint').style.display='none';
   }
-  // WS: join plaza
+  // WS: join the communication lounge
   const ws=_plzSocWs();
   if(ws&&ws.readyState===WebSocket.OPEN){
     ws.send(JSON.stringify({type:'plaza_join'}));
@@ -6930,7 +6975,7 @@ function plzInit(){
   const bgm=document.getElementById('plaza-bgm');
   if(bgm){bgm.volume=0.45;bgm.play().catch(err=>console.warn('BGM 재생 실패:', err));}
   // system message
-  _plzChatMsg(null,'애로우 시티 광장에 입장했습니다.','sys');
+  _plzChatMsg(null,'소통 라운지에 입장했습니다. 최근 대화가 표시됩니다.','sys');
   // start loop
   plzActive=true;
   plzLast=performance.now();
@@ -6962,8 +7007,6 @@ function _plzLoop(ts){
     _plzCamera();
     _plzDraw();
     _plzDrawMinimap();
-    _plzCheckNpc();
-    _plzBroadcastPos(ts);
   }
   // decay chat bubbles
   plzChatBubbles=plzChatBubbles.filter(b=>ts-b.t<4000);
@@ -8008,7 +8051,21 @@ function _plzChatMsg(from,text,type){
   const msgs=document.getElementById('plaza-msgs');if(!msgs)return;
   const d=document.createElement('div');
   d.className='plz-msg'+(type==='sys'?' plz-msg-sys':from===_plzMyNick()?' plz-msg-me':'');
-  d.textContent=from?'['+from+'] '+text:text;
+  if(from){
+    const name=document.createElement('span');
+    name.className='plz-msg-name';
+    name.textContent=from;
+    d.appendChild(name);
+    if(from==='Sedon'){
+      const badge=document.createElement('span');
+      badge.className='plz-admin-badge';
+      badge.textContent='관리자';
+      d.appendChild(badge);
+    }
+    const body=document.createElement('span');
+    body.textContent=text;
+    d.appendChild(body);
+  }else d.textContent=text;
   msgs.appendChild(d);
   while(msgs.children.length>50)msgs.firstChild.remove();
   msgs.scrollTop=msgs.scrollHeight;
@@ -8017,14 +8074,13 @@ function _plzSendChat(){
   const inp=document.getElementById('plaza-input');
   const text=(inp?.value||'').trim();if(!text)return;
   inp.value='';
-  // add local bubble
-  const myBubble={nick:_plzMyNick(),text,t:performance.now()};
-  plzChatBubbles.push(myBubble);
-  _plzChatMsg(_plzMyNick(),text);
-  // send via WS
+  // The server broadcasts back to the sender as well, so the local
+  // message is rendered exactly once and stays consistent with everyone else.
   const ws=_plzSocWs();
   if(ws&&ws.readyState===WebSocket.OPEN){
     ws.send(JSON.stringify({type:'plaza_chat',text}));
+  }else{
+    _plzChatMsg(null,'서버 연결 중이라 메시지를 보내지 못했습니다.','sys');
   }
 }
 
@@ -8036,15 +8092,20 @@ function _plzOnWsMsg(msg){
     // set bubble on other player
     const op=plzOtherPlayers.get(msg.from);
     if(op){op.bubble=msg.text.length>20?msg.text.slice(0,20)+'…':msg.text;op.bubbleT=performance.now();}
+    if(msg.from===_plzMyNick()){
+      plzChatBubbles.push({nick:msg.from,text:msg.text,t:performance.now()});
+    }
+  }else if(msg.type==='plaza_history'){
+    for(const entry of (msg.messages||[]))_plzChatMsg(entry.from,entry.text);
   }else if(msg.type==='plaza_pos'){
     let op=plzOtherPlayers.get(msg.from);
     if(!op){op={px:msg.x,py:msg.y,dir:msg.d||2,bubble:null,bubbleT:null,title:msg.title||null};plzOtherPlayers.set(msg.from,op);}
     else{op.px=msg.x;op.py=msg.y;op.dir=msg.d||2;if(msg.title!==undefined)op.title=msg.title||null;}
     document.getElementById('plz-pc').textContent=plzOtherPlayers.size+1;
   }else if(msg.type==='plaza_join'){
-    _plzChatMsg(null,msg.from+' 님이 광장에 입장했습니다.','sys');
+    _plzChatMsg(null,msg.from+' 님이 소통 라운지에 입장했습니다.','sys');
   }else if(msg.type==='plaza_leave'){
-    _plzChatMsg(null,msg.from+' 님이 광장을 떠났습니다.','sys');
+    _plzChatMsg(null,msg.from+' 님이 소통 라운지를 떠났습니다.','sys');
     plzOtherPlayers.delete(msg.from);
     document.getElementById('plz-pc').textContent=plzOtherPlayers.size+1;
   }
