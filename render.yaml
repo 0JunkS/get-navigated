@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: get-navigated
+    env: node
+    plan: free
+    buildCommand: bash render-build.sh
+    startCommand: node server.mjs
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
