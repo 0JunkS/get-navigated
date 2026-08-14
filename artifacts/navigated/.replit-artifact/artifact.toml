@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "NAVIGATED"
+description = "A mobile-first 3D navigation game with local progression, Firebase cloud sync, multiplayer rooms, social features, rankings, shops, challenges, and modular live events."
+version = "1.0.0"
+id = "artifacts/navigated"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19477
+
+[services.development]
+run = "pnpm --filter @workspace/navigated run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/navigated", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/navigated/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19477"
+BASE_PATH = "/"
