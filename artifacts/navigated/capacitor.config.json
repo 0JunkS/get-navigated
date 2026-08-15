@@ -1,0 +1,11 @@
+{
+  "appId": "com.navigated.game",
+  "appName": "NAVIGATED",
+  "webDir": "dist/public",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#06061a"
+  }
+}
