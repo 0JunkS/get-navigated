@@ -391,6 +391,60 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 .flight-score-box{background:rgba(15,45,63,.08);border-radius:8px;padding:10px}.flight-score-box small{display:block;font-size:9px;font-weight:950;color:rgba(15,45,63,.48);letter-spacing:1.4px;text-transform:uppercase}.flight-score-box b{font-size:20px;font-weight:950}
 @media(max-width:620px){.game-grid{grid-template-columns:1fr}.game-card{min-height:188px}.hub-title{margin-bottom:16px}.flight-top{top:10px;left:10px;right:10px}.flight-chip{min-width:70px;padding:7px 8px}.flight-chip b{font-size:15px}.flight-energy{top:112px;left:10px;right:10px}.flight-bottom{left:10px;right:10px;bottom:10px;grid-template-columns:1fr 1fr}.flight-start{grid-column:1/3;min-height:48px}.flight-back{padding:9px 10px}}
 
+/* ── 3D MERGE SNAKE MINIGAME ───────────────────── */
+.card-snake{background:linear-gradient(145deg,#0c1b33,#153a5b 58%,#00f3ff)}
+.card-snake .game-art{display:flex;align-items:center;justify-content:center;font-size:78px;filter:drop-shadow(0 0 26px rgba(0,243,255,0.7))}
+
+#snake-game{position:fixed;inset:0;z-index:100;display:none;overflow:hidden;pointer-events:all;background:#060919;color:#fff;font-family:Inter,'Apple SD Gothic Neo','Noto Sans KR',sans-serif}
+#snake-game.on{display:block}
+#snake-canvas{position:absolute;inset:0;z-index:1;width:100%!important;height:100%!important;display:block;touch-action:none}
+
+.snake-ui-layer{position:absolute;inset:0;z-index:10;pointer-events:none}
+.snake-top-bar{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.snake-chipset{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.snake-chip{background:rgba(10,15,35,0.82);border:1px solid rgba(0,243,255,0.35);border-radius:12px;padding:8px 14px;backdrop-filter:blur(10px);display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:#fff;box-shadow:0 0 16px rgba(0,243,255,0.2)}
+.snake-chip b{color:#00f3ff}
+
+.snake-back-btn{pointer-events:all;background:rgba(8,12,32,0.85);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:50px;padding:9px 18px;font-size:13px;font-weight:800;cursor:pointer;backdrop-filter:blur(10px)}
+
+#snake-leaderboard{position:absolute;top:70px;right:14px;width:210px;background:rgba(8,12,32,0.85);border:1px solid rgba(0,243,255,0.3);border-radius:16px;padding:12px;backdrop-filter:blur(12px);box-shadow:0 12px 36px rgba(0,0,0,0.5)}
+.s-lb-hdr{font-size:11px;font-weight:900;letter-spacing:1px;color:#00f3ff;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+#snake-leaderboard-list{display:flex;flex-direction:column;gap:5px;max-height:220px;overflow-y:auto}
+.s-lb-item{display:flex;align-items:center;justify-content:space-between;padding:4px 8px;border-radius:8px;background:rgba(255,255,255,0.05);font-size:11px;font-weight:700}
+.s-lb-item.self{background:rgba(0,243,255,0.22);border:1px solid rgba(0,243,255,0.6);color:#00f3ff}
+.s-lb-rank{min-width:24px;font-weight:900;color:#ffd700}
+.s-lb-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 4px}
+.s-lb-len{font-family:monospace;color:#fff}
+
+#snake-radar-wrap{position:absolute;bottom:24px;left:20px;width:120px;height:120px;background:rgba(8,12,32,0.8);border:2px solid rgba(0,243,255,0.4);border-radius:50%;overflow:hidden;backdrop-filter:blur(10px);pointer-events:none}
+#snake-radar-canvas{width:100%;height:100%;display:block}
+
+#snake-energy-bar{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);width:min(320px,70vw);height:12px;background:rgba(255,255,255,0.15);border:1px solid rgba(0,243,255,0.4);border-radius:50px;overflow:hidden;box-shadow:0 0 20px rgba(0,243,255,0.3)}
+#snake-energy-fill{height:100%;width:0%;background:linear-gradient(90deg,#00f3ff,#39ff14,#ffee00);border-radius:50px;transition:width 0.2s}
+
+#snake-btn-boost{position:absolute;bottom:24px;right:24px;pointer-events:all;width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#ff007f,#7209b7);border:2px solid rgba(255,255,255,0.4);color:#fff;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 0 28px rgba(255,0,127,0.6);cursor:pointer}
+#snake-btn-boost:active{transform:scale(0.92);opacity:0.85}
+
+#snake-joystick{position:absolute;bottom:24px;left:24px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);pointer-events:all;touch-action:none;display:none}
+@media(max-width:768px){#snake-joystick{display:block}#snake-radar-wrap{left:auto;right:100px;bottom:24px;width:90px;height:90px}}
+
+#snake-jknob{position:absolute;top:50%;left:50%;width:44px;height:44px;margin-left:-22px;margin-top:-22px;border-radius:50%;background:linear-gradient(135deg,#00f3ff,#4361ee);box-shadow:0 0 16px rgba(0,243,255,0.6);pointer-events:none}
+
+#snake-kill-flash{position:absolute;top:28%;left:50%;transform:translate(-50%,-50%);font-size:20px;font-weight:900;color:#ffee00;text-shadow:0 0 24px rgba(255,238,0,0.9);opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:20;background:rgba(8,12,32,0.85);padding:10px 24px;border-radius:50px;border:1px solid rgba(255,238,0,0.5)}
+
+#snake-setup-modal{position:absolute;inset:0;z-index:90;display:none;align-items:center;justify-content:center;background:rgba(4,6,18,0.92);backdrop-filter:blur(16px);pointer-events:all;padding:20px}
+.s-setup-card{background:rgba(12,18,44,0.95);border:1px solid rgba(0,243,255,0.3);border-radius:24px;padding:32px 26px;max-width:540px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+.s-setup-card h2{font-size:26px;font-weight:900;color:#fff;margin-bottom:6px;letter-spacing:1px}
+.s-setup-sub{color:rgba(180,200,240,0.8);font-size:13px;margin-bottom:20px;line-height:1.5}
+.snake-map-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:22px;text-align:left}
+.snake-map-card{background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);border-radius:14px;padding:12px;cursor:pointer;transition:all 0.2s}
+.snake-map-card.on{background:rgba(0,243,255,0.18);border-color:#00f3ff;box-shadow:0 0 18px rgba(0,243,255,0.3)}
+.snake-map-card strong{display:block;font-size:13px;color:#fff;margin-bottom:2px}
+.snake-map-card small{display:block;font-size:10px;color:rgba(200,210,240,0.65)}
+
+.s-btn-start{width:100%;padding:16px;border-radius:50px;border:none;background:linear-gradient(135deg,#00f3ff,#4361ee);color:#fff;font-size:18px;font-weight:900;cursor:pointer;box-shadow:0 0 28px rgba(0,243,255,0.5);letter-spacing:1px}
+.s-btn-start:active{transform:scale(0.97)}
+
 /* == DIFFICULTY OVERLAY == */
 #diff-ov{position:fixed;inset:0;background:rgba(4,4,20,.92);backdrop-filter:blur(18px);z-index:210;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
 #diff-ov.on{display:flex;pointer-events:all;animation:diffFadeIn .25s ease}
@@ -1281,6 +1335,11 @@ button:active, .btn:active, [role="button"]:active {
           <span>SKY DISTANCE</span>
           <i class="game-art"></i>
         </button>
+        <button class="game-card card-snake" id="pick-snake">
+          <strong>3D MERGE SNAKE</strong>
+          <span>10인 큐브 서바이벌</span>
+          <i class="game-art">🐍</i>
+        </button>
       </div>
     </div>
   </div>
@@ -1311,6 +1370,101 @@ button:active, .btn:active, [role="button"]:active {
           <div class="flight-score-box"><small>EARNED</small><b id="flight-earned">0</b></div>
         </div>
         <button id="flight-panel-start">TAKE OFF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D MERGE SNAKE GAME -->
+  <div id="snake-game">
+    <canvas id="snake-canvas"></canvas>
+    
+    <!-- UI Layer -->
+    <div class="snake-ui-layer">
+      <!-- Top HUD -->
+      <div class="snake-top-bar">
+        <button class="snake-back-btn" id="snake-back">← 게임 선택</button>
+        <div class="snake-chipset">
+          <div class="snake-chip">🗺️ <span id="snake-hud-mapname">사이버 룸</span></div>
+          <div class="snake-chip">⏱️ <span id="snake-hud-timer">00:00</span></div>
+          <div class="snake-chip">🐍 <b id="snake-len">3</b></div>
+          <div class="snake-chip">💥 <b id="snake-kills">0</b></div>
+          <div class="snake-chip">🏆 <b id="snake-hud-rank">#10</b></div>
+        </div>
+      </div>
+
+      <!-- Real-time 10-Player Leaderboard -->
+      <div id="snake-leaderboard">
+        <div class="s-lb-hdr"><span>🏆 LIVE RANKING</span><span>10 PLAYERS</span></div>
+        <div id="snake-leaderboard-list"></div>
+      </div>
+
+      <!-- AI Radar Canvas -->
+      <div id="snake-radar-wrap">
+        <canvas id="snake-radar-canvas" width="120" height="120"></canvas>
+      </div>
+
+      <!-- Energy Progress Bar -->
+      <div id="snake-energy-bar"><div id="snake-energy-fill"></div></div>
+
+      <!-- Dash Boost Button -->
+      <button id="snake-btn-boost">🚀</button>
+
+      <!-- Mobile Joystick -->
+      <div id="snake-joystick">
+        <div id="snake-jknob"></div>
+      </div>
+
+      <!-- Kill Flash Notice -->
+      <div id="snake-kill-flash">💥 +1 KILL!</div>
+    </div>
+
+    <!-- Map & Game Setup Modal -->
+    <div id="snake-setup-modal">
+      <div class="s-setup-card">
+        <h2>🐍 3D MERGE SNAKE</h2>
+        <div class="s-setup-sub">정육면체 공간 10인 실시간 서바이벌<br>빛나는 모서리 · 스킨 연동 연속 마디 · AI 레이더</div>
+        
+        <div style="font-size:12px;font-weight:800;color:#00f3ff;margin-bottom:8px;text-align:left">🗺️ 배경 맵 선택</div>
+        <div class="snake-map-grid" id="snake-map-selector">
+          <div class="snake-map-card on" data-map="cyber">
+            <strong>🌌 사이버 룸</strong>
+            <small>네온 푸른빛 큐브 공간</small>
+          </div>
+          <div class="snake-map-card" data-map="volcano">
+            <strong>🌋 용암 챔버</strong>
+            <small>뜨거운 용암 불꽃 공간</small>
+          </div>
+          <div class="snake-map-card" data-map="crystal">
+            <strong>💎 크리스탈 림</strong>
+            <small>보석 결정 프리즘 공간</small>
+          </div>
+          <div class="snake-map-card" data-map="sunset">
+            <strong>🌅 신스웨이브 선셋</strong>
+            <small>80s 레트로 황혼 그리드</small>
+          </div>
+          <div class="snake-map-card" data-map="galaxy">
+            <strong>🪐 은하수 스페이스</strong>
+            <small>깊은 우주 은하 성운</small>
+          </div>
+        </div>
+
+        <button class="s-btn-start" id="snake-lobby-btn-start">🎮 10인 룸 매치 시작</button>
+      </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="overlay" id="snake-modal" style="z-index:95">
+      <div class="r-card">
+        <div class="r-emoji" id="snake-modal-emoji">🏆</div>
+        <h2 id="snake-modal-title">SURVIVAL CLEAR!</h2>
+        <div class="r-sub" id="snake-modal-sub">3D 서바이벌 매치 완료!</div>
+        <div class="r-coins" id="snake-earned">+0 💰</div>
+        <div class="r-sub" style="margin-bottom:14px;font-size:12px">
+          뱀 길이: <b id="snake-final-len" style="color:#00f3ff">3</b> | 처치: <b id="snake-final-kills" style="color:#ff007f">0</b> | 최고: <b id="snake-best" style="color:#ffd700">3</b>
+        </div>
+        <div class="r-row">
+          <button class="btn btn-primary" id="snake-btn-start">🔄 다시 하기</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1887,6 +2041,7 @@ button:active, .btn:active, [role="button"]:active {
 
 </div>
 <script type="module" src="/src/game.js"></script>
+<script type="module" src="/src/gacha_speedrun_snake.js"></script>
 
 
 <!-- DIFFICULTY SELECTION -->
