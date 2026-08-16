@@ -1941,6 +1941,7 @@ function showUI(which){
   if(upill)upill.style.display='none';
   if(which==='hub'){
     document.getElementById('game-select').classList.add('on');
+    document.getElementById('ui').style.pointerEvents='auto';
   }else if(which==='menu'){
     document.getElementById('menu').classList.remove('hidden');
     document.getElementById('coin-pill').style.display='flex';

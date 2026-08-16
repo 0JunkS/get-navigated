@@ -1324,8 +1324,24 @@ function closeSnakeGame() {
 }
 
 function openSnakeSetupModal() {
+  const ui = document.getElementById('ui');
+  if (ui) ui.style.pointerEvents = 'auto';
+
+  const gameEl = document.getElementById('snake-game');
+  if (gameEl) {
+    gameEl.classList.add('on');
+    gameEl.style.display = 'block';
+    gameEl.style.pointerEvents = 'auto';
+  }
+
   const modal = document.getElementById('snake-setup-modal');
-  if (modal) modal.style.display = 'flex';
+  if (modal) {
+    modal.style.display = 'flex';
+    modal.style.pointerEvents = 'auto';
+  }
+
+  const overModal = document.getElementById('snake-modal');
+  if (overModal) overModal.style.display = 'none';
 }
 
 window.startSnakeGame = startSnakeGame;
@@ -1334,43 +1350,66 @@ window.openSnakeSetupModal = openSnakeSetupModal;
 window.applySnakeMap = applyMapStyle;
 
 // ══════════════════════════════════════════════════
-// Event Hook & Initializations
+// Universal Capture-Phase Click Handler (100% Click Reliability)
 // ══════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
-  const pickBtn = document.getElementById('pick-snake');
-  if (pickBtn) {
-    pickBtn.addEventListener('click', () => {
-      const gs = document.getElementById('game-select');
-      if (gs) gs.classList.remove('on');
-      openSnakeSetupModal();
-    });
-  }
+document.addEventListener('click', function(e) {
+  const target = e.target;
+  if (!target) return;
 
-  const backBtn = document.getElementById('snake-back');
-  if (backBtn) backBtn.addEventListener('click', closeSnakeGame);
-
-  const startBtn = document.getElementById('snake-btn-start');
-  if (startBtn) startBtn.addEventListener('click', startSnakeGame);
-
-  const lobbyStartBtn = document.getElementById('snake-lobby-btn-start');
-  if (lobbyStartBtn) lobbyStartBtn.addEventListener('click', startSnakeGame);
-
-  // Direct Arcade buttons in Main Menu & Modes Hub
-  const btnArcade = document.getElementById('btn-arcade');
+  const btnArcade = target.closest('#btn-arcade');
   if (btnArcade) {
-    btnArcade.addEventListener('click', () => {
-      if (typeof window.showUI === 'function') window.showUI('hub');
-    });
+    e.preventDefault();
+    e.stopPropagation();
+    openSnakeSetupModal();
+    return;
   }
 
-  const mhArcade = document.getElementById('mh-arcade');
+  const mhArcade = target.closest('#mh-arcade');
   if (mhArcade) {
-    mhArcade.addEventListener('click', () => {
-      if (typeof window._closePanel === 'function') window._closePanel('modes-ov');
-      if (typeof window.showUI === 'function') window.showUI('hub');
-    });
+    e.preventDefault();
+    e.stopPropagation();
+    const modesOv = document.getElementById('modes-ov');
+    if (modesOv) modesOv.classList.remove('on');
+    openSnakeSetupModal();
+    return;
   }
 
+  const pickSnake = target.closest('#pick-snake');
+  if (pickSnake) {
+    e.preventDefault();
+    e.stopPropagation();
+    const gs = document.getElementById('game-select');
+    if (gs) gs.classList.remove('on');
+    openSnakeSetupModal();
+    return;
+  }
+
+  const lobbyStartBtn = target.closest('#snake-lobby-btn-start');
+  if (lobbyStartBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    startSnakeGame();
+    return;
+  }
+
+  const snakeBack = target.closest('#snake-back');
+  if (snakeBack) {
+    e.preventDefault();
+    e.stopPropagation();
+    closeSnakeGame();
+    return;
+  }
+
+  const snakeStart = target.closest('#snake-btn-start');
+  if (snakeStart) {
+    e.preventDefault();
+    e.stopPropagation();
+    startSnakeGame();
+    return;
+  }
+}, true);
+
+document.addEventListener('DOMContentLoaded', () => {
   // Map Selector buttons in setup modal
   const mapGrid = document.getElementById('snake-map-selector');
   if (mapGrid) {
