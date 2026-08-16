@@ -550,7 +550,6 @@ function setupSnakeTouchAndMouse() {
       const rect = joy.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
-      let dx = touch.clientX - cx;
       let dy = touch.clientY - cy;
       const dist = Math.hypot(dx, dy);
       const maxDist = rect.width / 2 - 10;
@@ -603,110 +602,154 @@ function setupSnakeTouchAndMouse() {
     boostBtn.addEventListener('touchend', (e) => { e.preventDefault(); _isBoosting = false; });
   }
 }
+// Helper: Retrieve equipped skin ID & metadata from main shop
+function getEquippedShopSkinId() {
+  if (typeof window.activeSkin !== 'undefined' && window.activeSkin) return window.activeSkin;
+  const saved = localStorage.getItem('e3_skin');
+  if (saved) return saved;
+  return 'default';
+}
+
+function getShopSkinMeta(skinId) {
+  const skId = skinId || getEquippedShopSkinId();
+  if (typeof window.skinDef === 'function') {
+    const s = window.skinDef(skId);
+    if (s) return s;
+  }
+  return { id: skId, name: '기본 스킨', emoji: '💠', fc: '#00f3ff' };
+}
 
 // ══════════════════════════════════════════════════
-// Snake Skin Segment Generator
+// Snake Skin Segment Generator (Full Shop Skins 3D Models)
 // ══════════════════════════════════════════════════
 function buildSnakeSegmentMesh(skinId, colorHex, isHead = false, level = 1) {
   const group = new THREE.Group();
-  const col = colorHex || '#00f3ff';
-  const sk = skinId || _activeSkinKey || 'dragon';
+  const skMeta = getShopSkinMeta(skinId);
+  const sk = skMeta.id || 'default';
+  const col = colorHex || skMeta.fc || '#00f3ff';
+
+  const isMetal = ['gold', 'silver', 'chrome', 'cobra'].includes(sk);
+  const isNeon = ['neon', 'flame', 'thunder', 'rainbow'].includes(sk);
+  const isCrystal = ['crystal', 'crystal2', 'ice', 'ghost', 'cosmic'].includes(sk);
 
   const bodyMat = new THREE.MeshStandardMaterial({
     color: col,
-    metalness: sk === 'cobra' ? 0.9 : 0.6,
-    roughness: sk === 'pixel' ? 0.5 : 0.2,
-    emissive: sk === 'rainbow' ? col : '#000000',
-    emissiveIntensity: sk === 'rainbow' ? 0.5 : 0.0
+    metalness: isMetal ? 0.92 : 0.4,
+    roughness: isMetal ? 0.1 : (sk === 'pixel' ? 0.6 : 0.25),
+    emissive: isNeon ? col : (sk === 'cosmic' ? '#7209b7' : '#000000'),
+    emissiveIntensity: isNeon ? 0.6 : (sk === 'cosmic' ? 0.8 : 0.0),
+    transparent: isCrystal,
+    opacity: isCrystal ? (sk === 'ghost' ? 0.65 : 0.85) : 1.0
   });
 
   if (isHead) {
-    // Distinctive Snake Head Mesh per Skin
+    // 1. Dragon (🐉)
     if (sk === 'dragon') {
-      // Dragon Head with Horns & Eyes
-      const headGeo = new THREE.ConeGeometry(0.7, 1.8, 8);
+      const headGeo = new THREE.ConeGeometry(0.75, 1.9, 8);
       const headMesh = new THREE.Mesh(headGeo, bodyMat);
       headMesh.rotation.x = Math.PI / 2;
       group.add(headMesh);
 
-      // Horns
-      const hornGeo = new THREE.ConeGeometry(0.25, 0.9, 6);
-      const hornMat = new THREE.MeshBasicMaterial({ color: 0xff007f });
+      const hornGeo = new THREE.ConeGeometry(0.22, 0.95, 6);
+      const hornMat = new THREE.MeshStandardMaterial({ color: 0xff007f, emissive: 0xff007f, emissiveIntensity: 0.8 });
       const h1 = new THREE.Mesh(hornGeo, hornMat);
-      h1.position.set(-0.35, 0.4, -0.2);
-      h1.rotation.z = -0.4;
+      h1.position.set(-0.35, 0.4, -0.2); h1.rotation.z = -0.4;
       const h2 = new THREE.Mesh(hornGeo, hornMat);
-      h2.position.set(0.35, 0.4, -0.2);
-      h2.rotation.z = 0.4;
+      h2.position.set(0.35, 0.4, -0.2); h2.rotation.z = 0.4;
       group.add(h1); group.add(h2);
-    } else if (sk === 'viper') {
-      // Cyber Viper Head
-      const headGeo = new THREE.BoxGeometry(1.2, 0.7, 1.5);
+    }
+    // 2. Gold / Cobra (✨/👑)
+    else if (sk === 'gold' || sk === 'cobra') {
+      const headGeo = new THREE.SphereGeometry(0.85, 16, 16);
       const headMesh = new THREE.Mesh(headGeo, bodyMat);
       group.add(headMesh);
 
-      const visorGeo = new THREE.BoxGeometry(1.0, 0.25, 0.6);
-      const visorMat = new THREE.MeshBasicMaterial({ color: 0x00f3ff });
-      const visor = new THREE.Mesh(visorGeo, visorMat);
-      visor.position.set(0, 0.15, 0.5);
-      group.add(visor);
-    } else if (sk === 'cobra') {
-      // Golden Cobra Hood
-      const headGeo = new THREE.SphereGeometry(0.8, 12, 12);
+      const crownGeo = new THREE.CylinderGeometry(0.5, 0.3, 0.4, 6);
+      const crownMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.95, roughness: 0.1 });
+      const crown = new THREE.Mesh(crownGeo, crownMat);
+      crown.position.set(0, 0.9, 0);
+      group.add(crown);
+    }
+    // 3. Flame (🔥) / Lava (🌋)
+    else if (sk === 'flame' || sk === 'lava') {
+      const headGeo = new THREE.ConeGeometry(0.8, 1.8, 8);
+      const headMesh = new THREE.Mesh(headGeo, bodyMat);
+      headMesh.rotation.x = Math.PI / 2;
+      group.add(headMesh);
+
+      const flameGeo = new THREE.SphereGeometry(0.4, 8, 8);
+      const flameMat = new THREE.MeshBasicMaterial({ color: 0xffa500 });
+      const fMesh = new THREE.Mesh(flameGeo, flameMat);
+      fMesh.position.set(0, 0.5, -0.4);
+      group.add(fMesh);
+    }
+    // 4. Thunder (⚡) / Rocket (🚀)
+    else if (sk === 'thunder' || sk === 'rocket') {
+      const headGeo = new THREE.ConeGeometry(0.7, 2.0, 4);
+      const headMesh = new THREE.Mesh(headGeo, bodyMat);
+      headMesh.rotation.x = Math.PI / 2;
+      group.add(headMesh);
+    }
+    // 5. Star (⭐)
+    else if (sk === 'star') {
+      const headGeo = new THREE.DodecahedronGeometry(0.85, 0);
+      const headMesh = new THREE.Mesh(headGeo, bodyMat);
+      group.add(headMesh);
+    }
+    // 6. Car (🚗)
+    else if (sk === 'car') {
+      const headGeo = new THREE.BoxGeometry(1.2, 0.7, 1.6);
       const headMesh = new THREE.Mesh(headGeo, bodyMat);
       group.add(headMesh);
 
-      const hoodGeo = new THREE.CylinderGeometry(1.3, 0.2, 0.2, 12);
-      const hoodMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.1 });
-      const hood = new THREE.Mesh(hoodGeo, hoodMat);
-      hood.position.set(0, 0.1, -0.2);
-      group.add(hood);
-    } else if (sk === 'pixel') {
-      // Cubic Pixel Head
-      const headGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
-      const headMesh = new THREE.Mesh(headGeo, bodyMat);
-      group.add(headMesh);
-    } else {
-      // Classic / Rainbow Head
-      const headGeo = new THREE.SphereGeometry(0.75, 16, 16);
+      const lightGeo = new THREE.SphereGeometry(0.18, 8, 8);
+      const lightMat = new THREE.MeshBasicMaterial({ color: 0xffffaa });
+      const l1 = new THREE.Mesh(lightGeo, lightMat); l1.position.set(-0.4, 0.1, 0.8);
+      const l2 = new THREE.Mesh(lightGeo, lightMat); l2.position.set(0.4, 0.1, 0.8);
+      group.add(l1); group.add(l2);
+    }
+    // 7. Default / Rainbow / Crystal / Ghost / Other
+    else {
+      const headGeo = new THREE.SphereGeometry(0.8, 16, 16);
       const headMesh = new THREE.Mesh(headGeo, bodyMat);
       group.add(headMesh);
 
-      // Glowing Eyes
-      const eyeGeo = new THREE.SphereGeometry(0.18, 8, 8);
+      const eyeGeo = new THREE.SphereGeometry(0.2, 8, 8);
       const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-      const e1 = new THREE.Mesh(eyeGeo, eyeMat);
-      e1.position.set(-0.32, 0.2, 0.55);
-      const e2 = new THREE.Mesh(eyeGeo, eyeMat);
-      e2.position.set(0.32, 0.2, 0.55);
+      const e1 = new THREE.Mesh(eyeGeo, eyeMat); e1.position.set(-0.35, 0.22, 0.58);
+      const e2 = new THREE.Mesh(eyeGeo, eyeMat); e2.position.set(0.35, 0.22, 0.58);
       group.add(e1); group.add(e2);
     }
 
-    // Level Badge Indicator above head
-    const badgeGeo = new THREE.OctahedronGeometry(0.3, 0);
+    // Floating 3D Level Badge Indicator
+    const badgeGeo = new THREE.OctahedronGeometry(0.32, 0);
     const badgeMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
     const badge = new THREE.Mesh(badgeGeo, badgeMat);
-    badge.position.set(0, 1.4, 0);
+    badge.position.set(0, 1.5, 0);
     badge.name = 'headBadge';
     group.add(badge);
   } else {
-    // Body Segment Mesh matching skin
-    if (sk === 'pixel') {
+    // Body Segments matching skin shape
+    if (sk === 'pixel' || sk === 'car') {
       const segGeo = new THREE.BoxGeometry(0.85, 0.85, 0.85);
       const segMesh = new THREE.Mesh(segGeo, bodyMat);
       group.add(segMesh);
-    } else if (sk === 'cobra') {
-      const segGeo = new THREE.SphereGeometry(0.55, 12, 12);
+    } else if (sk === 'star' || sk === 'thunder') {
+      const segGeo = new THREE.OctahedronGeometry(0.55, 0);
+      const segMesh = new THREE.Mesh(segGeo, bodyMat);
+      group.add(segMesh);
+    } else if (sk === 'crystal' || sk === 'crystal2' || sk === 'ice') {
+      const segGeo = new THREE.ConeGeometry(0.5, 1.0, 5);
       const segMesh = new THREE.Mesh(segGeo, bodyMat);
       group.add(segMesh);
     } else {
-      const segGeo = new THREE.SphereGeometry(0.5, 14, 14);
+      const segGeo = new THREE.SphereGeometry(0.52, 14, 14);
       const segMesh = new THREE.Mesh(segGeo, bodyMat);
       group.add(segMesh);
     }
   }
 
-  group.scale.set(0.8, 0.8, 0.8);
+  group.scale.set(0.85, 0.85, 0.85);
   return group;
 }
 
@@ -714,9 +757,10 @@ function buildSnakeSegmentMesh(skinId, colorHex, isHead = false, level = 1) {
 // Snake Object Factory
 // ══════════════════════════════════════════════════
 function createSnakeObject(isPlayer, skinId, startX, startY, startZ, isBot, botName, level = 1) {
+  const skMeta = getShopSkinMeta(skinId);
   const colorHex = isPlayer
-    ? '#00f3ff'
-    : ['#ff007f', '#39ff14', '#ffee00', '#b500ff', '#ff6600', '#7209b7', '#4cc9f0'][Math.floor(Math.random() * 7)];
+    ? (skMeta.fc || '#00f3ff')
+    : (skMeta.fc || ['#ff007f', '#39ff14', '#ffee00', '#b500ff', '#ff6600', '#7209b7', '#4cc9f0'][Math.floor(Math.random() * 7)]);
 
   const headMesh = buildSnakeSegmentMesh(skinId, colorHex, true, level);
   _snakeScene.add(headMesh);
@@ -725,7 +769,7 @@ function createSnakeObject(isPlayer, skinId, startX, startY, startZ, isBot, botN
     id: Math.random().toString(36).substring(2, 9),
     isPlayer,
     isBot,
-    name: isPlayer ? '나 (PLAYER)' : botName,
+    name: isPlayer ? `나 (${skMeta.name})` : botName,
     skinId,
     colorHex,
     level,
@@ -750,7 +794,7 @@ function createSnakeObject(isPlayer, skinId, startX, startY, startZ, isBot, botN
 
   // Initialize Tail Segments
   for (let i = 0; i < snake.length - 1; i++) {
-    const segMesh = buildSnakeSegmentMesh(skinId, isPlayer ? '#70a1ff' : colorHex, false, level);
+    const segMesh = buildSnakeSegmentMesh(skinId, colorHex, false, level);
     // Tapering scale towards tail
     const taper = Math.max(0.4, 0.8 - (i / snake.length) * 0.35);
     segMesh.scale.set(taper, taper, taper);
@@ -816,6 +860,160 @@ function initEnergyOrbs(count = 90) {
 }
 
 // ══════════════════════════════════════════════════
+// Real-Time Human Multiplayer Room Sync Engine (BroadcastChannel + LocalStorage)
+// ══════════════════════════════════════════════════
+let _snakeChannel = null;
+let _remoteHumanPlayers = new Map(); // remoteId -> snake object
+let _lastSyncTime = 0;
+
+function initSnakeMultiplayerChannel() {
+  if (typeof BroadcastChannel === 'undefined') return;
+  if (_snakeChannel) return;
+
+  try {
+    _snakeChannel = new BroadcastChannel('navigated_3d_snake_room');
+
+    _snakeChannel.onmessage = (e) => {
+      const data = e.data;
+      if (!data || !data.type) return;
+
+      if (data.type === 'SNAKE_JOIN_ROOM') {
+        handleRemotePlayerJoin(data);
+      } else if (data.type === 'SNAKE_SYNC_POS') {
+        handleRemotePlayerSync(data);
+      } else if (data.type === 'SNAKE_LEAVE_ROOM') {
+        handleRemotePlayerLeave(data);
+      }
+    };
+  } catch (err) {
+    console.warn('[3D Snake] BroadcastChannel init error:', err);
+  }
+}
+
+function broadcastSelfJoin() {
+  if (!_snakeChannel || !_playerSnake) return;
+  const pSkin = getEquippedShopSkinId();
+  const pMeta = getShopSkinMeta(pSkin);
+
+  _snakeChannel.postMessage({
+    type: 'SNAKE_JOIN_ROOM',
+    id: _playerSnake.id,
+    name: pMeta.name,
+    skinId: pSkin,
+    level: _playerSnake.level,
+    pos: { x: _playerSnake.pos.x, y: _playerSnake.pos.y, z: _playerSnake.pos.z }
+  });
+}
+
+function broadcastSelfSync() {
+  if (!_snakeChannel || !_playerSnake || !_snakeActive) return;
+  _snakeChannel.postMessage({
+    type: 'SNAKE_SYNC_POS',
+    id: _playerSnake.id,
+    pos: { x: _playerSnake.pos.x, y: _playerSnake.pos.y, z: _playerSnake.pos.z },
+    yaw: _playerSnake.yaw,
+    pitch: _playerSnake.pitch,
+    level: _playerSnake.level,
+    length: _playerSnake.length,
+    dead: _playerSnake.dead
+  });
+}
+
+function handleRemotePlayerJoin(data) {
+  if (!_snakeActive || !_playerSnake) return;
+  if (data.id === _playerSnake.id) return; // ignore self
+  if (_remoteHumanPlayers.has(data.id)) return; // already in room
+
+  // AI BOT REPLACEMENT: Remove 1 AI Bot to accommodate the incoming real human player!
+  if (_aiSnakes.length > 0) {
+    // Find a non-human AI bot to remove
+    const botIdx = _aiSnakes.findIndex(bot => bot.isBot);
+    if (botIdx !== -1) {
+      const aiToRemove = _aiSnakes.splice(botIdx, 1)[0];
+      if (aiToRemove) {
+        if (aiToRemove.headMesh) _snakeScene.remove(aiToRemove.headMesh);
+        if (aiToRemove.segments) aiToRemove.segments.forEach(s => _snakeScene.remove(s));
+      }
+    }
+  }
+
+  // Create 3D Snake Object for incoming Real Human Player
+  const rx = data.pos ? data.pos.x : (Math.random() * 2 - 1) * 30;
+  const ry = data.pos ? data.pos.y : (Math.random() * 2 - 1) * 20;
+  const rz = data.pos ? data.pos.z : (Math.random() * 2 - 1) * 30;
+
+  const remoteSnake = createSnakeObject(
+    false,
+    data.skinId || 'dragon',
+    rx, ry, rz,
+    false, // NOT BOT - REAL HUMAN PLAYER!
+    `🎮 ${data.name || '유저'}`,
+    data.level || 1
+  );
+  remoteSnake.isHumanRemote = true;
+  remoteSnake.remoteId = data.id;
+
+  _remoteHumanPlayers.set(data.id, remoteSnake);
+  _aiSnakes.push(remoteSnake);
+
+  // Show Live Notification: Real player joined & AI bot replaced!
+  showKillFlash(`🎮 ${data.name || '유저'} 님이 매칭되었습니다! (🤖 AI 1명 퇴장)`);
+
+  // Respond so the joining player registers us as well
+  broadcastSelfJoin();
+}
+
+function handleRemotePlayerSync(data) {
+  if (!_snakeActive || !_playerSnake) return;
+  if (data.id === _playerSnake.id) return;
+
+  if (!_remoteHumanPlayers.has(data.id)) {
+    handleRemotePlayerJoin(data);
+    return;
+  }
+
+  const remoteSnake = _remoteHumanPlayers.get(data.id);
+  if (!remoteSnake || remoteSnake.dead) return;
+
+  if (data.pos) {
+    remoteSnake.pos.set(data.pos.x, data.pos.y, data.pos.z);
+    if (remoteSnake.headMesh) remoteSnake.headMesh.position.copy(remoteSnake.pos);
+  }
+  if (data.yaw !== undefined) remoteSnake.yaw = data.yaw;
+  if (data.pitch !== undefined) remoteSnake.pitch = data.pitch;
+  if (data.level !== undefined) remoteSnake.level = data.level;
+  if (data.dead !== undefined) remoteSnake.dead = data.dead;
+}
+
+function handleRemotePlayerLeave(data) {
+  if (!_remoteHumanPlayers.has(data.id)) return;
+
+  const remoteSnake = _remoteHumanPlayers.get(data.id);
+  if (remoteSnake) {
+    if (remoteSnake.headMesh) _snakeScene.remove(remoteSnake.headMesh);
+    if (remoteSnake.segments) remoteSnake.segments.forEach(s => _snakeScene.remove(s));
+
+    const idx = _aiSnakes.indexOf(remoteSnake);
+    if (idx !== -1) _aiSnakes.splice(idx, 1);
+  }
+
+  _remoteHumanPlayers.delete(data.id);
+
+  // RE-SPAWN 1 AI BOT TO FILL THE VACATED SLOT AND MAINTAIN EXACTLY 10 PLAYERS IN THE ROOM!
+  if (_aiSnakes.length < TOTAL_PLAYERS - 1) {
+    const nickPool = [...BOT_NICKNAMES].sort(() => Math.random() - 0.5);
+    const botSkinPool = ['dragon', 'flame', 'thunder', 'gold', 'rainbow', 'crystal', 'car', 'rocket', 'cosmic', 'neon'];
+    const rx = (Math.random() * 2 - 1) * (BOX_X / 2 - 15);
+    const ry = (Math.random() * 2 - 1) * (BOX_Y / 2 - 10);
+    const rz = (Math.random() * 2 - 1) * (BOX_Z / 2 - 15);
+    const botName = nickPool[Math.floor(Math.random() * nickPool.length)];
+    const botSkin = botSkinPool[Math.floor(Math.random() * botSkinPool.length)];
+
+    _aiSnakes.push(createSnakeObject(false, botSkin, rx, ry, rz, true, botName, 1));
+  }
+}
+
+// ══════════════════════════════════════════════════
 // Start Minigame & Loop
 // ══════════════════════════════════════════════════
 function startSnakeGame() {
@@ -831,22 +1029,29 @@ function startSnakeGame() {
     bot.segments.forEach(s => _snakeScene.remove(s));
   });
   _aiSnakes = [];
+  _remoteHumanPlayers.clear();
 
-  // Create Player
-  const pSkin = localStorage.getItem('e3_snake_selected_skin') || _activeSkinKey || 'dragon';
-  _playerSnake = createSnakeObject(true, pSkin, 0, 0, 0, false, 'PLAYER', 1);
+  // Create Player with Equipped Shop Skin!
+  const playerSkinId = getEquippedShopSkinId();
+  const playerMeta = getShopSkinMeta(playerSkinId);
+  _playerSnake = createSnakeObject(true, playerSkinId, 0, 0, 0, false, `나 (${playerMeta.name})`, 1);
 
-  // Spawn 9 AI Bots to make 10 players total
+  // Spawn initial 9 AI Bots with colorful shop skins (Will be dynamically replaced as human players join!)
+  const botSkinPool = ['dragon', 'flame', 'thunder', 'gold', 'rainbow', 'crystal', 'car', 'rocket', 'cosmic', 'neon'];
   const nickPool = [...BOT_NICKNAMES].sort(() => Math.random() - 0.5);
   for (let i = 0; i < TOTAL_PLAYERS - 1; i++) {
     const rx = (Math.random() * 2 - 1) * (BOX_X / 2 - 15);
     const ry = (Math.random() * 2 - 1) * (BOX_Y / 2 - 10);
     const rz = (Math.random() * 2 - 1) * (BOX_Z / 2 - 15);
     const botName = nickPool[i % nickPool.length];
-    const botSkin = Object.keys(SNAKE_MAPS)[i % 5];
+    const botSkin = botSkinPool[i % botSkinPool.length];
     const botLevel = Math.floor(Math.random() * 4) + 1;
     _aiSnakes.push(createSnakeObject(false, botSkin, rx, ry, rz, true, botName, botLevel));
   }
+
+  // Init & Broadcast Join on Channel
+  initSnakeMultiplayerChannel();
+  broadcastSelfJoin();
 
   // Populate Orbs
   initEnergyOrbs(100);
@@ -908,6 +1113,12 @@ function startSnakeGame() {
 // ══════════════════════════════════════════════════
 function updateSnakeLoop(dt, now) {
   if (!_playerSnake) return;
+
+  // Broadcast real-time player state to room every 40ms (25fps)
+  if (now - _lastSyncTime > 40) {
+    _lastSyncTime = now;
+    broadcastSelfSync();
+  }
 
   // Pulse edge lights & ambient particles
   if (_cuboidEdgeLines && _cuboidEdgeLines.material) {
@@ -1342,6 +1553,14 @@ function openSnakeSetupModal() {
   const ui = document.getElementById('ui');
   if (ui) ui.style.pointerEvents = 'auto';
 
+  const pSkin = getEquippedShopSkinId();
+  const pMeta = getShopSkinMeta(pSkin);
+
+  const badgeEl = document.getElementById('snake-equipped-skin-badge');
+  if (badgeEl) {
+    badgeEl.innerHTML = `👕 내가 장착한 상점 스킨: <b style="color:#00f3ff">${pMeta.emoji || '💠'} ${pMeta.name || '기본'}</b> <span style="font-size:11px;color:rgba(180,200,240,0.6)">(상점에서 장착 시 자동 반영)</span>`;
+  }
+
   const gameEl = document.getElementById('snake-game');
   if (gameEl) {
     gameEl.classList.add('on');
@@ -1439,6 +1658,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+})();
+
 // Hook into window.loadLevel & window.endGame for Speedrun timer
 (function hookSpeedrunAndGacha() {
   const origLoadLevel = window.loadLevel;
@@ -1464,6 +1685,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (origEndGame) return origEndGame.apply(this, arguments);
   };
-})();
-
 })();
