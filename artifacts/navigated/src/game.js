@@ -17,6 +17,12 @@ import {
   getDoc,
   serverTimestamp
 } from 'firebase/firestore';
+import {
+  getLocalHistory,
+  loadReplay,
+  loadUserHistory,
+  saveMatchRecord
+} from './replay-store.js';
 
 // window._FB_CFG는 index.html의 <script> 블록에서 설정됨
 const _fbApp = window._FB_CFG ? initializeApp(window._FB_CFG) : null;
@@ -1090,6 +1096,331 @@ let idleT=0,hudOn=true;
 let demoIdx=0,demoT=0;
 
 // ══════════════════════════════════════════════════
+// REPLAY + PERSONAL HISTORY
+// ══════════════════════════════════════════════════
+let _activeReplay=null;
+let _lastCompletedReplay=null;
+let _historyRecords=[];
+let _historyFilter='all';
+let _replayPlayback=null;
+
+function _replayId(){
+  if(typeof crypto!=='undefined'&&typeof crypto.randomUUID==='function')return crypto.randomUUID();
+  return `replay-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+}
+
+function _replayModeLabel(mode){
+  if(mode==='rank')return '랭크';
+  if(mode==='blast-rank')return '블라스트 랭크';
+  if(mode==='general-ai')return 'AI 대전';
+  return mode==='general'?'일반 멀티':'일반';
+}
+
+function _replayTimeLabel(seconds){
+  if(seconds===null||seconds===undefined||!Number.isFinite(Number(seconds)))return '—';
+  return `${Number(seconds).toFixed(2)}초`;
+}
+
+function _replayDateLabel(value){
+  const date=new Date(Number(value)||Date.now());
+  return date.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+function _replayEventPayload(entry){
+  return {
+    id:entry.id,
+    x:Number(entry.bp?.x||0),
+    y:Number(entry.bp?.y||0),
+    z:Number(entry.bp?.z||0),
+    dir:entry.def?.dir||'py',
+    spinAngle:Number(entry.spinAngle||0),
+    launchRotY:Number(entry.launchRotY||0),
+  };
+}
+
+function _recordReplayEvent(type,payload={},player='me'){
+  if(!_activeReplay||_activeReplay.saved)return null;
+  const event={t:Math.max(0,Date.now()-_activeReplay.startedAt),type,player,...payload};
+  _activeReplay.events.push(event);
+  if(_activeReplay.events.length>1800)_activeReplay.events.shift();
+  return event;
+}
+
+function _sendReplayAction(event){
+  if(!_activeReplay||_activeReplay.kind!=='multi'||!event)return;
+  if(typeof multiSend==='function')multiSend({type:'replay_event',event:{...event,player:'opponent'}});
+}
+
+function _startReplaySession(config){
+  if(_activeReplay)_finishReplaySession('abandoned');
+  _activeReplay={
+    id:_replayId(),
+    startedAt:Date.now(),
+    events:[{t:0,type:'start',player:'me'}],
+    kind:config.kind||'single',
+    levelIndex:Number.isFinite(config.levelIndex)?config.levelIndex:null,
+    mode:config.mode||'normal',
+    code:config.code||null,
+    total:Number(config.total||0),
+    opponent:config.opponent||null,
+    perfect:true,
+    combo:0,
+    maxCombo:0,
+    coins:0,
+    saved:false,
+  };
+}
+
+function _finishReplaySession(result,extra={}){
+  const session=_activeReplay;
+  if(!session||session.saved)return;
+  const endedAt=Date.now();
+  const duration=Math.max(0,(endedAt-session.startedAt)/1000);
+  _recordReplayEvent('finish',{result});
+  session.saved=true;
+  const isMulti=session.kind==='multi';
+  const record={
+    id:session.id,
+    replayId:session.id,
+    playedAt:endedAt,
+    kind:session.kind,
+    mode:session.mode,
+    levelIndex:session.levelIndex,
+    level:session.levelIndex===null?(session.code||'멀티'):session.levelIndex+1,
+    result,
+    duration:Number(duration.toFixed(2)),
+    perfect:Boolean(session.perfect&&result!=='abandoned'),
+    combo:Number(session.maxCombo||0),
+    coins:Number(session.coins||0),
+    opponent:extra.opponent||session.opponent||null,
+    opponentTime:extra.opponentTime??null,
+    total:Number(session.total||0),
+  };
+  const replay={
+    id:session.id,
+    createdAt:session.startedAt,
+    endedAt,
+    kind:session.kind,
+    mode:session.mode,
+    levelIndex:session.levelIndex,
+    code:session.code,
+    total:session.total,
+    opponent:record.opponent,
+    duration:record.duration,
+    events:session.events.slice(),
+  };
+  _lastCompletedReplay=record;
+  _activeReplay=null;
+  saveMatchRecord({db:_fbDb,user:_fbUser,record,replay})
+    .then(()=>{if(_fbUser)_loadHistoryRecords();})
+    .catch(error=>console.warn('[Replay] Match save failed:',error));
+  return record;
+}
+
+function _finishMultiReplay(result,extra={}){
+  if(!_activeReplay)return;
+  _activeReplay.coins=Number(extra.coins||0);
+  _finishReplaySession(result,extra);
+}
+
+function _markReplayLaunch(entry,blockedNow){
+  if(!_activeReplay)return;
+  if(blockedNow){
+    _activeReplay.perfect=false;
+    _activeReplay.combo=0;
+  }else{
+    _activeReplay.combo+=1;
+    _activeReplay.maxCombo=Math.max(_activeReplay.maxCombo,_activeReplay.combo);
+  }
+  const event=_recordReplayEvent(blockedNow?'blocked':'launch',{
+    ..._replayEventPayload(entry),
+    combo:_activeReplay.combo,
+  });
+  if(phase==='multi-playing')_sendReplayAction(event);
+}
+
+async function _loadHistoryRecords(){
+  _historyRecords=await loadUserHistory({db:_fbDb,user:_fbUser});
+  if(document.getElementById('history-ov')?.classList.contains('on'))_renderHistory();
+}
+
+function _historySummary(records){
+  const finished=records.filter(item=>item.result!=='abandoned');
+  const singles=finished.filter(item=>item.kind==='single');
+  const multi=finished.filter(item=>item.kind==='multi');
+  const wins=multi.filter(item=>item.result==='win').length;
+  const losses=multi.filter(item=>item.result==='loss').length;
+  const draws=multi.filter(item=>item.result==='draw').length;
+  const times=finished.map(item=>Number(item.duration)).filter(Number.isFinite).filter(item=>item>0);
+  let longest=0,current=0;
+  for(const item of [...finished].sort((a,b)=>Number(a.playedAt)-Number(b.playedAt))){
+    if(item.kind==='multi'&&item.result==='win'){current+=1;longest=Math.max(longest,current);}
+    else if(item.kind==='multi'&&item.result!=='abandoned')current=0;
+  }
+  for(const item of [...finished].sort((a,b)=>Number(b.playedAt)-Number(a.playedAt))){
+    if(item.kind==='multi'&&item.result==='win')break;
+    if(item.kind==='multi'&&item.result!=='abandoned'){current=0;break;}
+  }
+  return {
+    total:finished.length,
+    clears:singles.filter(item=>item.result==='clear').length,
+    wins,losses,draws,
+    best:times.length?Math.min(...times):null,
+    average:times.length?times.reduce((a,b)=>a+b,0)/times.length:null,
+    perfect:finished.filter(item=>item.perfect).length,
+    combo:finished.reduce((best,item)=>Math.max(best,Number(item.combo)||0),0),
+    coins:finished.reduce((sum,item)=>sum+(Number(item.coins)||0),0),
+    streak:current,
+    longest,
+  };
+}
+
+function _historyResultLabel(item){
+  if(item.result==='clear')return 'CLEAR';
+  if(item.result==='win')return 'WIN';
+  if(item.result==='draw')return 'DRAW';
+  if(item.result==='abandoned')return '중단';
+  return 'LOSS';
+}
+
+function _renderHistory(){
+  const list=document.getElementById('history-list');
+  const empty=document.getElementById('history-empty');
+  const summary=_historySummary(_historyRecords);
+  const records=_historyRecords
+    .filter(item=>_historyFilter==='all'||(_historyFilter==='single'&&item.kind==='single')||(_historyFilter==='multi'&&item.kind==='multi'))
+    .sort((a,b)=>Number(b.playedAt)-Number(a.playedAt));
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=String(value);};
+  set('history-total',summary.total);set('history-clears',summary.clears);
+  set('history-winloss',`${summary.wins} / ${summary.losses}${summary.draws?` / ${summary.draws}`:''}`);
+  set('history-best',_replayTimeLabel(summary.best));set('history-average',_replayTimeLabel(summary.average));
+  set('history-perfect',summary.perfect);set('history-combo',summary.combo);
+  set('history-coins',summary.coins);set('history-streak',`${summary.streak} / ${summary.longest}`);
+  if(!list||!empty)return;
+  list.replaceChildren();
+  empty.style.display=records.length?'none':'flex';
+  for(const item of records){
+    const row=document.createElement('article');
+    row.className='history-item';
+    const isMulti=item.kind==='multi';
+    const result=_historyResultLabel(item);
+    row.innerHTML=`
+      <div class="history-item-top">
+        <div><strong>${isMulti?'MULTI':'SINGLE'}</strong><span>${_replayDateLabel(item.playedAt)}</span></div>
+        <b class="history-result ${result.toLowerCase()}">${result}</b>
+      </div>
+      <div class="history-item-meta">${isMulti?`${_replayModeLabel(item.mode)} · 코드 ${item.level||'—'}`:`레벨 ${item.level||item.levelIndex+1} · ${_replayModeLabel(item.mode)}`}</div>
+      <div class="history-item-stats">
+        <span>TIME <b>${_replayTimeLabel(item.duration)}</b></span>
+        <span>${item.perfect?'PERFECT':'NO MISS X'} <b>${item.perfect?'✓':'—'}</b></span>
+        <span>COMBO <b>${item.combo||0}</b></span>
+        <span>COIN <b>${item.coins||0}</b></span>
+      </div>
+      ${isMulti&&item.opponent?`<div class="history-opponent">VS ${item.opponent}</div>`:''}
+      <button class="history-replay-btn" data-replay-id="${item.replayId||item.id}">[ REPLAY ]</button>`;
+    row.querySelector('.history-replay-btn').addEventListener('click',()=>_openReplay(item.replayId||item.id));
+    list.appendChild(row);
+  }
+}
+
+function _openHistory(){
+  phase='history';
+  clearPreview();
+  closeMultiWs();
+  showUI('history');
+  _historyFilter='all';
+  document.querySelectorAll('.history-filter').forEach(button=>button.classList.toggle('on',button.dataset.filter==='all'));
+  _loadHistoryRecords();
+  _renderHistory();
+}
+
+function _replayPositionCamera(){
+  const center=new THREE.Vector3();
+  arrows.forEach(entry=>center.add(entry.bp));
+  if(arrows.length)center.divideScalar(arrows.length);
+  const span=Math.sqrt(Math.max(1,arrows.length))*GRID;
+  const portrait=innerHeight>innerWidth*1.1;
+  camera.position.set(center.x,center.y+span*.5,center.z+(portrait?span*2.5+5.5:span*1.9+3.5));
+  controls.target.copy(center);controls.update();
+}
+
+function _replayApplyEvent(event){
+  if(!_replayPlayback)return;
+  if(event.player==='opponent'){
+    _replayPlayback.opponentEvents+=1;
+    const count=_replayPlayback.opponentEvents;
+    const total=_replayPlayback.opponentTotal||count;
+    const fill=document.getElementById('replay-op-fill');
+    if(fill)fill.style.width=Math.min(100,count/Math.max(1,total)*100)+'%';
+    const label=document.getElementById('replay-op-count');
+    if(label)label.textContent=`${count}/${total}`;
+    return;
+  }
+  if(event.type!=='launch'&&event.type!=='blocked')return;
+  const entry=arrowMap[event.id];
+  if(!entry||entry.state!=='idle')return;
+  entry.spinAngle=Number(event.spinAngle||entry.spinAngle||0);
+  entry.launchRotY=Number(event.launchRotY||0);
+  entry.dv=DV[event.dir] ? DV[event.dir].clone().applyEuler(new THREE.Euler(0,entry.spinAngle,0)).normalize() : entry.dv;
+  if(event.type==='blocked'){
+    entry.state='returning';entry.prog=0.22;
+  }else{
+    entry.state='moving';entry.prog=0;
+    _replayPlayback.myEvents+=1;
+    const fill=document.getElementById('replay-my-fill');
+    if(fill)fill.style.width=Math.min(100,_replayPlayback.myEvents/Math.max(1,_replayPlayback.myTotal)*100)+'%';
+    const label=document.getElementById('replay-my-count');
+    if(label)label.textContent=`${_replayPlayback.myEvents}/${_replayPlayback.myTotal}`;
+  }
+}
+
+async function _openReplay(id){
+  const replay=await loadReplay({db:_fbDb,user:_fbUser,id});
+  if(!replay){
+    popup('리플레이를 찾을 수 없습니다.',innerWidth/2,innerHeight*.45,'#ff6b6b');
+    return;
+  }
+  const total=Number(replay.total||replay.events?.filter(event=>event.player==='me'&&event.type==='launch').length||1);
+  const level=replay.kind==='multi'?genMultiLevel(replay.code||'0000',total):getLevel(Number(replay.levelIndex)||0);
+  clearPreview();closeMultiWs();clearRankBot();clearBlastRankTimer();
+  phase='replay';escaped=0;selId=null;lastId=null;opening=false;
+  spawnArrows(level,activeSkin);_replayPositionCamera();
+  arrows.forEach(entry=>{entry.root.visible=true;entry.state='idle';entry.prog=0;});
+  _replayPlayback={
+    replay,
+    events:[...(replay.events||[])].sort((a,b)=>Number(a.t)-Number(b.t)),
+    eventIndex:0,
+    elapsed:0,
+    paused:false,
+    speed:1,
+    myEvents:0,
+    opponentEvents:0,
+    myTotal:Math.max(1,(replay.events||[]).filter(event=>event.player!=='opponent'&&event.type==='launch').length),
+    opponentTotal:Math.max(1,(replay.events||[]).filter(event=>event.player==='opponent'&&event.type==='launch').length),
+  };
+  showUI('replay');
+  _updateReplayControls();
+}
+
+function _updateReplayControls(){
+  if(!_replayPlayback)return;
+  const play=document.getElementById('replay-play');
+  const elapsed=document.getElementById('replay-elapsed');
+  const total=document.getElementById('replay-total');
+  if(play)play.textContent=_replayPlayback.paused?'▶ 재생':'Ⅱ 일시정지';
+  if(elapsed)elapsed.textContent=_replayTimeLabel(_replayPlayback.elapsed);
+  if(total)total.textContent=_replayTimeLabel(Number(_replayPlayback.replay.duration)||0);
+  const progress=document.getElementById('replay-progress-fill');
+  if(progress)progress.style.width=Math.min(100,_replayPlayback.elapsed/Math.max(.01,Number(_replayPlayback.replay.duration)||1)*100)+'%';
+  document.querySelectorAll('.replay-speed').forEach(button=>button.classList.toggle('on',Number(button.dataset.speed)===_replayPlayback.speed));
+}
+
+function _stopReplay(){
+  _replayPlayback=null;
+  phase='menu';clearPreview();showUI('menu');initDemo();
+}
+
+// ══════════════════════════════════════════════════
 // HIT TEST
 // ══════════════════════════════════════════════════
 function hitTest(cx,cy){
@@ -1431,10 +1762,12 @@ function launchArrow(id){
     if(blocked(e)){
       e.state='returning';e.prog=0.22;e.launchRotY=0;
       resetComboSound();
+      _markReplayLaunch(e,true);
       if(phase==='playing'){lives--;shk=1.0;updateHUD();flashBlock();if(lives<=0)setTimeout(()=>endGame(false),700);}
       else if(phase==='multi-playing'){shk=0.6;flashBlock();multiBlockCount++;multiLives=Math.max(0,multiLives-1);updateMultiHUD();const pen=Math.min(2,multiBlockCount);popup('실수! ❤️×'+multiLives,innerWidth/2,innerHeight*.38,'#ff6b6b');if(multiLives<=0){setTimeout(()=>multiLiveOut(),600);}}
     }else{
       e.launchRotY=0;e.state='moving';e.prog=0;
+      _markReplayLaunch(e,false);
       popup('PERFECT!',innerWidth/2,innerHeight*.38,'#FFD700');
       playComboNote();
       if(typeof achieveState!=='undefined'){_achStat('totalArrows',1,true);_achStat('maxCombo',_comboIdx,false,true);_missionProg('arrows',1);}
@@ -1448,6 +1781,7 @@ function launchArrow(id){
       // 현재 방향이 막혀 있음 → 실패
       e.state='returning';e.prog=0.22;e.launchRotY=spinA;
       resetComboSound();
+      _markReplayLaunch(e,true);
       if(phase==='playing'){lives--;shk=1.0;updateHUD();flashBlock();if(lives<=0)setTimeout(()=>endGame(false),700);}
       else if(phase==='multi-playing'){shk=0.6;flashBlock();multiBlockCount++;multiLives=Math.max(0,multiLives-1);updateMultiHUD();const pen=Math.min(2,multiBlockCount);popup('실수! ❤️×'+multiLives,innerWidth/2,innerHeight*.38,'#ff6b6b');if(multiLives<=0){setTimeout(()=>multiLiveOut(),600);}}
     }else{
@@ -1455,6 +1789,7 @@ function launchArrow(id){
       e.dv=spinDir.clone();
       e.launchRotY=spinA;
       e.state='moving';e.prog=0;
+      _markReplayLaunch(e,false);
       // 90도 방향 탈출이면 PERFECT! ★
       const cosA=Math.abs(DV[e.def.dir].dot(spinDir));
       const is90=cosA<Math.sin(JUST_WINDOW);
@@ -1547,6 +1882,7 @@ function loadLevel(i){
   lvIdx=i;const lv=getLevel(i);
   maxLiv=4;lives=maxLiv;
   selId=null;lastId=null;escaped=0;phase='playing';
+  _startReplaySession({kind:'single',levelIndex:i,mode:typeof _currentDiff!=='undefined'?_currentDiff:'normal',total:lv.length});
   controls.autoRotate=false;
   spawnArrows(lv,activeSkin);
   const sp=Math.sqrt(lv.length)*GRID;
@@ -1583,6 +1919,8 @@ function showUI(which){
   document.getElementById('hud').style.display='none';
   document.getElementById('win-ov').style.display='none';
   document.getElementById('over-ov').style.display='none';
+  document.getElementById('history-ov').classList.remove('on');
+  document.getElementById('replay-ov').classList.remove('on');
   document.getElementById('shop').classList.remove('on');
   document.getElementById('coin-pill').style.display='none';
   document.getElementById('exit-btn').style.display='none';
@@ -1614,6 +1952,12 @@ function showUI(which){
     document.getElementById('win-ov').style.display='flex';
   }else if(which==='over'){
     document.getElementById('over-ov').style.display='flex';
+  }else if(which==='history'){
+    document.getElementById('history-ov').classList.add('on');
+    document.getElementById('ui').style.pointerEvents='auto';
+  }else if(which==='replay'){
+    document.getElementById('replay-ov').classList.add('on');
+    document.getElementById('ui').style.pointerEvents='auto';
   }else if(which==='shop'){
     document.getElementById('shop').classList.add('on');
   }else if(which==='multi-mode'){
@@ -1676,9 +2020,10 @@ function endGame(won){
   if(typeof _clearBossRound==='function')_clearBossRound();
   const _dv2=document.getElementById('danger-vignette');if(_dv2)_dv2.classList.remove('on');
   if(typeof bgm!=='undefined')bgm.playbackRate=1.0;
+  if(!won&&_activeReplay)_finishReplaySession('loss');
   // ── 던전 모드 ─────────────────────────────────────
   if(typeof dungeonState!=='undefined'&&dungeonState){
-    if(won){const r=reward(dungeonState.rooms[dungeonState.room],lives,maxLiv);dungeonOnWin(r);}
+    if(won){const r=reward(dungeonState.rooms[dungeonState.room],lives,maxLiv);if(_activeReplay)_activeReplay.coins=r;_finishReplaySession('clear');dungeonOnWin(r);}
     else{dungeonBest=Math.max(dungeonBest,dungeonState.room);saveDungeonBest();dungeonState=null;
       popup('💀 던전 실패...',innerWidth/2,innerHeight*.4,'#ff6b6b');
       phase='over';clearPreview();document.getElementById('exit-btn').style.display='none';showUI('over');}
@@ -1686,7 +2031,7 @@ function endGame(won){
   }
   // ── 무한 모드 ─────────────────────────────────────
   if(typeof infState!=='undefined'&&infState){
-    if(won){const r=reward(infState.level,lives,maxLiv);infOnWin(r);}
+    if(won){const r=reward(infState.level,lives,maxLiv);if(_activeReplay)_activeReplay.coins=r;_finishReplaySession('clear');infOnWin(r);}
     else{infState.mistakes++;popup('💥 실수! 계속...',innerWidth/2,innerHeight*.4,'#ff6b6b');
       setTimeout(()=>loadInfLevel(),900);}
     return;
@@ -1723,6 +2068,7 @@ function endGame(won){
   const prev=clearedLevels[lvIdx]||0;
   if(stars>prev)clearedLevels[lvIdx]=stars;
   const r=reward(lvIdx,lives,maxLiv);coins+=r;doSave();updateCoins();
+  if(_activeReplay){_activeReplay.coins=r;_finishReplaySession('clear');}
   if(typeof _addBPXP==='function'){var _bpDm2={easy:0.7,normal:1,hard:1.5,extreme:2}[typeof _currentDiff!=='undefined'?_currentDiff:'normal']||1;var _bpXp=Math.round(120*_bpDm2);setTimeout(function(){_addBPXP(_bpXp);popup('+'+_bpXp+' BP XP',innerWidth/2,innerHeight*.42,'#7b2ff7');},500);}
   popup(`+${r} 💰`,innerWidth/2,innerHeight*.45);
   document.getElementById('w-stars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
@@ -2477,6 +2823,8 @@ function handleMultiMsg(msg){
     updateMultiHUD();
     if(multiMyFinishTime!==null){showMultiResult();}
     else{popup('상대 완료! 서둘러!',innerWidth/2,innerHeight*.38,'#f72585');}
+  } else if(msg.type==='replay_event'){
+    if(_activeReplay&&msg.event)_recordReplayEvent(msg.event.type,msg.event,'opponent');
   } else if(msg.type==='again'){
     setTimeout(()=>startMultiCountdown(),400);
   } else if(msg.type==='opponent_disconnected'){
@@ -2521,6 +2869,13 @@ function startMultiGame(){
   multiOpDone=false;multiBlockCount=0;multiLives=5;
   clearRankBot();
   multiStartTime=Date.now();
+  _startReplaySession({
+    kind:'multi',
+    mode:multiMode,
+    code:multiCode,
+    total:multiTotal,
+    opponent:rankHumanMatch?'상대':(multiMode==='general-ai'||multiMode==='rank'?'AI':null),
+  });
   escaped=0;
   selId=null;lastId=null;
   phase='multi-playing';
@@ -2580,6 +2935,10 @@ function multiLiveOut(){
     showRankResult();
     return;
   }
+  _finishMultiReplay('loss',{
+    opponentTime:multiOpFinishTime,
+    opponent:rankHumanMatch?'상대':(multiMode==='general-ai'?'AI':null),
+  });
   document.getElementById('multi-hud').classList.remove('on');
   document.getElementById('pbar').style.display='block';
   document.getElementById('mr-emoji').textContent='💔';
@@ -2633,6 +2992,13 @@ function showMultiResult(){
   } else {
     emoji='💔';title='패배...';detail='상대방이 먼저 완료했어요. 다시 도전!';
   }
+  const result=emoji==='🏆'?'win':emoji==='🤝'?'draw':'loss';
+  const coinDelta=-Math.min(multiBlockCount*2,10);
+  _finishMultiReplay(result,{
+    opponentTime:opT,
+    opponent:window._lastOpponentName||null,
+    coins:coinDelta,
+  });
   document.getElementById('mr-emoji').textContent=emoji;
   document.getElementById('mr-title').textContent=title;
   document.getElementById('mr-my-time').textContent=myT!==null?myT+'초':'미완';
@@ -2664,6 +3030,12 @@ function showGeneralAiResult(){
   }else{
     emoji='💔';title='패배...';detail='AI가 먼저 완료했어요. 다시 도전!';
   }
+  const coinDelta=-Math.min(multiBlockCount*2,10);
+  _finishMultiReplay(emoji==='🏆'?'win':'loss',{
+    opponentTime:opT,
+    opponent:rankHumanMatch?(window._lastOpponentName||'상대'):'AI',
+    coins:coinDelta,
+  });
   if(multiBlockCount>0){
     const pen=Math.min(multiBlockCount*2,10);
     detail+=` (실수 ${multiBlockCount}회 · 보상 -${pen} 코인 반영)`;
@@ -2875,6 +3247,10 @@ function showBlastRankResult(){
   const title=win?'승리!':draw?'무승부!':'패배...';
   let detail='내 점수: '+myScore+'점 · 상대: '+opScore+'점';
   if(state.placed&&rpChange!==0)detail+='\nRP '+(rpChange>0?'+':'')+rpChange;
+  _finishMultiReplay(win?'win':draw?'draw':'loss',{
+    opponentTime:null,
+    opponent:multiRole==='rank-ai'?'AI':(window._lastOpponentName||'상대'),
+  });
   document.getElementById('mr-emoji').textContent=emoji;
   document.getElementById('mr-title').textContent=title;
   document.getElementById('mr-my-time').textContent=myScore+'점';
@@ -3135,6 +3511,7 @@ document.getElementById('flight-up-accuracy').onclick=()=>buyFlightAccuracy();
 document.getElementById('btn-start').onclick=()=>openLevelSelect();
 document.getElementById('btn-cont').onclick=()=>loadLevel(progress);
 document.getElementById('btn-shop').onclick=()=>{phase='shop';showUI('shop');renderShopGrid();controls.autoRotate=true;};
+document.getElementById('btn-history').onclick=()=>_openHistory();
 const hubBtn=document.getElementById('btn-hub');
 if(hubBtn)hubBtn.onclick=()=>goHub();
 document.getElementById('btn-multi').onclick=()=>openMultiplayer();
@@ -3187,6 +3564,13 @@ document.getElementById('tier-promo-ov').addEventListener('click',()=>{
 document.getElementById('launch-btn').onclick=()=>{if(selId){launchArrow(selId);resetIdle();}};
 document.getElementById('btn-next').onclick=()=>loadLevel(lvIdx+1);
 document.getElementById('btn-retry').onclick=()=>loadLevel(lvIdx);
+const replayLastResult=()=>{
+  const id=_lastCompletedReplay?.replayId||_lastCompletedReplay?.id;
+  if(id)_openReplay(id);
+  else popup('리플레이를 준비하는 중입니다.',innerWidth/2,innerHeight*.45,'#ffcf5c');
+};
+document.getElementById('win-replay').onclick=replayLastResult;
+document.getElementById('over-replay').onclick=replayLastResult;
 document.getElementById('btn-m1').onclick=()=>goMenu();
 document.getElementById('btn-m2').onclick=()=>goMenu();
 document.getElementById('shop-x').onclick=()=>goMenu();
@@ -3201,6 +3585,7 @@ document.getElementById('multi-join-btn').onclick=()=>joinMultiRoom();
 document.getElementById('multi-back-btn').onclick=()=>goMenu();
 document.getElementById('multi-lobby-back').onclick=()=>{closeMultiWs();goMenu();};
 document.getElementById('mr-menu').onclick=()=>{closeMultiWs();goMenu();};
+document.getElementById('mr-replay').onclick=replayLastResult;
 document.getElementById('mr-again').onclick=()=>{
   if(multiMode==='rank'){startRankMatch();return;}
   if(multiMode==='blast-rank'){startBlastRankMatch();return;}
@@ -3208,6 +3593,27 @@ document.getElementById('mr-again').onclick=()=>{
   multiSend({type:'again'});
   startMultiCountdown();
 };
+document.getElementById('history-close').onclick=()=>goMenu();
+document.querySelectorAll('.history-filter').forEach(button=>{
+  button.onclick=()=>{
+    _historyFilter=button.dataset.filter||'all';
+    document.querySelectorAll('.history-filter').forEach(item=>item.classList.toggle('on',item===button));
+    _renderHistory();
+  };
+});
+document.getElementById('replay-exit').onclick=()=>_openHistory();
+document.getElementById('replay-play').onclick=()=>{
+  if(_replayPlayback){_replayPlayback.paused=!_replayPlayback.paused;_updateReplayControls();}
+};
+document.getElementById('replay-restart').onclick=()=>{
+  const id=_replayPlayback?.replay?.id;
+  if(id)_openReplay(id);
+};
+document.querySelectorAll('.replay-speed').forEach(button=>{
+  button.onclick=()=>{
+    if(_replayPlayback){_replayPlayback.speed=Number(button.dataset.speed)||1;_updateReplayControls();}
+  };
+});
 
 function goHub(){
   phase='hub';clearPreview();
@@ -3220,6 +3626,8 @@ function goHub(){
   updateCoins();initDemo();showUI('hub');
 }
 function goMenu(){
+  if(_activeReplay)_finishReplaySession('abandoned');
+  _replayPlayback=null;
   phase='menu';clearPreview();
   clearRankBot();clearBlastRankTimer();closeLevelSelect();
   showUI('menu');
@@ -3244,6 +3652,19 @@ function loop(){
     if(opening){const el=Date.now()/1000-openT;let done=true;arrows.forEach(a=>{const t=(el-a.oDelay)/0.55;if(t<0){a.root.position.copy(a.oStart);done=false;}else if(t<1){const e=1-Math.pow(1-Math.min(t,1),3);a.root.position.lerpVectors(a.oStart,a.bp,e);done=false;}else{a.root.position.copy(a.bp);}});if(done)opening=false;}
     else{arrows.forEach(a=>tickArrow(a,dt));tickFreeHint(dt);}
     tickIdle(dt);
+  }else if(phase==='replay'){
+    const playback=_replayPlayback;
+    if(playback&&!playback.paused){
+      playback.elapsed+=dt*playback.speed;
+      while(playback.eventIndex<playback.events.length&&Number(playback.events[playback.eventIndex].t||0)/1000<=playback.elapsed){
+        _replayApplyEvent(playback.events[playback.eventIndex++]);
+      }
+      arrows.forEach(a=>tickArrow(a,dt*playback.speed));
+      if(playback.eventIndex>=playback.events.length&&playback.elapsed>=Number(playback.replay.duration||0)+0.35)playback.paused=true;
+      _updateReplayControls();
+    }else{
+      arrows.forEach(a=>tickArrow(a,0));
+    }
   }else if(phase==='win'||phase==='over'||phase==='multi-result'||phase==='multi-done'){arrows.forEach(a=>tickArrow(a,dt*0.35));}
   tickFlight(dt);
   renderFlight();
@@ -3418,6 +3839,9 @@ function initAuth(){
       _hideAuthOv();
       _setUserPill(user);
       await fbCloudLoad();
+      await _loadHistoryRecords();
+    }else{
+      _historyRecords=getLocalHistory(null);
     }
     // user가 null이면 오버레이 계속 표시
   });
@@ -5709,20 +6133,10 @@ const _CG_TOTAL_ROUNDS=5;
 // ── 보조 함수 ─────────────────────────────────────
 function _cgRand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
 function _cgPick(pool){
-  // Smart RNG: reduce weight of owned skins/maps so unowned items drop much more frequently
-  const adjustedPool = pool.map(item => {
-    let w = item.w || 10;
-    if(item.type === 'skin' && typeof owned !== 'undefined' && owned.has(item.id)) {
-      w = Math.max(1, Math.floor(w * 0.15));
-    } else if(item.type === 'map' && typeof ownedMaps !== 'undefined' && ownedMaps.has(item.id)) {
-      w = Math.max(1, Math.floor(w * 0.15));
-    }
-    return { ...item, w };
-  });
-  const total = adjustedPool.reduce((s,r)=>s+r.w,0);
-  let rand = Math.random()*total;
-  for(const r of adjustedPool){ rand -= r.w; if(rand <= 0) return r; }
-  return adjustedPool[0] || pool[0];
+  const total=pool.reduce((s,r)=>s+r.w,0);
+  let rand=Math.random()*total;
+  for(const r of pool){rand-=r.w;if(rand<=0)return r;}
+  return pool[0];
 }
 
 // ── DOM ───────────────────────────────────────────

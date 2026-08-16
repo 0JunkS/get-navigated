@@ -4,14 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>NAVIGATED</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ── 터치 이슈 글로벌 수정 ── */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:#06061a}
-body{font-family:'Outfit','Plus Jakarta Sans','Noto Sans KR','Apple SD Gothic Neo',sans-serif;user-select:none;touch-action:pan-x pan-y}
+body{font-family:'Inter','Apple SD Gothic Neo','Noto Sans KR',sans-serif;user-select:none;touch-action:pan-x pan-y}
 /* Three.js 메인 캔버스만 touch-action:none (id="c") */
 canvas#c{display:block;position:fixed;inset:0;width:100%!important;height:100%!important;touch-action:none}
 /* 기타 캔버스는 touch-action 유지 */
@@ -35,70 +32,67 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 #menu button,#menu a,#menu [role="button"],#menu input,#menu label,#menu select{touch-action:manipulation!important}
 #menu:not(.hidden){pointer-events:auto}
 #menu.hidden{opacity:0;pointer-events:none}#menu.hidden *{pointer-events:none!important}
-#menu-top{padding:44px 0 0;text-align:center;pointer-events:none;flex-shrink:0;margin-bottom:24px}
-#menu-top h1{color:#fff;font-size:38px;font-weight:900;letter-spacing:6px;text-shadow:0 0 30px rgba(76,201,240,0.8),0 0 60px rgba(67,97,238,0.4);font-family:'Outfit',sans-serif;}
-#menu-top .tag{color:rgba(170,190,255,0.75);font-size:12px;margin-top:4px;letter-spacing:4px;font-weight:700;}
-#menu-bottom{padding:0 22px calc(36px + env(safe-area-inset-bottom, 0px));display:flex;flex-direction:column;gap:12px;pointer-events:all;flex-shrink:0;max-width:440px;margin:0 auto;width:100%;}
+#menu-top{padding:52px 0 0;text-align:center;pointer-events:none;flex-shrink:0;margin-bottom:32px}
+#menu-top h1{color:#fff;font-size:32px;font-weight:900;letter-spacing:5px;text-shadow:0 0 32px rgba(76,201,240,0.7)}
+#menu-top .tag{color:rgba(170,170,220,0.7);font-size:12px;margin-top:6px;letter-spacing:2px}
+#menu-bottom{padding:0 28px calc(44px + env(safe-area-inset-bottom, 0px));display:flex;flex-direction:column;gap:10px;pointer-events:all;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:15px 32px;border-radius:50px;font-size:15px;font-weight:700;cursor:pointer;border:none;outline:none;color:#fff;transition:transform .12s,opacity .12s;width:100%}
+.btn:active{transform:scale(0.96);opacity:0.85}
+.btn-primary{background:linear-gradient(135deg,#4361ee,#4cc9f0);box-shadow:0 0 28px rgba(67,97,238,0.5)}
+.btn-secondary{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);backdrop-filter:blur(8px)}
+.btn-shop{background:linear-gradient(135deg,#f77f00,#d62828);box-shadow:0 0 22px rgba(247,127,0,0.4)}
+.btn-multi{background:linear-gradient(135deg,#7209b7,#f72585);box-shadow:0 0 28px rgba(247,37,133,0.45)}
+.btn-sm{width:auto;padding:11px 24px;font-size:14px}
+/* 솔로·멀티 버튼 터치 영역 확대 */
+#btn-start,#btn-multi{padding:22px 32px;font-size:18px;min-height:68px;letter-spacing:.3px}
+#btn-history{background:linear-gradient(135deg,#0b7285,#4361ee);border:1px solid rgba(76,201,240,.38);box-shadow:0 0 22px rgba(67,97,238,.25)}
 
-/* ── ULTRASLEEK BUTTON DESIGN ── */
-.btn{
-  position:relative;
-  display:inline-flex;align-items:center;justify-content:center;gap:10px;
-  padding:16px 28px;border-radius:18px;font-size:16px;font-weight:800;
-  cursor:pointer;border:1px solid rgba(255,255,255,0.15);outline:none;color:#fff;
-  transition:all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-  width:100%;letter-spacing:0.4px;
-  background:rgba(20,24,55,0.75);
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-  box-shadow:0 8px 24px -6px rgba(0,0,0,0.5), inset 0 1px 0 0 rgba(255,255,255,0.2);
-  overflow:hidden;
-}
-.btn::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 60%);
-  pointer-events:none;border-radius:inherit;
-}
-.btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px -4px rgba(0,0,0,0.6), inset 0 1px 0 0 rgba(255,255,255,0.3);}
-.btn:active{transform:translateY(1px) scale(0.97);opacity:0.9;}
+#coin-pill{position:absolute;top:18px;right:18px;background:rgba(10,10,35,0.8);border:1px solid rgba(255,215,0,0.35);border-radius:50px;padding:8px 16px;display:none;align-items:center;gap:6px;pointer-events:all;font-size:14px;font-weight:700;color:#FFD700;cursor:pointer;backdrop-filter:blur(10px)}
 
-.btn-primary{
-  background:linear-gradient(135deg, #3a86ff 0%, #4cc9f0 100%);
-  border-color:rgba(120,210,255,0.5);
-  box-shadow:0 10px 30px -4px rgba(58,134,255,0.55), inset 0 1px 0 0 rgba(255,255,255,0.35);
-  text-shadow:0 2px 8px rgba(0,20,80,0.4);
-}
-
-.btn-secondary{
-  background:rgba(255,255,255,0.08);
-  border:1px solid rgba(255,255,255,0.18);
-  backdrop-filter:blur(12px);
-}
-.btn-shop{
-  background:linear-gradient(135deg, #ff9f1c 0%, #ff4000 100%);
-  border-color:rgba(255,180,60,0.5);
-  box-shadow:0 10px 26px -4px rgba(255,100,0,0.45);
-}
-.btn-multi{
-  background:linear-gradient(135deg, #4361ee 0%, #7209b7 100%);
-  border-color:rgba(180,100,255,0.4);
-  box-shadow:0 10px 28px -4px rgba(114,9,183,0.45);
-}
-.btn-sm{width:auto;padding:12px 22px;font-size:14px;border-radius:14px;}
-.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;}
-
-/* 버튼 내 뱃지 */
-.btn-badge{
-  background:#f72585;color:#fff;font-size:10px;font-weight:900;
-  padding:2px 8px;border-radius:50px;letter-spacing:1px;
-  box-shadow:0 0 10px rgba(247,37,133,0.8);animation:badgePulse 1.5s ease-in-out infinite;
-}
-@keyframes badgePulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
-
-#btn-start{padding:20px 28px;font-size:18px;border-radius:20px;letter-spacing:0.5px;}
-
-#coin-pill{position:absolute;top:18px;right:18px;background:rgba(10,10,35,0.85);border:1px solid rgba(255,215,0,0.4);border-radius:50px;padding:8px 18px;display:none;align-items:center;gap:8px;pointer-events:all;font-size:14px;font-weight:800;color:#FFD700;cursor:pointer;backdrop-filter:blur(12px);box-shadow:0 0 20px rgba(255,215,0,0.2);}
-
-
+/* ── HISTORY + REPLAY ───────────────────────────── */
+#history-ov,#replay-ov{position:absolute;inset:0;display:none;z-index:80;background:radial-gradient(circle at 50% 0%,rgba(38,54,130,.42),rgba(6,6,26,.98) 62%);overflow-y:auto;padding:22px 18px calc(28px + env(safe-area-inset-bottom,0px));pointer-events:all}
+#history-ov.on,#replay-ov.on{display:block}
+.history-shell{max-width:720px;margin:0 auto}
+.history-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.history-header h2{color:#fff;font-size:24px;letter-spacing:2px;text-shadow:0 0 18px rgba(76,201,240,.5)}
+.history-close{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);color:#fff;border-radius:50%;width:44px;height:44px;font-size:20px}
+.history-sub{color:rgba(194,202,238,.72);font-size:12px;margin:-10px 0 14px;line-height:1.6}
+.history-filters{display:flex;gap:8px;margin-bottom:14px}
+.history-filter{flex:1;border:1px solid rgba(130,143,255,.22);background:rgba(20,25,70,.75);color:rgba(230,235,255,.72);border-radius:12px;padding:10px 6px;font-size:12px;font-weight:800}
+.history-filter.on{background:linear-gradient(135deg,#4361ee,#7209b7);color:#fff;border-color:rgba(126,220,255,.7)}
+.history-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:16px}
+.history-stat{padding:10px 7px;background:rgba(17,22,58,.82);border:1px solid rgba(120,135,240,.18);border-radius:12px;text-align:center}
+.history-stat small{display:block;color:rgba(183,193,235,.55);font-size:9px;letter-spacing:.7px;margin-bottom:4px}
+.history-stat b{display:block;color:#fff;font-size:15px}
+.history-list{display:flex;flex-direction:column;gap:9px}
+.history-item{position:relative;background:linear-gradient(135deg,rgba(25,31,83,.94),rgba(10,14,41,.96));border:1px solid rgba(118,137,255,.22);border-radius:15px;padding:13px 13px 12px;box-shadow:0 8px 22px rgba(0,0,0,.2)}
+.history-item-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.history-item-top strong{color:#74e3ff;font-size:12px;letter-spacing:1.4px}
+.history-item-top span{color:rgba(197,203,235,.55);font-size:10px;margin-left:9px}
+.history-result{font-size:11px;letter-spacing:1px}
+.history-result.clear,.history-result.win{color:#7dffcf}.history-result.loss{color:#ff8b9e}.history-result.draw{color:#ffe28a}.history-result.중단{color:#9da5c9}
+.history-item-meta{color:rgba(233,237,255,.82);font-size:12px;font-weight:700;margin-top:7px}
+.history-item-stats{display:flex;flex-wrap:wrap;gap:10px;color:rgba(170,184,231,.58);font:10px/1.5 monospace;margin-top:9px}
+.history-item-stats b{color:#fff;font-size:11px}
+.history-opponent{color:#f5a5ff;font-size:10px;font-weight:800;margin-top:7px}
+.history-replay-btn{float:right;margin-top:-25px;border:1px solid rgba(76,201,240,.45);background:rgba(30,85,135,.35);color:#8beaff;border-radius:9px;padding:8px 10px;font-size:10px;font-weight:900;letter-spacing:.7px}
+.history-empty{min-height:180px;display:flex;align-items:center;justify-content:center;text-align:center;color:rgba(193,202,238,.6);font-size:13px;line-height:1.8;border:1px dashed rgba(130,143,255,.22);border-radius:15px}
+.replay-shell{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:10px}
+.replay-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:auto}
+.replay-badge{padding:7px 11px;border-radius:20px;background:rgba(8,12,40,.82);border:1px solid rgba(76,201,240,.35);color:#8beaff;font:900 11px monospace;letter-spacing:1px}
+.replay-exit{border:1px solid rgba(255,255,255,.18);background:rgba(8,10,32,.7);color:#fff;border-radius:20px;padding:9px 14px;font-size:12px;font-weight:800}
+.replay-panel{background:rgba(8,11,35,.88);border:1px solid rgba(123,145,255,.28);border-radius:19px;padding:15px;backdrop-filter:blur(14px);box-shadow:0 15px 38px rgba(0,0,0,.35)}
+.replay-title{display:flex;justify-content:space-between;align-items:center;color:#fff;font-size:14px;font-weight:900;margin-bottom:12px}
+.replay-time{color:#90eaff;font:12px monospace}
+.replay-progress{height:4px;background:rgba(255,255,255,.13);border-radius:4px;overflow:hidden;margin-bottom:12px}
+.replay-progress i{display:block;width:0;height:100%;background:linear-gradient(90deg,#4cc9f0,#f72585);transition:width .1s}
+.replay-track{display:grid;grid-template-columns:54px 1fr 45px;align-items:center;gap:8px;margin:7px 0;color:rgba(226,234,255,.75);font:10px monospace}
+.replay-track b{font-size:10px;color:#fff}.replay-track span{text-align:right}
+.replay-track .track{height:6px;background:rgba(255,255,255,.12);border-radius:5px;overflow:hidden}.replay-track .track i{display:block;width:0;height:100%;background:#4cc9f0}
+#replay-op-fill{background:#f72585}
+.replay-actions{display:flex;gap:8px;margin-top:14px}.replay-actions button{flex:1;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:11px;padding:10px 6px;font-size:11px;font-weight:800}
+.replay-actions #replay-play{background:linear-gradient(135deg,#4361ee,#7209b7);border-color:rgba(150,170,255,.55)}
+.replay-speeds{display:flex;gap:6px;margin-top:9px}.replay-speed{flex:1;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(220,230,255,.72);border-radius:9px;padding:7px;font:11px monospace}.replay-speed.on{color:#fff;background:rgba(76,201,240,.25);border-color:#4cc9f0}
 
 /* ── EXIT ────────────────────────────────────────── */
 #exit-btn{position:absolute;top:18px;left:18px;background:rgba(8,8,28,0.78);border:1px solid rgba(255,255,255,0.14);border-radius:50px;padding:9px 18px;color:rgba(255,255,255,0.85);font-size:13px;font-weight:700;cursor:pointer;pointer-events:all;backdrop-filter:blur(10px);display:none;z-index:50;transition:opacity .15s}
@@ -159,7 +153,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 .b-own{background:rgba(90,200,90,0.25);color:#90ee90}
 .b-gacha{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff}
 .sk.gacha-locked{position:relative}
-.sk.gacha-locked::after{content:'🎴 가챠 전용';position:absolute;inset:0;border-radius:inherit;background:rgba(15,5,30,0.72);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#c084fc;letter-spacing:1px;backdrop-filter:blur(1px)}
+.sk.gacha-locked::after{content:'🎴 크로시스 가챠 전용';position:absolute;inset:0;border-radius:inherit;background:rgba(15,5,30,0.72);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#c084fc;letter-spacing:1px;backdrop-filter:blur(1px)}
 .sk-info-btn{margin-top:6px;width:100%;padding:4px 0;background:rgba(76,201,240,0.12);border:1px solid rgba(76,201,240,0.3);border-radius:8px;color:#4cc9f0;font-size:10px;font-weight:700;cursor:pointer;pointer-events:all}
 .sk-info-btn:active{background:rgba(76,201,240,0.25)}
 
@@ -930,7 +924,7 @@ window._FB_CFG={
 /* ═══════════════════════ PLAZA ═══════════════════════ */
 #plaza-screen{
   display:none;position:fixed;inset:0;z-index:9000;
-  background:#1a2a1a;overflow:hidden;
+   background:radial-gradient(circle at 50% 20%,#173467 0%,#0b1730 42%,#060b1b 100%);overflow:hidden;
   flex-direction:column;pointer-events:all;
 }
 #plaza-screen.on{display:flex;}
@@ -939,61 +933,86 @@ window._FB_CFG={
   background:linear-gradient(180deg,rgba(0,0,0,.7) 0%,transparent 100%);
   display:flex;align-items:center;padding:0 12px;gap:10px;pointer-events:none;
 }
-#plaza-title{font-size:14px;font-weight:800;color:#ffe566;text-shadow:0 2px 6px #000;flex:1;}
-#plaza-ch{font-size:11px;color:rgba(255,255,200,.7);}
-#plaza-pcount{font-size:12px;color:#aaffaa;}
+#plaza-title{font-size:14px;font-weight:800;color:#8fe7ff;text-shadow:0 2px 6px #000;flex:1;}
+#plaza-ch{font-size:11px;color:rgba(190,220,255,.72);}
+#plaza-pcount{font-size:12px;color:#a8f5ff;}
 #plaza-exit{
   pointer-events:all;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.25);
   color:#fff;border-radius:50%;width:30px;height:30px;font-size:14px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
 }
 #plaza-canvas{
-  position:absolute;inset:0;width:100%;height:100%;
-  image-rendering:pixelated;
+   display:none;
 }
+#plaza-side,#plaza-joystick,#plaza-ibtn,#plz-kbhint,#plaza-npc-dlg,#plz-inthint,#plz-minimap{display:none!important;}
+#plaza-screen::before,#plaza-screen::after{
+  content:"";position:absolute;border-radius:50%;pointer-events:none;filter:blur(2px);
+}
+#plaza-screen::before{
+  width:340px;height:340px;top:18%;left:-120px;
+  background:radial-gradient(circle,rgba(54,184,232,.18),transparent 68%);
+}
+#plaza-screen::after{
+  width:420px;height:420px;right:-170px;bottom:12%;
+  background:radial-gradient(circle,rgba(116,91,255,.18),transparent 68%);
+}
+#plaza-community-card{
+  position:absolute;top:72px;left:50%;transform:translateX(-50%);z-index:8;
+  width:min(480px,calc(100% - 32px));padding:14px 16px;border-radius:16px;
+  background:rgba(7,15,38,.76);border:1px solid rgba(143,231,255,.22);
+  box-shadow:0 12px 32px rgba(0,0,0,.24);backdrop-filter:blur(12px);
+  pointer-events:none;text-align:center;
+}
+#plaza-community-card strong{display:block;color:#fff;font-size:17px;margin:3px 0 4px}
+#plaza-community-card small{display:block;color:rgba(215,231,255,.68);font-size:11px}
+.plz-live-kicker{color:#8fe7ff;font-size:9px;font-weight:900;letter-spacing:2px}
 /* side buttons */
 #plaza-side{
   position:absolute;top:54px;right:8px;z-index:10;
   display:flex;flex-direction:column;gap:6px;
 }
 .plz-sbtn{
-  background:rgba(10,20,10,.85);border:1.5px solid rgba(80,200,80,.4);
-  border-radius:10px;color:#ccffcc;font-size:12px;font-weight:700;
+   background:rgba(10,20,45,.85);border:1.5px solid rgba(143,231,255,.28);
+   border-radius:10px;color:#d7f7ff;font-size:12px;font-weight:700;
   padding:7px 10px;cursor:pointer;white-space:nowrap;
   backdrop-filter:blur(6px);
 }
 .plz-sbtn:active{background:rgba(40,100,40,.85);}
 /* chat */
 #plaza-chat{
-  position:absolute;bottom:0;left:0;right:0;z-index:10;
+   position:absolute;bottom:16px;left:50%;transform:translateX(-50%);width:min(560px,calc(100% - 24px));z-index:10;
   pointer-events:none;
+   background:rgba(5,12,30,.78);border:1px solid rgba(143,231,255,.2);
+   border-radius:18px;box-shadow:0 16px 36px rgba(0,0,0,.3);backdrop-filter:blur(12px);
 }
 #plaza-msgs{
-  max-height:110px;overflow-y:auto;padding:6px 10px 2px;
+   max-height:180px;overflow-y:auto;padding:10px 10px 2px;
   display:flex;flex-direction:column;gap:3px;
   scrollbar-width:none;
 }
 #plaza-msgs::-webkit-scrollbar{display:none;}
 .plz-msg{
-  background:rgba(0,0,0,.55);backdrop-filter:blur(4px);
+   background:rgba(18,34,70,.7);backdrop-filter:blur(4px);
   border-radius:8px;padding:4px 9px;
-  font-size:12px;color:#e8ffe8;max-width:80%;
+   font-size:12px;color:#e7f5ff;max-width:88%;
   width:fit-content;word-break:break-word;
 }
-.plz-msg-me{align-self:flex-end;background:rgba(30,80,30,.7);}
-.plz-msg-sys{color:rgba(200,255,200,.6);font-size:11px;}
+.plz-msg-me{align-self:flex-end;background:rgba(32,93,126,.72);}
+.plz-msg-sys{color:rgba(195,221,255,.62);font-size:11px;}
+.plz-msg-name{font-weight:800;color:#9edfff;margin-right:5px}
+.plz-admin-badge{display:inline-block;margin-right:5px;padding:2px 5px;border-radius:5px;background:linear-gradient(135deg,#ffd86b,#f59e0b);color:#281500;font-size:9px;font-weight:900}
 #plaza-input-row{
   display:flex;gap:6px;padding:6px 10px 10px;
   pointer-events:all;
 }
 #plaza-input{
-  flex:1;background:rgba(0,0,0,.65);border:1.5px solid rgba(80,200,80,.35);
+   flex:1;background:rgba(3,10,26,.72);border:1.5px solid rgba(143,231,255,.28);
   border-radius:10px;color:#e0ffe0;font-size:13px;padding:8px 12px;
   outline:none;
 }
-#plaza-input::placeholder{color:rgba(150,230,150,.5);}
+#plaza-input::placeholder{color:rgba(170,210,235,.5);}
 #plaza-send{
-  background:linear-gradient(135deg,#2d6a2d,#4aaa4a);border:none;
+   background:linear-gradient(135deg,#237ca5,#42c9e8);border:none;
   border-radius:10px;color:#fff;font-weight:700;padding:8px 14px;cursor:pointer;
   font-size:13px;
 }
@@ -1058,9 +1077,19 @@ window._FB_CFG={
 #plz-inthint.show{opacity:1;}
 
 
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Pretendard:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ── GLOBAL FONT APPLICATION ── */
+*, *::before, *::after {
+  font-family: 'Outfit', 'Plus Jakarta Sans', 'Noto Sans KR', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
 
 /* ── MOTION GRAPHICS & GLASSMORPHISM FOR ALL BUTTONS ── */
-button, .btn, [role="button"], input[type="button"], input[type="submit"], .plz-sbtn, .sdm-close-btn, .btn-xs, .chest-card {
+button, .btn, [role="button"], input[type="button"], input[type="submit"], .rev-ctrl-btn, .plz-sbtn, .sdm-close-btn, .btn-xs, .chest-card {
   position: relative !important;
   overflow: hidden !important;
   background: rgba(255, 255, 255, 0.1) !important;
@@ -1106,7 +1135,11 @@ button:active, .btn:active, [role="button"]:active {
   border-color: rgba(120, 210, 255, 0.6) !important;
   box-shadow: 0 10px 32px -4px rgba(58, 134, 255, 0.55), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
-
+.btn-reverse {
+  background: linear-gradient(135deg, rgba(114, 9, 183, 0.55) 0%, rgba(247, 37, 133, 0.45) 100%) !important;
+  border-color: rgba(247, 37, 133, 0.6) !important;
+  box-shadow: 0 10px 32px -4px rgba(247, 37, 133, 0.55), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
 .btn-secondary {
   background: rgba(255, 255, 255, 0.12) !important;
   border-color: rgba(255, 255, 255, 0.3) !important;
@@ -1161,197 +1194,11 @@ button:active, .btn:active, [role="button"]:active {
     filter: brightness(1.2) hue-rotate(360deg);
   }
 }
-
-/* ── SPEEDRUN TIMER HUD ── */
-#speedrun-hud {
-  position: fixed;
-  top: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 52;
-  background: rgba(255, 255, 255, 0.92);
-  border: 2px solid #ffb7b2;
-  border-radius: 50px;
-  padding: 6px 18px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 8px 24px rgba(255, 183, 178, 0.45), 0 2px 8px rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(8px);
-  pointer-events: none;
-  animation: cutePulse 2s ease-in-out infinite alternate;
-}
-#speedrun-hud-lbl { font-size: 11px; font-weight: 900; color: #ff6b81; letter-spacing: 1px; }
-#speedrun-hud-txt { font-size: 16px; font-weight: 900; color: #2d3436; font-family: monospace; }
-@keyframes cutePulse { from { transform: translateX(-50%) scale(1); } to { transform: translateX(-50%) scale(1.03); } }
-
-/* ── GACHA DUPLICATE BADGE & CUTE UI ENHANCEMENTS ── */
-.cg-dup-badge {
-  font-size: 13px;
-  font-weight: 900;
-  color: #fff;
-  background: linear-gradient(135deg, #ff758c, #ff7eb3);
-  padding: 6px 20px;
-  border-radius: 30px;
-  box-shadow: 0 4px 16px rgba(255, 117, 140, 0.5);
-  animation: cgJP .7s ease-in-out infinite alternate;
-  display: inline-block;
-  margin-top: 4px;
-}
-.game-card.card-snake {
-  border-color: rgba(0, 243, 255, 0.5) !important;
-  background: linear-gradient(135deg, rgba(0, 243, 255, 0.18), rgba(57, 255, 20, 0.12)) !important;
-}
-
-/* ── 3D MERGE SNAKE OVERLAY & MINI GAME ── */
-#snake-game {
-  position: fixed;
-  inset: 0;
-  z-index: 85;
-  display: none;
-  background: #060919;
-}
-#snake-game.on { display: block; }
-#snake-canvas { width: 100%; height: 100%; display: block; touch-action: none; }
-.snake-ui { position: absolute; inset: 0; pointer-events: none; }
-.snake-top {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  right: 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  pointer-events: auto;
-}
-.snake-chipset { display: flex; gap: 8px; }
-.snake-chip {
-  background: rgba(14, 20, 40, 0.85);
-  border: 1px solid rgba(0, 243, 255, 0.35);
-  border-radius: 12px;
-  padding: 6px 14px;
-  color: #fff;
-  backdrop-filter: blur(8px);
-}
-.snake-chip small { display: block; font-size: 9px; opacity: 0.7; letter-spacing: 1px; color: #00f3ff; }
-.snake-chip b { font-size: 14px; font-weight: 900; }
-.snake-back {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 20px;
-  color: #fff;
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  pointer-events: auto;
-}
-.snake-energy-bar {
-  position: absolute;
-  top: 68px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(280px, 80vw);
-  height: 10px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid rgba(57, 255, 20, 0.4);
-}
-#snake-energy-fill {
-  width: 0%;
-  height: 100%;
-  background: linear-gradient(90deg, #39ff14, #00f3ff, #ff007f);
-  transition: width 0.15s ease-out;
-  border-radius: 8px;
-}
-#snake-joystick {
-  position: absolute;
-  bottom: 24px;
-  left: 24px;
-  width: 110px;
-  height: 110px;
-  pointer-events: auto;
-  touch-action: none;
-}
-#snake-jbase {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(0, 243, 255, 0.4);
-  backdrop-filter: blur(4px);
-}
-#snake-jknob {
-  position: absolute;
-  width: 44px;
-  height: 44px;
-  top: 33px;
-  left: 33px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #00f3ff, #39ff14);
-  box-shadow: 0 0 16px rgba(0, 243, 255, 0.7);
-  pointer-events: none;
-}
-.snake-kbhint {
-  position: absolute;
-  bottom: 16px;
-  right: 20px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
-  background: rgba(0, 0, 0, 0.4);
-  padding: 4px 12px;
-  border-radius: 12px;
-  pointer-events: none;
-}
-.snake-modal {
-  position: absolute;
-  inset: 0;
-  background: rgba(4, 6, 18, 0.88);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: auto;
-  z-index: 10;
-}
-.snake-modal-card {
-  background: linear-gradient(155deg, rgba(20, 25, 55, 0.95), rgba(10, 12, 30, 0.95));
-  border: 2px solid rgba(0, 243, 255, 0.5);
-  border-radius: 28px;
-  padding: 28px 24px;
-  width: min(340px, 90vw);
-  text-align: center;
-  box-shadow: 0 16px 48px rgba(0, 243, 255, 0.25);
-  animation: snakePop 0.4s cubic-bezier(0.18, 1.4, 0.4, 1);
-}
-@keyframes snakePop { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
-.snake-modal-emoji { font-size: 54px; margin-bottom: 6px; }
-.snake-modal-card h2 { font-size: 24px; font-weight: 900; color: #fff; margin-bottom: 4px; letter-spacing: 1px; }
-.snake-modal-card p { font-size: 12px; color: rgba(255, 255, 255, 0.65); margin-bottom: 18px; line-height: 1.4; }
-.snake-score-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; }
-.snake-score-box { flex: 1; background: rgba(255, 255, 255, 0.07); border-radius: 14px; padding: 10px 6px; border: 1px solid rgba(255, 255, 255, 0.12); }
-.snake-score-box small { display: block; font-size: 9px; color: rgba(255, 255, 255, 0.5); margin-bottom: 2px; }
-.snake-score-box b { font-size: 15px; font-weight: 900; color: #00f3ff; }
-#snake-btn-start {
-  width: 100%;
-  padding: 14px;
-  border-radius: 50px;
-  border: none;
-  background: linear-gradient(135deg, #00f3ff, #39ff14);
-  color: #060919;
-  font-size: 16px;
-  font-weight: 900;
-  cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 243, 255, 0.4);
-  transition: transform 0.15s;
-}
-#snake-btn-start:active { transform: scale(0.96); }
 </style>
 <script>
 (function(){
   function triggerRainbowRipple(e) {
-    var btn = e.target.closest('button, .btn, [role="button"], input[type="button"], input[type="submit"], .plz-sbtn, .btn-xs, .chest-card');
+    var btn = e.target.closest('button, .btn, [role="button"], input[type="button"], input[type="submit"], .rev-ctrl-btn, .plz-sbtn, .btn-xs, .chest-card');
     if(!btn) return;
 
     var rect = btn.getBoundingClientRect();
@@ -1434,46 +1281,6 @@ button:active, .btn:active, [role="button"]:active {
           <span>SKY DISTANCE</span>
           <i class="game-art"></i>
         </button>
-        <button class="game-card card-snake" id="pick-snake">
-          <strong>MERGE SNAKE</strong>
-          <span>3D ARROW RUN</span>
-          <i class="game-art">🐍</i>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 3D MERGE SNAKE MINI GAME -->
-  <div id="snake-game">
-    <canvas id="snake-canvas"></canvas>
-    <div class="snake-ui">
-      <div class="snake-top">
-        <div class="snake-chipset">
-          <div class="snake-chip"><small>LENGTH</small><b id="snake-len">🐍 1</b></div>
-          <div class="snake-chip"><small>KILLS</small><b id="snake-kills">💥 0</b></div>
-          <div class="snake-chip"><small>BEST</small><b id="snake-best">0</b></div>
-        </div>
-        <button class="snake-back" id="snake-back">← 게임 선택</button>
-      </div>
-      <div class="snake-energy-bar"><div id="snake-energy-fill"></div></div>
-      <div id="snake-joystick">
-        <div id="snake-jbase"></div>
-        <div id="snake-jknob"></div>
-      </div>
-      <div class="snake-kbhint">WASD / 방향키 이동 · 상대 몸통에 헤드가 부딪히면 사망!</div>
-
-      <div class="snake-modal" id="snake-modal">
-        <div class="snake-modal-card">
-          <div class="snake-modal-emoji" id="snake-modal-emoji">🐍</div>
-          <h2 id="snake-modal-title">3D MERGE SNAKE</h2>
-          <p id="snake-modal-sub">장착 화살표로 3D 서바이벌! 네온 에너지를 먹고 성장하세요.</p>
-          <div class="snake-score-row">
-            <div class="snake-score-box"><small>FINAL LENGTH</small><b id="snake-final-len">1</b></div>
-            <div class="snake-score-box"><small>KILLS</small><b id="snake-final-kills">0</b></div>
-            <div class="snake-score-box"><small>REWARD</small><b id="snake-earned">+0 💰</b></div>
-          </div>
-          <button id="snake-btn-start">🐍 게임 시작!</button>
-        </div>
       </div>
     </div>
   </div>
@@ -1508,12 +1315,6 @@ button:active, .btn:active, [role="button"]:active {
     </div>
   </div>
 
-  <!-- SPEEDRUN TIMER HUD -->
-  <div id="speedrun-hud" style="display:none">
-    <span id="speedrun-hud-lbl">⏱️ TIMER</span>
-    <span id="speedrun-hud-txt">00:00.00</span>
-  </div>
-
   <!-- EXIT -->
   <div id="exit-btn">← 메뉴</div>
 
@@ -1532,28 +1333,20 @@ button:active, .btn:active, [role="button"]:active {
     </div>
     <div id="menu-bottom">
       <button class="btn btn-primary" id="btn-start">▶ 게임 시작</button>
-
       <button class="btn btn-secondary" id="btn-cont" style="display:none">↩ 이어하기</button>
-      <button class="btn" id="btn-plaza" style="display:none;background:linear-gradient(135deg,#1a4a1a,#2a7a2a);border:1px solid rgba(80,200,80,.4)">🏙️ 애로우 광장</button>
-      
+       <button class="btn" id="btn-plaza" style="display:none;background:linear-gradient(135deg,#155477,#237ca5);border:1px solid rgba(143,231,255,.35)">💬 소통 라운지</button>
       <button class="btn btn-multi" id="btn-multi">⚡ 멀티플레이</button>
-
-      <button class="btn btn-secondary" id="btn-modes">🎮 게임 모드 &amp; 컨텐츠</button>
-
-      <div class="btn-grid">
-        <button class="btn btn-shop" id="btn-shop">🛒 상점</button>
-        <div class="btn-friend-wrap" style="position:relative">
-          <button class="btn btn-secondary" id="btn-friend" style="width:100%">👥 친구</button>
-          <span id="friend-badge" style="position:absolute;top:-4px;right:-4px;background:#f72585;color:#fff;font-size:10px;font-weight:900;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center">0</span>
-        </div>
+      <button class="btn" id="btn-history">📊 전적 · 리플레이</button>
+      <button class="btn btn-shop" id="btn-shop">🛒 상점</button>
+      <button class="btn btn-xs" id="btn-modes" style="background:linear-gradient(135deg,#1a1a4e,#2d2d80);border:1px solid rgba(100,100,255,.35);font-size:14px;padding:13px">🎮 게임 모드 &amp; 컨텐츠</button>
+      <button class="btn btn-xs" id="btn-settings">⚙️ 설정</button>
+      <div class="btn-friend-wrap" style="position:relative">
+        <button class="btn btn-secondary" id="btn-friend">👥 친구</button>
+        <span id="friend-badge" style="position:absolute;top:-4px;right:-4px;background:#f72585;color:#fff;font-size:10px;font-weight:900;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center">0</span>
       </div>
-
-      <div class="btn-grid">
-        <div class="btn-bp-wrap" style="position:relative;width:100%">
-          <button class="btn" id="btn-battlepass" style="width:100%;background:linear-gradient(135deg,#7209b7,#f72585);box-shadow:0 0 24px rgba(114,9,183,.45)">🎖️ 배틀패스</button>
-          <span id="bp-badge" style="position:absolute;top:-4px;right:-4px;background:#f72585;color:#fff;font-size:10px;font-weight:900;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center">!</span>
-        </div>
-        <button class="btn btn-secondary" id="btn-settings">⚙️ 설정</button>
+      <div class="btn-bp-wrap" style="position:relative">
+        <button class="btn" id="btn-battlepass" style="background:linear-gradient(135deg,#7209b7,#f72585);box-shadow:0 0 24px rgba(114,9,183,.45)">🎖️ 배틀패스</button>
+        <span id="bp-badge" style="position:absolute;top:-4px;right:-4px;background:#f72585;color:#fff;font-size:10px;font-weight:900;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center">!</span>
       </div>
     </div>
   </div>
@@ -1601,6 +1394,7 @@ button:active, .btn:active, [role="button"]:active {
       <div id="w-time" style="font-family:monospace;font-size:20px;font-weight:900;color:#4cc9f0;margin:6px 0 2px;text-shadow:0 0 10px rgba(76,201,240,0.6);display:none"></div>
       <p class="r-sub" id="w-sub"></p>
       <div class="r-row">
+        <button class="btn btn-secondary btn-sm" id="win-replay">[ REPLAY ]</button>
         <button class="btn btn-primary btn-sm" id="btn-next">다음 ▶</button>
         <button class="btn btn-secondary btn-sm" id="btn-m1">메뉴</button>
       </div>
@@ -1614,6 +1408,7 @@ button:active, .btn:active, [role="button"]:active {
       <h2>게임 오버</h2>
       <p class="r-sub">생명을 모두 잃었습니다.<br>다시 도전해보세요!</p>
       <div class="r-row">
+        <button class="btn btn-secondary btn-sm" id="over-replay">[ REPLAY ]</button>
         <button class="btn btn-primary btn-sm" id="btn-retry">다시 시도</button>
         <button class="btn btn-secondary btn-sm" id="btn-m2">메뉴</button>
       </div>
@@ -1931,7 +1726,8 @@ button:active, .btn:active, [role="button"]:active {
 
   <!-- ══ TIER VIEW PANEL ══ -->
   <div class="nf-ov" id="tier-ov">
-    <div class="nf-hdr"><h2>🎖️ 티어 확인</h2><button class="nf-back" id="tier-back">✕</button></div>
+
+  <div class="nf-hdr"><h2>🎖️ 티어 확인</h2><button class="nf-back" id="tier-back">✕</button></div>
     <div class="nf-body">
       <div class="tier-current" id="tier-current-box"></div>
       <div class="rank-section">
@@ -2028,6 +1824,7 @@ button:active, .btn:active, [role="button"]:active {
       <p class="mr-detail" id="mr-detail"></p>
       <button class="btn btn-crosis-gacha" id="btn-crosis-gacha" style="display:none">🪵 크로시스 가챠 열기</button>
       <div class="r-row">
+        <button class="btn btn-secondary btn-sm" id="mr-replay">[ REPLAY ]</button>
         <button class="btn btn-multi btn-sm" id="mr-again">다시 대결</button>
       <button class="mr-add-friend" id="mr-add-friend-btn" style="display:none">&#128101; 친구 추가</button>
         <button class="btn btn-secondary btn-sm" id="mr-menu">메뉴</button>
@@ -2035,9 +1832,61 @@ button:active, .btn:active, [role="button"]:active {
     </div>
   </div>
 
+  <!-- HISTORY -->
+  <div id="history-ov">
+    <div class="history-shell">
+      <div class="history-header">
+        <h2>📊 전적</h2>
+        <button class="history-close" id="history-close">✕</button>
+      </div>
+      <p class="history-sub">최근 50게임 · 로그인한 계정에만 동기화됩니다. 게스트 기록은 이 기기에만 저장됩니다.</p>
+      <div class="history-filters">
+        <button class="history-filter on" data-filter="all">전체</button>
+        <button class="history-filter" data-filter="single">싱글플레이</button>
+        <button class="history-filter" data-filter="multi">멀티플레이</button>
+      </div>
+      <div class="history-summary">
+        <div class="history-stat"><small>GAMES</small><b id="history-total">0</b></div>
+        <div class="history-stat"><small>CLEAR</small><b id="history-clears">0</b></div>
+        <div class="history-stat"><small>W / L / D</small><b id="history-winloss">0 / 0</b></div>
+        <div class="history-stat"><small>PERFECT</small><b id="history-perfect">0</b></div>
+        <div class="history-stat"><small>BEST</small><b id="history-best">—</b></div>
+        <div class="history-stat"><small>AVERAGE</small><b id="history-average">—</b></div>
+        <div class="history-stat"><small>MAX COMBO</small><b id="history-combo">0</b></div>
+        <div class="history-stat"><small>WIN STREAK</small><b id="history-streak">0 / 0</b></div>
+      </div>
+      <div id="history-list" class="history-list"></div>
+      <div id="history-empty" class="history-empty">아직 저장된 전적이 없습니다.<br>게임을 플레이하면 리플레이가 자동으로 저장됩니다.</div>
+    </div>
+  </div>
+
+  <!-- REPLAY PLAYER -->
+  <div id="replay-ov">
+    <div class="replay-shell">
+      <div class="replay-top">
+        <div class="replay-badge">● REPLAY</div>
+        <button class="replay-exit" id="replay-exit">전적 목록</button>
+      </div>
+      <div class="replay-panel">
+        <div class="replay-title"><span>플레이 리플레이</span><span class="replay-time"><span id="replay-elapsed">0.00초</span> / <span id="replay-total">0.00초</span></span></div>
+        <div class="replay-progress"><i id="replay-progress-fill"></i></div>
+        <div class="replay-track"><b>MY RUN</b><div class="track"><i id="replay-my-fill"></i></div><span id="replay-my-count">0/0</span></div>
+        <div class="replay-track"><b>OPPONENT</b><div class="track"><i id="replay-op-fill"></i></div><span id="replay-op-count">0/0</span></div>
+        <div class="replay-actions">
+          <button id="replay-restart">↺ 처음부터</button>
+          <button id="replay-play">Ⅱ 일시정지</button>
+        </div>
+        <div class="replay-speeds">
+          <button class="replay-speed" data-speed="0.5">0.5x</button>
+          <button class="replay-speed on" data-speed="1">1x</button>
+          <button class="replay-speed" data-speed="2">2x</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 <script type="module" src="/src/game.js"></script>
-<script type="module" src="/src/gacha_speedrun_snake.js"></script>
 
 
 <!-- DIFFICULTY SELECTION -->
@@ -2187,6 +2036,7 @@ button:active, .btn:active, [role="button"]:active {
 
 </div>
 
+<!-- ═══════════════ 스킨 상세 모달 ═══════════════ -->
 <div id="skin-detail-modal">
   <div class="sdm-card">
     <button id="sdm-close">✕</button>
@@ -2203,18 +2053,24 @@ button:active, .btn:active, [role="button"]:active {
 <div id="plaza-screen">
   <!-- top bar -->
   <div id="plaza-topbar">
-    <div id="plaza-title">🏙️ 애로우 시티 광장</div>
-    <div id="plaza-ch">채널 KOR 1</div>
+    <div id="plaza-title">💬 소통 라운지</div>
+    <div id="plaza-ch">공개 채널</div>
     <div id="plaza-pcount">👥 <span id="plz-pc">1</span></div>
     <button id="plaza-exit">✕</button>
   </div>
   <!-- canvas -->
-  <canvas id="plaza-canvas"></canvas>
+  <canvas id="plaza-canvas" aria-hidden="true"></canvas>
+  <div id="plaza-community-card">
+    <span class="plz-live-kicker">LIVE COMMUNITY</span>
+    <strong>모두가 보는 실시간 소통공간</strong>
+    <small>이곳에 남긴 메시지는 라운지에 있는 모든 유저에게 바로 보여요.</small>
+  </div>
   <!-- mini-map -->
   <canvas id="plz-minimap" width="44" height="34"></canvas>
   <!-- side buttons -->
   <div id="plaza-side">
     <button class="plz-sbtn" id="plz-btn-shop">🛒 상점</button>
+
     <button class="plz-sbtn" id="plz-btn-quest">📋 퀘스트</button>
   </div>
   <!-- interaction hint -->
@@ -2238,7 +2094,7 @@ button:active, .btn:active, [role="button"]:active {
   <div id="plaza-chat">
     <div id="plaza-msgs"></div>
     <div id="plaza-input-row">
-      <input id="plaza-input" placeholder="채팅 입력…" maxlength="100" autocomplete="off">
+      <input id="plaza-input" placeholder="모두에게 보낼 메시지…" maxlength="150" autocomplete="off">
       <button id="plaza-send">전송</button>
     </div>
   </div>
