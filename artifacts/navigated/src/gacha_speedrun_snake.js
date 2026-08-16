@@ -1355,6 +1355,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const lobbyStartBtn = document.getElementById('snake-lobby-btn-start');
   if (lobbyStartBtn) lobbyStartBtn.addEventListener('click', startSnakeGame);
 
+  // Direct Arcade buttons in Main Menu & Modes Hub
+  const btnArcade = document.getElementById('btn-arcade');
+  if (btnArcade) {
+    btnArcade.addEventListener('click', () => {
+      if (typeof window.showUI === 'function') window.showUI('hub');
+    });
+  }
+
+  const mhArcade = document.getElementById('mh-arcade');
+  if (mhArcade) {
+    mhArcade.addEventListener('click', () => {
+      if (typeof window._closePanel === 'function') window._closePanel('modes-ov');
+      if (typeof window.showUI === 'function') window.showUI('hub');
+    });
+  }
+
   // Map Selector buttons in setup modal
   const mapGrid = document.getElementById('snake-map-selector');
   if (mapGrid) {

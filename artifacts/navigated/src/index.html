@@ -1445,7 +1445,8 @@ button:active, .btn:active, [role="button"]:active {
     <div id="menu-bottom">
       <button class="btn btn-primary" id="btn-start">▶ 게임 시작</button>
       <button class="btn btn-secondary" id="btn-cont" style="display:none">↩ 이어하기</button>
-       <button class="btn" id="btn-plaza" style="display:none;background:linear-gradient(135deg,#155477,#237ca5);border:1px solid rgba(143,231,255,.35)">💬 소통 라운지</button>
+      <button class="btn" id="btn-plaza" style="display:none;background:linear-gradient(135deg,#155477,#237ca5);border:1px solid rgba(143,231,255,.35)">💬 소통 라운지</button>
+      <button class="btn" id="btn-arcade" style="background:linear-gradient(135deg,#00f3ff,#4361ee);box-shadow:0 0 28px rgba(0,243,255,0.55);font-size:17px;padding:18px 32px;min-height:64px;font-weight:900;letter-spacing:.5px">🕹️ 미니게임 아케이드 (3D 머지 스네이크)</button>
       <button class="btn btn-multi" id="btn-multi">⚡ 멀티플레이</button>
       <button class="btn btn-shop" id="btn-shop">🛒 상점</button>
       <button class="btn btn-xs" id="btn-modes" style="background:linear-gradient(135deg,#1a1a4e,#2d2d80);border:1px solid rgba(100,100,255,.35);font-size:14px;padding:13px">🎮 게임 모드 &amp; 컨텐츠</button>
@@ -1716,6 +1717,11 @@ button:active, .btn:active, [role="button"]:active {
     <div class="nf-body">
       <div style="color:rgba(150,150,200,.6);font-size:11px;letter-spacing:1px;font-weight:700;margin-bottom:10px">── 게임 모드 ──</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px">
+        <div class="special-card" id="mh-arcade" style="cursor:pointer;border-color:rgba(0,243,255,.6);background:rgba(0,243,255,.12);grid-column:span 3;padding:16px">
+          <div class="special-ico" style="font-size:32px">🐍</div>
+          <div class="special-name" style="color:#00f3ff;font-size:16px;font-weight:900">🕹️ 미니게임 아케이드 (3D 머지 스네이크)</div>
+          <div class="special-desc" style="color:rgba(200,240,255,.8);font-size:12px">정육면체 공간 10인 실시간 서바이벌 &amp; 미니게임</div>
+        </div>
         <div class="special-card" id="mh-special" style="cursor:pointer">
           <div class="special-ico">⚡</div><div class="special-name">특수 스테이지</div>
           <div class="special-desc">특수 조건 도전</div>
