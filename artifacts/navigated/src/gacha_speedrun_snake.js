@@ -6,6 +6,11 @@
  * 3. 3D 머지 스네이크 (Slither-style 3D Cuboid Survival) 10인 멀티플레이어 미니게임
  */
 
+import * as THREE from 'three';
+if (typeof window !== 'undefined') {
+  window.THREE = THREE;
+}
+
 (function(){
 'use strict';
 
@@ -849,10 +854,20 @@ function startSnakeGame() {
   _snakeActive = true;
   _matchTimer = 0;
 
-  // Show HUD, Hide lobby modal
-  document.getElementById('snake-game').classList.add('on');
+  // Show HUD & Canvas, Hide lobby modal
+  const ui = document.getElementById('ui');
+  if (ui) ui.style.pointerEvents = 'auto';
+
+  const gameEl = document.getElementById('snake-game');
+  if (gameEl) {
+    gameEl.classList.add('on');
+    gameEl.style.display = 'block';
+    gameEl.style.pointerEvents = 'auto';
+  }
+
   const setupModal = document.getElementById('snake-setup-modal');
   if (setupModal) setupModal.style.display = 'none';
+
   const overModal = document.getElementById('snake-modal');
   if (overModal) overModal.style.display = 'none';
 
