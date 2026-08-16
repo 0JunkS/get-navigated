@@ -5709,10 +5709,20 @@ const _CG_TOTAL_ROUNDS=5;
 // ── 보조 함수 ─────────────────────────────────────
 function _cgRand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
 function _cgPick(pool){
-  const total=pool.reduce((s,r)=>s+r.w,0);
-  let rand=Math.random()*total;
-  for(const r of pool){rand-=r.w;if(rand<=0)return r;}
-  return pool[0];
+  // Smart RNG: reduce weight of owned skins/maps so unowned items drop much more frequently
+  const adjustedPool = pool.map(item => {
+    let w = item.w || 10;
+    if(item.type === 'skin' && typeof owned !== 'undefined' && owned.has(item.id)) {
+      w = Math.max(1, Math.floor(w * 0.15));
+    } else if(item.type === 'map' && typeof ownedMaps !== 'undefined' && ownedMaps.has(item.id)) {
+      w = Math.max(1, Math.floor(w * 0.15));
+    }
+    return { ...item, w };
+  });
+  const total = adjustedPool.reduce((s,r)=>s+r.w,0);
+  let rand = Math.random()*total;
+  for(const r of adjustedPool){ rand -= r.w; if(rand <= 0) return r; }
+  return adjustedPool[0] || pool[0];
 }
 
 // ── DOM ───────────────────────────────────────────
