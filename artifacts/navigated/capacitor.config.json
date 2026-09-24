@@ -3,9 +3,16 @@
   "appName": "NAVIGATED",
   "webDir": "dist/public",
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "allowNavigation": [
+      "*.firebaseapp.com",
+      "*.googleapis.com",
+      "*.google.com",
+      "*.firebasestorage.app"
+    ]
   },
   "android": {
-    "backgroundColor": "#06061a"
+    "backgroundColor": "#06061a",
+    "allowMixedContent": true
   }
 }

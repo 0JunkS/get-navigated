@@ -7,6 +7,8 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   onAuthStateChanged
 } from 'firebase/auth';
@@ -359,7 +361,7 @@ camera.position.set(2,3,9);
 const controls=new OrbitControls(camera,canvas);
 controls.enablePan=false;controls.minDistance=1;controls.maxDistance=18;
 controls.dampingFactor=0.08;controls.enableDamping=true;
-controls.autoRotate=true;controls.autoRotateSpeed=1.3;
+controls.autoRotate=false;
 const ambLight=new THREE.AmbientLight(0xffffff,0.75);
 const sunLight=new THREE.DirectionalLight(0xffffff,1.3);sunLight.position.set(8,12,8);
 const fillLight=new THREE.DirectionalLight(0x4455ff,0.4);fillLight.position.set(-6,-4,-6);
@@ -444,7 +446,7 @@ function mkMat(col,sk,tex,em='#000',ei=0){
   const emCol=sk.neon?col:em;
   const emInt=sk.neon?1.4:ei;
   const mat=new THREE.MeshStandardMaterial({
-    color:c,emissive:emCol,emissiveIntensity:emInt,
+    color:c,emissive:emCol,emissiveIntensity:0,
     roughness:sk.r??0.55,metalness:sk.m??0.15,
     transparent:sk.tr||false,opacity:sk.op??1,
     side:sk.tr?THREE.DoubleSide:THREE.FrontSide,
@@ -471,7 +473,7 @@ function buildArrow(col,sk,grp,tex){
 
   // Decorative glowing collar ring where shaft meets head
   const collarMat=new THREE.MeshStandardMaterial({
-    color:col,emissive:col,emissiveIntensity:0.7,
+    color:col,emissive:'#000',emissiveIntensity:0,
     roughness:0.3,metalness:0.6,transparent:false,opacity:1
   });
   const collar=new THREE.Mesh(new THREE.TorusGeometry(HR*0.55,BR*1.3,8,24),collarMat);
@@ -487,7 +489,7 @@ function buildArrow(col,sk,grp,tex){
 
   // Cute bright sparkle sphere at the very tip
   const tipMat=new THREE.MeshStandardMaterial({
-    color:'#ffffff',emissive:col,emissiveIntensity:1.1,
+    color:'#ffffff',emissive:'#000',emissiveIntensity:0,
     roughness:0.05,metalness:0.6,transparent:false,opacity:1,
     envMap:_skinEnvMap,envMapIntensity:1.8
   });
@@ -496,7 +498,7 @@ function buildArrow(col,sk,grp,tex){
 
   // Small decorative side fins at head base
   const finMat=new THREE.MeshStandardMaterial({
-    color:col,emissive:col,emissiveIntensity:0.35,roughness:0.4,metalness:0.3,
+    color:col,emissive:'#000',emissiveIntensity:0,roughness:0.4,metalness:0.3,
     transparent:false,opacity:1,side:THREE.DoubleSide
   });
   const finGeo=new THREE.ConeGeometry(HR*0.42,HH*0.28,3);
@@ -681,7 +683,7 @@ function buildCrystal2(col,sk,grp){
   // Main large shard: tall thin octahedron
   const mainGeo=new THREE.OctahedronGeometry(HR*0.7,0);
   mainGeo.applyMatrix4(new THREE.Matrix4().makeScale(0.6,2.8,0.6));
-  const mainShard=new THREE.Mesh(mainGeo,new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:0.35,roughness:0.0,metalness:0.1,transparent:false,opacity:1,envMap:_skinEnvMap,envMapIntensity:2.4,side:THREE.DoubleSide}));
+  const mainShard=new THREE.Mesh(mainGeo,new THREE.MeshStandardMaterial({color:col,emissive:'#000',emissiveIntensity:0,roughness:0.0,metalness:0.1,transparent:false,opacity:1,envMap:_skinEnvMap,envMapIntensity:2.4,side:THREE.DoubleSide}));
   mainShard.position.y=HH*0.25;
   // 2 side shards
   [[-1,0.65],[1,-0.55]].forEach(([sign,yOff])=>{
@@ -1074,14 +1076,12 @@ function clearPreview(){if(prevMesh){scene.remove(prevMesh);prevMesh=null;}}
 // GLOW
 // ══════════════════════════════════════════════════
 function setGlow(entry,on){
-  const sk=skinDef(activeSkin);
   entry.parts.forEach(p=>{
     if(!p.material)return;
-    p.material.emissive.set(on?entry.def.col:'#000');
-    // 선택 시: neon 스킨은 1.2, 일반 0.8 / 해제 시: 항상 0 (neon이어도 반짝이면 선택된 것처럼 보임)
-    p.material.emissiveIntensity=on?(sk.neon?1.2:0.8):0;
+    p.material.emissive.set('#000');
+    p.material.emissiveIntensity=0; // 발광 안 되게 0 고정
   });
-  entry.ring.visible=on; // ring은 오직 setGlow만 제어
+  entry.ring.visible=on; // 선택 링만 깔끔하게 표시
 }
 
 // ══════════════════════════════════════════════════
@@ -1860,7 +1860,7 @@ function tickArrow(a,dt){
 // ══════════════════════════════════════════════════
 function initDemo(){
   spawnArrows(getLevel(demoIdx%5),'default');
-  demoT=0;controls.autoRotate=true;controls.autoRotateSpeed=1.3;
+  demoT=0;controls.autoRotate=false;
   camera.position.set(1.5,2,5);controls.target.set(0,0,0);controls.update();
 }
 function tickDemo(dt){
@@ -2110,22 +2110,12 @@ function tickFreeHint(dt){
   _hintT+=dt;
   arrows.forEach(a=>{
     if(a.state!=='idle')return;
-    // 선택된 화살표는 setGlow가 완전히 관리 — 건드리지 않음
     if(a.id===selId)return;
-    const isVertical=a.def.dir==='py'||a.def.dir==='ny';
-    let free;
-    if(isVertical){
-      free=!blocked(a);
-    }else{
-      const spinDir=DV[a.def.dir].clone().applyEuler(new THREE.Euler(0,a.spinAngle||0,0)).normalize();
-      free=!blockedInDirection(a,spinDir);
-    }
     a.parts.forEach(p=>{
       if(!p.material||!p.material.emissive)return;
-      // 반짝임/맥동 없이 고정 밝기 — 탈출 가능이면 일정한 밝기, 막히면 어둡게
-      p.material.emissiveIntensity=free?0.7:0.0;
+      // 발광/깜빡임/어두워짐 완전 제거 (발광 안 되게 0으로 고정)
+      p.material.emissiveIntensity=0;
     });
-    // ring은 setGlow만 제어 — 여기서는 항상 숨김 (선택 안 된 화살표)
     if(a.ring)a.ring.visible=false;
   });
 }
@@ -2133,7 +2123,7 @@ function tickFreeHint(dt){
 function tickIdle(dt){
   if(phase!=='playing'&&phase!=='multi-playing')return;
   idleT+=dt;
-  if(idleT>=5&&hudOn&&(typeof _settings==='undefined'||_settings.hudAutoHide)){hudOn=false;document.getElementById('hud').style.opacity='0';document.getElementById('tap-restore').style.opacity='1';controls.autoRotate=true;controls.autoRotateSpeed=0.5;}
+  if(idleT>=5&&hudOn&&(typeof _settings==='undefined'||_settings.hudAutoHide)){hudOn=false;document.getElementById('hud').style.opacity='0';document.getElementById('tap-restore').style.opacity='1';controls.autoRotate=false;}
 }
 
 // ══════════════════════════════════════════════════
@@ -3623,7 +3613,7 @@ function goHub(){
   document.getElementById('multi-countdown').classList.remove('on');
   document.getElementById('pbar').style.display='block';
   document.getElementById('flight-panel').classList.add('hidden');
-  controls.autoRotate=true;controls.autoRotateSpeed=1.3;
+  controls.autoRotate=false;
   updateCoins();initDemo();showUI('hub');
 }
 function goMenu(){
@@ -3635,7 +3625,7 @@ function goMenu(){
   document.getElementById('multi-hud').classList.remove('on');
   document.getElementById('multi-countdown').classList.remove('on');
   document.getElementById('pbar').style.display='block';
-  controls.autoRotate=true;controls.autoRotateSpeed=1.3;
+  controls.autoRotate=false;
   document.getElementById('btn-cont').style.display=progress>0?'flex':'none';
   updateCoins();initDemo();
 }
@@ -3790,13 +3780,25 @@ async function _googleLogin(){
   document.getElementById('btn-ggl').style.opacity='0.6';
   try{
     const provider=new GoogleAuthProvider();
-    await signInWithPopup(_fbAuth,provider);
-    // onAuthStateChanged가 이후 처리
+    try {
+      await signInWithPopup(_fbAuth,provider);
+    } catch(err) {
+      if (err.code === 'auth/popup-blocked' || 
+          err.code === 'auth/operation-not-supported-in-this-environment' || 
+          err.code === 'auth/popup-closed-by-user' || 
+          err.code === 'auth/unauthorized-domain' ||
+          /cordova|capacitor|android|webview/i.test(navigator.userAgent)) {
+        console.warn('[Auth] Popup unavailable in APK/WebView, falling back to redirect:', err);
+        await signInWithRedirect(_fbAuth, provider);
+        return;
+      }
+      throw err;
+    }
   }catch(e){
     document.getElementById('auth-loading').style.display='none';
     document.getElementById('btn-ggl').style.opacity='1';
     if(e.code!=='auth/popup-closed-by-user')
-      alert('로그인 실패: '+e.message);
+      alert('로그인 연결 확인 필요: ' + (e.message || '서버 연결 실패'));
   }
 }
 
@@ -3808,7 +3810,6 @@ async function _doLogout(){
 }
 
 function initAuth(){
-  // 버튼 이벤트
   document.getElementById('btn-ggl').addEventListener('click',_googleLogin);
   document.getElementById('btn-gst').addEventListener('click',()=>{_hideAuthOv();_setUserPill(null);});
   document.getElementById('user-pill').addEventListener('click',()=>{
@@ -3827,14 +3828,36 @@ function initAuth(){
   });
 
   if(!_fbAuth){
-    // Firebase 미설정 → 게스트 모드로 바로 시작
     _hideAuthOv();
     _setUserPill(null);
     return;
   }
 
-  // 인증 상태 감지 (이미 로그인되어 있으면 자동으로 처리)
+  try {
+    getRedirectResult(_fbAuth).then(async (result) => {
+      if (result && result.user) {
+        _fbUser = result.user;
+        _hideAuthOv();
+        _setUserPill(result.user);
+        await fbCloudLoad();
+      }
+    }).catch(err => {
+      console.warn('[Auth] Redirect result check error:', err);
+    });
+  } catch(e) {}
+
+  const authTimeout = setTimeout(() => {
+    if (!_fbUser) {
+      console.warn('[Auth] Firebase Auth timeout in APK environment - enabling guest fallback option.');
+      const subEl = document.querySelector('#auth-ov .auth-sub');
+      if (subEl) {
+        subEl.innerHTML = '네트워크 연결이 지연되고 있습니다.<br><b style="color:#ffee00">게스트로 시작</b>을 누르면 바로 오프라인 플레이할 수 있습니다.';
+      }
+    }
+  }, 3000);
+
   onAuthStateChanged(_fbAuth,async(user)=>{
+    clearTimeout(authTimeout);
     _fbUser=user;
     if(user){
       _hideAuthOv();
@@ -3844,7 +3867,6 @@ function initAuth(){
     }else{
       _historyRecords=getLocalHistory(null);
     }
-    // user가 null이면 오버레이 계속 표시
   });
 }
 
