@@ -1,4 +1,4 @@
-name: Android CI
+name: Android CI & Release
 
 on:
   push:
@@ -6,9 +6,10 @@ on:
   pull_request:
     branches: ["main"]
 
-# GitHub Release 생성에 필요
+# GitHub Release 및 태그 생성에 필요한 권한 설정
 permissions:
   contents: write
+  packages: write
 
 jobs:
   build:
@@ -69,12 +70,16 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: gradle
+
       # ----------------------------------------
-      # 8. Add Android platform
+      # 8. Add Android platform (안전하게 체크 후 추가)
       # ----------------------------------------
       - name: Add Android platform
         working-directory: artifacts/navigated
-        run: npx cap add android
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
 
       # ----------------------------------------
       # 9. Sync web → Android
@@ -89,7 +94,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x artifacts/navigated/android/gradlew
 
-      # ----------------- -----------------------
+      # ----------------------------------------
       # 11. Build APK
       # ----------------------------------------
       - name: Build debug APK
@@ -104,12 +109,7 @@ jobs:
         run: ./gradlew bundleDebug --no-daemon
 
       # ----------------------------------------
-      # 13. Rename files
-      #
-      # Release에서 예전처럼
-      # app-release.apk
-      # app-release.aab
-      # 이름으로 보이게 함
+      # 13. Release 파일 준비
       # ----------------------------------------
       - name: Prepare release files
         run: |
@@ -124,7 +124,7 @@ jobs:
           ls -lh release-files
 
       # ----------------------------------------
-      # 14. Actions Artifact도 유지
+      # 14. Actions Artifact 업로드
       # ----------------------------------------
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -141,42 +141,36 @@ jobs:
           if-no-files-found: error
 
       # ----------------------------------------
-      # 15. 다음 버전 번호 계산
-      #
-      # 예:
-      # v198 존재
-      # ↓
-      # v199 생성
-      #
-      # v199 존재
-      # ↓
-      # v200 생성
+      # 15. 다음 버전 번호 계산 (git 태그 및 gh release 대조)
       # ----------------------------------------
       - name: Calculate next release version
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         id: version
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Checking existing releases..."
+          echo "Checking existing releases & git tags..."
+          git fetch --tags || true
+
+          MAX_GIT_TAG=$(git tag -l "v*" | sed -n 's/^v\([0-9][0-9]*\)$/\1/p' | sort -n | tail -1)
 
           RELEASES=$(gh release list \
             --repo "${GITHUB_REPOSITORY}" \
             --limit 1000 \
             --json tagName \
-            --jq '.[].tagName' || true)
+            --jq '.[].tagName' 2>/dev/null || true)
 
-          MAX_VERSION=$(echo "$RELEASES" \
-            | sed -n 's/^v\([0-9][0-9]*\)$/\1/p' \
-            | sort -n \
-            | tail -1)
+          MAX_GH_RELEASE=$(echo "$RELEASES" | sed -n 's/^v\([0-9][0-9]*\)$/\1/p' | sort -n | tail -1)
 
-          if [ -z "$MAX_VERSION" ]; then
-            MAX_VERSION=0
+          MAX_VERSION=0
+          if [ -n "$MAX_GIT_TAG" ] && [ "$MAX_GIT_TAG" -gt "$MAX_VERSION" ]; then
+            MAX_VERSION=$MAX_GIT_TAG
+          fi
+          if [ -n "$MAX_GH_RELEASE" ] && [ "$MAX_GH_RELEASE" -gt "$MAX_VERSION" ]; then
+            MAX_VERSION=$MAX_GH_RELEASE
           fi
 
           NEXT_VERSION=$((MAX_VERSION + 1))
-
           TAG="v${NEXT_VERSION}"
 
           echo "Latest version: v${MAX_VERSION}"
@@ -186,19 +180,18 @@ jobs:
           echo "version=${NEXT_VERSION}" >> "$GITHUB_OUTPUT"
 
       # ----------------------------------------
-      # 16. GitHub Release 생성
-      #
-      # Push 때만 실행
+      # 16. GitHub Release 및 태그 자동 생성 (softprops/action-gh-release)
       # ----------------------------------------
       - name: Create GitHub Release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: "3D Escape ${{ steps.version.outputs.tag }}"
+          files: |
+            release-files/app-release.apk
+            release-files/app-release.aab
+          generate_release_notes: true
         env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.version.outputs.tag }}
-        run: |
-          gh release create "$TAG" \
-            release-files/app-release.apk \
-            release-files/app-release.aab \
-            --repo "${GITHUB_REPOSITORY}" \
-            --title "3D Escape ${TAG}" \
-            --generate-notes
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
