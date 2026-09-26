@@ -6,6 +6,7 @@ import { initializeApp } from 'firebase/app';
 import {
   getAuth,
   GoogleAuthProvider,
+  signInWithCredential,
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
@@ -3900,57 +3901,57 @@ async function _googleLogin(){
   document.getElementById('auth-loading').style.display='block';
   document.getElementById('btn-ggl').style.opacity='0.6';
 
-  const isAndroidNative = (typeof window.Capacitor !== 'undefined' && window.Capacitor.getPlatform() === 'android') ||
+  const isAndroidNative = (typeof window.Capacitor !== 'undefined' && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) ||
                          (/Android/i.test(navigator.userAgent) && /wv|Capacitor/i.test(navigator.userAgent));
 
   try{
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
 
-    if (isAndroidNative) {
-      // In Android APK/Capacitor WebView, standard popup/redirect causes Google Error 400 (disallowed_useragent).
-      // Solution: Open Google Auth via System Chrome Custom Tabs (Browser.open), which Google officially permits!
-      console.log('[Auth] Android native detected. Launching System Chrome Custom Tab for Google OAuth...');
-      const authDomain = window._FB_CFG && window._FB_CFG.authDomain ? window._FB_CFG.authDomain : 'threed-escape0.firebaseapp.com';
-      const systemAuthUrl = 'https://' + authDomain + '/__/auth/handler';
-      
+    // 1. Check if Capacitor Native GoogleAuth plugin is available
+    const nativeGAuth = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.GoogleAuth;
+    if (isAndroidNative && nativeGAuth) {
+      console.log('[Auth] Attempting Native Android Google Sign-In...');
       try {
-        const capBrowser = (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) || (window.CapacitorCustomPlatform && window.CapacitorCustomPlatform.Browser);
-      if (capBrowser && capBrowser.open) {
-        await capBrowser.open({ url: systemAuthUrl, windowName: '_system' });
-        } else {
-          window.open(systemAuthUrl, '_system');
+        const gUser = await nativeGAuth.signIn();
+        const idToken = (gUser && gUser.authentication) ? gUser.authentication.idToken : (gUser ? gUser.idToken : null);
+        if (idToken) {
+          const cred = GoogleAuthProvider.credential(idToken);
+          const res = await signInWithCredential(_fbAuth, cred);
+          if (res && res.user) {
+            _fbUser = res.user;
+            _hideAuthOv();
+            _setUserPill(res.user);
+            await fbCloudLoad();
+            return;
+          }
         }
-      } catch (bErr) {
-        console.warn('[Auth] System browser open fallback:', bErr);
-        await signInWithRedirect(_fbAuth, provider);
+      } catch (nErr) {
+        console.warn('[Auth] Native Google Sign-In failed or cancelled:', nErr);
       }
-      return;
     }
 
-    const res = await signInWithPopup(_fbAuth, provider);
-    if (res && res.user) {
-      _fbUser = res.user;
-      _hideAuthOv();
-      _setUserPill(res.user);
-      await fbCloudLoad();
+    // 2. Standard Web or Android Fallback: signInWithPopup or signInWithRedirect
+    try {
+      const res = await signInWithPopup(_fbAuth, provider);
+      if (res && res.user) {
+        _fbUser = res.user;
+        _hideAuthOv();
+        _setUserPill(res.user);
+        await fbCloudLoad();
+        return;
+      }
+    } catch (popupErr) {
+      console.warn('[Auth] Popup error, trying signInWithRedirect:', popupErr);
+      await signInWithRedirect(_fbAuth, provider);
+      return;
     }
   }catch(e){
-    console.warn('[GoogleAuth Error]', e);
+    console.warn('[GoogleAuth Exception]', e);
     document.getElementById('auth-loading').style.display='none';
     document.getElementById('btn-ggl').style.opacity='1';
 
-    if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') {
-      try {
-        const provider = new GoogleAuthProvider();
-        await signInWithRedirect(_fbAuth, provider);
-        return;
-      } catch(reErr) {
-        console.warn('[Auth Redirect Fallback Error]', reErr);
-      }
-    }
-
-    if(e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
+    if(e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request' && e.code !== '12501') {
       alert('구글 로그인 오류: ' + (e.message || '인증 연결 실패'));
     }
   }
