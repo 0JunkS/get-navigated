@@ -99,6 +99,38 @@ jobs:
           echo "Successfully copied pre-rendered launcher icons to Android res!"
 
       # ----------------------------------------
+      # 9.2 Inject google-services.json (from Secret)
+      # ----------------------------------------
+      - name: Inject google-services.json
+        working-directory: artifacts/navigated/android/app
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          echo "$GOOGLE_SERVICES_JSON" > google-services.json
+          echo "google-services.json written."
+
+      # ----------------------------------------
+      # 9.3 Patch Gradle files for google-services plugin
+      # ----------------------------------------
+      - name: Patch Gradle for google-services plugin
+        working-directory: artifacts/navigated/android
+        run: |
+          # --- Project-level build.gradle ---
+          # Add google-services classpath if not already present
+          if ! grep -q "com.google.gms.google-services" build.gradle; then
+            sed -i '/dependencies {/a\        classpath("com.google.gms:google-services:4.5.0")' build.gradle
+            echo "Patched project-level build.gradle"
+          fi
+
+          # --- App-level build.gradle ---
+          # Add apply plugin at end of file if not already present
+          if ! grep -q "com.google.gms.google-services" app/build.gradle; then
+            echo "" >> app/build.gradle
+            echo "apply plugin: 'com.google.gms.google-services'" >> app/build.gradle
+            echo "Patched app/build.gradle"
+          fi
+
+      # ----------------------------------------
       # 10. Gradle permission
       # ----------------------------------------
       - name: Grant execute permission for gradlew
