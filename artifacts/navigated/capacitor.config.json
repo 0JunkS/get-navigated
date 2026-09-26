@@ -8,7 +8,8 @@
       "*.firebaseapp.com",
       "*.googleapis.com",
       "*.google.com",
-      "*.firebasestorage.app"
+      "*.firebasestorage.app",
+      "*.onrender.com"
     ]
   },
   "android": {

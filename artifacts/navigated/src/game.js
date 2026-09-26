@@ -261,16 +261,16 @@ const SKINS=[
 const MAPS=[
   {id:'default',name:'우주',desc:'다채로운 기본 우주',price:0,emoji:'🌌',pc:'p-free',
    bg:'#06061a',fogColor:'#06061a',fogNear:22,fogFar:65,
-   ambient:[0xffffff,1.25],sun:[0xffffff,1.8],fill:[0x7799ff,0.7],starCol:0xffffff,colors:null,tex:null},
+   ambient:[0xffffff,1.85],sun:[0xffffff,2.4],fill:[0x7799ff,1.0],starCol:0xffffff,colors:null,tex:null},
   {id:'mars',name:'화성',desc:'붉은 화성 · 먼지 구름 하늘',price:200,emoji:'🔴',pc:'p-cheap',
    bg:'#c47a45',fogColor:'#c06030',fogNear:14,fogFar:45,
-   ambient:[0xffaa77,1.35],sun:[0xff7744,1.8],fill:[0x992200,0.7],starCol:0xff9966,
+   ambient:[0xffaa77,1.95],sun:[0xff7744,2.4],fill:[0x992200,1.0],starCol:0xff9966,
    colors:['#FF4500','#FF6347','#FF7F50','#E34234','#FF4444','#CC3300',
            '#FF5500','#DD2200','#FF8C00','#FF6600','#CD2626','#B22222',
            '#DC143C','#FF2400','#C0392B','#E74C3C','#FF3300','#FF4136'],tex:'mars'},
   {id:'earth',name:'지구',desc:'파란 지구 · 구름 하늘',price:200,emoji:'🌍',pc:'p-cheap',
    bg:'#1a6ab5',fogColor:'#4498d0',fogNear:18,fogFar:55,
-   ambient:[0xbbddff,1.35],sun:[0xffffff,1.8],fill:[0x0066bb,0.75],starCol:0x88ffcc,
+   ambient:[0xbbddff,1.95],sun:[0xffffff,2.4],fill:[0x0066bb,1.1],starCol:0x88ffcc,
    colors:['#2E8B57','#3CB371','#006400','#1E90FF','#4169E1','#00CED1',
            '#228B22','#32CD32','#0000CD','#4682B4','#20B2AA','#66CDAA',
            '#5F9EA0','#008080','#2196F3','#4CAF50','#45B7D1','#1ABC9C'],tex:'earth'},
@@ -325,7 +325,7 @@ const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'h
 renderer.setPixelRatio(Math.min(devicePixelRatio,2.5));
 renderer.setSize(innerWidth,innerHeight);
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.4;
+renderer.toneMappingExposure=1.75;
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 // 터치 이벤트 정상 처리를 위해 touch-action 명시
 canvas.style.touchAction='none';
@@ -362,10 +362,10 @@ const controls=new OrbitControls(camera,canvas);
 controls.enablePan=false;controls.minDistance=1;controls.maxDistance=18;
 controls.dampingFactor=0.08;controls.enableDamping=true;
 controls.autoRotate=false;
-const ambLight=new THREE.AmbientLight(0xffffff,1.25);
-const sunLight=new THREE.DirectionalLight(0xffffff,1.8);sunLight.position.set(8,12,8);
-const fillLight=new THREE.DirectionalLight(0x7799ff,0.7);fillLight.position.set(-6,-4,-6);
-const ptLight=new THREE.PointLight(0xffffff,1.2,20);ptLight.position.set(1,2,1);
+const ambLight=new THREE.AmbientLight(0xffffff,1.85);
+const sunLight=new THREE.DirectionalLight(0xffffff,2.4);sunLight.position.set(8,12,8);
+const fillLight=new THREE.DirectionalLight(0x7799ff,1.0);fillLight.position.set(-6,-4,-6);
+const ptLight=new THREE.PointLight(0xffffff,2.2,40);ptLight.position.set(1,2,1);
 scene.add(ambLight,sunLight,fillLight,ptLight);
 const sg=new THREE.BufferGeometry();
 const sv=[];for(let i=0;i<1800;i++)sv.push((Math.random()-.5)*130,(Math.random()-.5)*130,(Math.random()-.5)*130);
@@ -444,14 +444,14 @@ function mkMat(col,sk,tex,em='#000',ei=0){
   const isMetallic=(sk.m??0)>=0.88;
   const useEnv=isMetallic||sk.crystal;
   const emCol=sk.neon?col:(em!=='#000'?em:c);
-  const emInt=sk.neon?1.4:(ei||0.25);
+  const emInt=sk.neon?1.8:(ei||0.55);
   const mat=new THREE.MeshStandardMaterial({
     color:c,emissive:emCol,emissiveIntensity:emInt,
     roughness:sk.r??0.38,metalness:sk.m??0.15,
     transparent:sk.tr||false,opacity:sk.op??1,
     side:sk.tr?THREE.DoubleSide:THREE.FrontSide,
     envMap:useEnv?_skinEnvMap:null,
-    envMapIntensity:isMetallic?2.2:sk.crystal?1.4:0.6,
+    envMapIntensity:isMetallic?2.5:sk.crystal?1.8:0.8,
   });
   if(tex&&!isMetallic&&!sk.crystal){mat.roughnessMap=tex;mat.needsUpdate=true;}
   return mat;
@@ -473,8 +473,8 @@ function buildArrow(col,sk,grp,tex){
 
   // Decorative glowing collar ring where shaft meets head
   const collarMat=new THREE.MeshStandardMaterial({
-    color:col,emissive:col,emissiveIntensity:0.4,
-    roughness:0.2,metalness:0.6,transparent:false,opacity:1
+    color:col,emissive:col,emissiveIntensity:0.8,
+    roughness:0.1,metalness:0.6,transparent:false,opacity:1
   });
   const collar=new THREE.Mesh(new THREE.TorusGeometry(HR*0.55,BR*1.3,8,24),collarMat);
   collar.rotation.x=Math.PI/2;
@@ -489,8 +489,8 @@ function buildArrow(col,sk,grp,tex){
 
   // Cute bright sparkle sphere at the very tip
   const tipMat=new THREE.MeshStandardMaterial({
-    color:'#ffffff',emissive:'#ffffff',emissiveIntensity:0.8,
-    roughness:0.05,metalness:0.6,transparent:false,opacity:1,
+    color:'#ffffff',emissive:'#ffffff',emissiveIntensity:1.5,
+    roughness:0.02,metalness:0.6,transparent:false,opacity:1,
     envMap:_skinEnvMap,envMapIntensity:1.8
   });
   const tip=new THREE.Mesh(new THREE.SphereGeometry(BR*1.6,10,8),tipMat);
@@ -498,7 +498,7 @@ function buildArrow(col,sk,grp,tex){
 
   // Small decorative side fins at head base
   const finMat=new THREE.MeshStandardMaterial({
-    color:col,emissive:col,emissiveIntensity:0.3,roughness:0.3,metalness:0.3,
+    color:col,emissive:col,emissiveIntensity:0.6,roughness:0.2,metalness:0.3,
     transparent:false,opacity:1,side:THREE.DoubleSide
   });
   const finGeo=new THREE.ConeGeometry(HR*0.42,HH*0.28,3);
@@ -3891,30 +3891,68 @@ function _showAccountModal(show){
 }
 
 async function _googleLogin(){
-  if(!_fbAuth)return;
+  if(!_fbAuth){
+    _hideAuthOv();
+    _setUserPill(null);
+    return;
+  }
+
   document.getElementById('auth-loading').style.display='block';
   document.getElementById('btn-ggl').style.opacity='0.6';
+
+  const isAndroidNative = (typeof window.Capacitor !== 'undefined' && window.Capacitor.getPlatform() === 'android') ||
+                         (/Android/i.test(navigator.userAgent) && /wv|Capacitor/i.test(navigator.userAgent));
+
   try{
-    const provider=new GoogleAuthProvider();
-    try {
-      await signInWithPopup(_fbAuth,provider);
-    } catch(err) {
-      if (err.code === 'auth/popup-blocked' || 
-          err.code === 'auth/operation-not-supported-in-this-environment' || 
-          err.code === 'auth/popup-closed-by-user' || 
-          err.code === 'auth/unauthorized-domain' ||
-          /cordova|capacitor|android|webview/i.test(navigator.userAgent)) {
-        console.warn('[Auth] Popup unavailable in APK/WebView, falling back to redirect:', err);
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    if (isAndroidNative) {
+      // In Android APK/Capacitor WebView, standard popup/redirect causes Google Error 400 (disallowed_useragent).
+      // Solution: Open Google Auth via System Chrome Custom Tabs (Browser.open), which Google officially permits!
+      console.log('[Auth] Android native detected. Launching System Chrome Custom Tab for Google OAuth...');
+      const authDomain = window._FB_CFG && window._FB_CFG.authDomain ? window._FB_CFG.authDomain : 'threed-escape0.firebaseapp.com';
+      const systemAuthUrl = 'https://' + authDomain + '/__/auth/handler';
+      
+      try {
+        const capBrowser = (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) || (window.CapacitorCustomPlatform && window.CapacitorCustomPlatform.Browser);
+      if (capBrowser && capBrowser.open) {
+        await capBrowser.open({ url: systemAuthUrl, windowName: '_system' });
+        } else {
+          window.open(systemAuthUrl, '_system');
+        }
+      } catch (bErr) {
+        console.warn('[Auth] System browser open fallback:', bErr);
         await signInWithRedirect(_fbAuth, provider);
-        return;
       }
-      throw err;
+      return;
+    }
+
+    const res = await signInWithPopup(_fbAuth, provider);
+    if (res && res.user) {
+      _fbUser = res.user;
+      _hideAuthOv();
+      _setUserPill(res.user);
+      await fbCloudLoad();
     }
   }catch(e){
+    console.warn('[GoogleAuth Error]', e);
     document.getElementById('auth-loading').style.display='none';
     document.getElementById('btn-ggl').style.opacity='1';
-    if(e.code!=='auth/popup-closed-by-user')
-      alert('로그인 연결 확인 필요: ' + (e.message || '서버 연결 실패'));
+
+    if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') {
+      try {
+        const provider = new GoogleAuthProvider();
+        await signInWithRedirect(_fbAuth, provider);
+        return;
+      } catch(reErr) {
+        console.warn('[Auth Redirect Fallback Error]', reErr);
+      }
+    }
+
+    if(e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
+      alert('구글 로그인 오류: ' + (e.message || '인증 연결 실패'));
+    }
   }
 }
 
