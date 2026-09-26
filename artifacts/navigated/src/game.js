@@ -3901,29 +3901,49 @@ async function _googleLogin(){
   document.getElementById('auth-loading').style.display='block';
   document.getElementById('btn-ggl').style.opacity='0.6';
 
-  try{
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
 
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+                   (typeof window.Capacitor !== 'undefined' && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+
+  if (isMobile) {
+    // On Mobile/Android, signInWithPopup throws auth/network-request-failed due to WebView popup RPC restrictions.
+    // Use signInWithRedirect directly!
     try {
-      const res = await signInWithPopup(_fbAuth, provider);
-      if (res && res.user) {
-        _fbUser = res.user;
-        _hideAuthOv();
-        _setUserPill(res.user);
-        await fbCloudLoad();
-        return;
-      }
-    } catch (popupErr) {
-      console.warn('[Auth] Popup unavailable or blocked, falling back to redirect:', popupErr);
       await signInWithRedirect(_fbAuth, provider);
       return;
+    } catch(rErr) {
+      console.warn('[Auth] Mobile redirect error:', rErr);
+      document.getElementById('auth-loading').style.display='none';
+      document.getElementById('btn-ggl').style.opacity='1';
+      if (rErr.code !== 'auth/popup-closed-by-user' && rErr.code !== 'auth/cancelled-popup-request') {
+        alert('로그인 오류: ' + (rErr.message || '인증 서버 연결 실패'));
+      }
+      return;
     }
-  }catch(e){
-    console.warn('[GoogleAuth Exception]', e);
+  }
+
+  try {
+    const res = await signInWithPopup(_fbAuth, provider);
+    if (res && res.user) {
+      _fbUser = res.user;
+      _hideAuthOv();
+      _setUserPill(res.user);
+      await fbCloudLoad();
+    }
+  } catch(e) {
+    console.warn('[Auth Popup Exception]', e);
+    if (e.code === 'auth/popup-blocked' || e.code === 'auth/network-request-failed' || e.code === 'auth/operation-not-supported-in-this-environment') {
+      try {
+        await signInWithRedirect(_fbAuth, provider);
+        return;
+      } catch(reErr) {
+        console.warn('[Auth Fallback Redirect Exception]', reErr);
+      }
+    }
     document.getElementById('auth-loading').style.display='none';
     document.getElementById('btn-ggl').style.opacity='1';
-
     if(e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
       alert('로그인 오류: ' + (e.message || '서버 연결 실패'));
     }
