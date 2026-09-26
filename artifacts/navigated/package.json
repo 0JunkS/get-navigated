@@ -76,8 +76,6 @@
     "zod": "catalog:"
   },
   "dependencies": {
-    "@capacitor/browser": "^8.0.4",
-    "@codetrix-studio/capacitor-google-auth": "3.4.0-rc.4",
     "firebase": "^12.0.0"
   }
 }
