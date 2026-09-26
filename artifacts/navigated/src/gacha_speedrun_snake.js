@@ -3,7 +3,6 @@
  * 
  * 1. 크로시스 가챠 중복 아이템 코인 환급 & 확률 보정 (Smart RNG)
  * 2. 게임 시작 ~ 클리어 스피드런 타이머 (Speedrun Timer)
- * 3. 3D 머지 스네이크 (Slither-style 3D Cuboid Survival) 10인 멀티플레이어 미니게임
  */
 
 import * as THREE from 'three';

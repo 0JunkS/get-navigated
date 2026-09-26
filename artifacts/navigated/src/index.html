@@ -1336,7 +1336,16 @@ button:active, .btn:active, [role="button"]:active {
       <div id="coins-txt">💰 <span id="hud-coin-val">0</span></div>
     </div>
     <div id="blocked-flash">막혔습니다! 💥</div>
-  <div id="danger-vignette"></div>
+    <div id="danger-vignette"></div>
+    <div id="fever-vignette"></div>
+    <!-- COMBO & FEVER VERTICAL BAR HUD -->
+    <div id="combo-hud">
+      <div id="combo-title">COMBO!</div>
+      <div id="combo-bar-shell">
+        <div id="combo-bar-fill"></div>
+      </div>
+      <div id="combo-count-txt">x0</div>
+    </div>
     <div id="hint-bar">탭: 선택 · 더블탭 또는 버튼: 발사</div>
     <div id="tap-restore">화면을 탭하면 UI 표시</div>
     <div id="launch-wrap"><button id="launch-btn">탈출! 🚀</button></div>
@@ -1564,9 +1573,6 @@ button:active, .btn:active, [role="button"]:active {
     <div class="nf-body">
       <div style="color:rgba(150,150,200,.6);font-size:11px;letter-spacing:1px;font-weight:700;margin-bottom:10px">── 게임 모드 ──</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px">
-        <div class="special-name" style="color:#00f3ff;font-size:16px;font-weight:900">🕹️ 미니게임 아케이드 (3D 머지 스네이크)</div>
-          <div class="special-desc" style="color:rgba(200,240,255,.8);font-size:12px">정육면체 공간 10인 실시간 서바이벌 &amp; 미니게임</div>
-        </div>
         <div class="special-card" id="mh-special" style="cursor:pointer">
           <div class="special-ico">⚡</div><div class="special-name">특수 스테이지</div>
           <div class="special-desc">특수 조건 도전</div>

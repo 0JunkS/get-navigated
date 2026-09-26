@@ -118,6 +118,28 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 #pfill{height:3px;background:linear-gradient(90deg,#4361ee,#4cc9f0);width:0;transition:width .35s}
 #hud-timer{position:absolute;top:0;left:50%;transform:translateX(-50%);height:58px;display:flex;align-items:center;font-family:monospace;font-size:22px;font-weight:900;color:#4cc9f0;letter-spacing:1px;text-shadow:0 0 12px rgba(76,201,240,0.7);pointer-events:none;user-select:none}
 
+/* ── FEVER RAINBOW VIGNETTE FRAME ── */
+#fever-vignette{position:fixed;inset:0;pointer-events:none;z-index:48;opacity:0;transition:opacity .3s ease;box-shadow:inset 0 0 45px 16px rgba(255,0,150,.6),inset 0 0 90px 35px rgba(0,240,255,.5)}
+#fever-vignette.on{opacity:1;animation:feverRainbowGlow .8s linear infinite alternate}
+@keyframes feverRainbowGlow{
+  0%{box-shadow:inset 0 0 55px 22px rgba(255,0,100,.85),inset 0 0 100px 40px rgba(0,230,255,.7);outline:8px solid rgba(255,230,0,.8);outline-offset:-8px}
+  33%{box-shadow:inset 0 0 60px 25px rgba(0,255,120,.85),inset 0 0 110px 45px rgba(200,0,255,.7);outline:8px solid rgba(0,255,255,.8);outline-offset:-8px}
+  66%{box-shadow:inset 0 0 55px 22px rgba(255,150,0,.85),inset 0 0 105px 42px rgba(0,100,255,.7);outline:8px solid rgba(255,0,200,.8);outline-offset:-8px}
+  100%{box-shadow:inset 0 0 65px 28px rgba(255,0,255,.9),inset 0 0 120px 50px rgba(255,255,0,.75);outline:8px solid rgba(0,255,100,.8);outline-offset:-8px}
+}
+
+/* ── VERTICAL COMBO BAR HUD ── */
+#combo-hud{position:absolute;top:72px;right:18px;display:flex;flex-direction:column;align-items:center;gap:4px;z-index:52;pointer-events:none;opacity:0;transition:opacity .3s ease,transform .2s ease}
+#combo-hud.active{opacity:1}
+#combo-title{color:#ffea00;font-size:12px;font-weight:900;letter-spacing:1px;text-shadow:0 0 10px rgba(255,230,0,.9),0 0 20px rgba(255,0,150,.8);animation:comboPulse .5s ease-in-out infinite alternate}
+@keyframes comboPulse{0%{transform:scale(1)}100%{transform:scale(1.14)}}
+#combo-bar-shell{width:14px;height:120px;background:rgba(10,10,35,.75);border:2px solid rgba(255,255,255,.3);border-radius:12px;position:relative;overflow:hidden;box-shadow:0 0 12px rgba(0,0,0,.5),inset 0 0 6px rgba(0,0,0,.8)}
+#combo-bar-fill{position:absolute;bottom:0;left:0;right:0;height:0%;border-radius:10px;background:linear-gradient(0deg,#ff0055,#ff9900,#ffee00,#00ff66,#00ffff,#aa00ff);background-size:100% 200%;animation:comboRainbowShift 2s linear infinite;transition:height .25s cubic-bezier(.175,.885,.32,1.275);box-shadow:0 0 12px rgba(255,255,255,.8)}
+@keyframes comboRainbowShift{0%{background-position:0% 0%}100%{background-position:0% 100%}}
+#combo-count-txt{color:#ffffff;font-size:12px;font-weight:900;font-family:monospace;text-shadow:0 0 8px rgba(0,240,255,.8)}
+#combo-hud.fever #combo-bar-fill{height:100%!important;animation:comboRainbowShift .4s linear infinite!important;box-shadow:0 0 20px rgba(255,255,255,1),0 0 30px rgba(255,0,200,1)!important}
+#combo-hud.fever #combo-title{color:#00ffff;font-size:13px;text-shadow:0 0 15px #00ffff,0 0 25px #ff00ea}
+
 /* ── WIN / OVER ──────────────────────────────────── */
 .overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:all;background:rgba(0,0,0,0.35)}
 .r-card{background:rgba(8,8,28,0.93);border:1px solid rgba(100,100,220,0.22);border-radius:24px;padding:36px 28px;text-align:center;max-width:320px;width:88%;backdrop-filter:blur(20px)}
@@ -1380,7 +1402,16 @@ button:active, .btn:active, [role="button"]:active {
       <div id="coins-txt">💰 <span id="hud-coin-val">0</span></div>
     </div>
     <div id="blocked-flash">막혔습니다! 💥</div>
-  <div id="danger-vignette"></div>
+    <div id="danger-vignette"></div>
+    <div id="fever-vignette"></div>
+    <!-- COMBO & FEVER VERTICAL BAR HUD -->
+    <div id="combo-hud">
+      <div id="combo-title">COMBO!</div>
+      <div id="combo-bar-shell">
+        <div id="combo-bar-fill"></div>
+      </div>
+      <div id="combo-count-txt">x0</div>
+    </div>
     <div id="hint-bar">탭: 선택 · 더블탭 또는 버튼: 발사</div>
     <div id="tap-restore">화면을 탭하면 UI 표시</div>
     <div id="launch-wrap"><button id="launch-btn">탈출! 🚀</button></div>
@@ -1610,9 +1641,6 @@ button:active, .btn:active, [role="button"]:active {
     <div class="nf-body">
       <div style="color:rgba(150,150,200,.6);font-size:11px;letter-spacing:1px;font-weight:700;margin-bottom:10px">── 게임 모드 ──</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px">
-        <div class="special-name" style="color:#00f3ff;font-size:16px;font-weight:900">🕹️ 미니게임 아케이드 (3D 머지 스네이크)</div>
-          <div class="special-desc" style="color:rgba(200,240,255,.8);font-size:12px">정육면체 공간 10인 실시간 서바이벌 &amp; 미니게임</div>
-        </div>
         <div class="special-card" id="mh-special" style="cursor:pointer">
           <div class="special-ico">⚡</div><div class="special-name">특수 스테이지</div>
           <div class="special-desc">특수 조건 도전</div>
