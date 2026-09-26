@@ -3,6 +3,7 @@
   "appName": "NAVIGATED",
   "webDir": "dist/public",
   "server": {
+    "hostname": "d-game-2919b.firebaseapp.com",
     "androidScheme": "https",
     "allowNavigation": [
       "*.firebaseapp.com",
@@ -14,6 +15,7 @@
   },
   "android": {
     "backgroundColor": "#06061a",
-    "allowMixedContent": true
+    "allowMixedContent": true,
+    "overrideUserAgent": "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36"
   }
 }

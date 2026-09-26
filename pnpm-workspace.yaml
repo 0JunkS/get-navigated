@@ -164,3 +164,4 @@ allowBuilds:
   '@firebase/util': true
   esbuild: true
   protobufjs: true
+  sharp: set this to true or false

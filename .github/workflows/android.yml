@@ -89,40 +89,14 @@ jobs:
         run: npx cap sync android
 
       # ----------------------------------------
-      # 9.1 Generate Android App Launcher Icons
+      # 9.1 Copy Android App Launcher Icons
       # ----------------------------------------
-      - name: Generate Android Launcher Icons from icon.jpg
+      - name: Copy Launcher Icons to Android res
         working-directory: artifacts/navigated
         run: |
-          node -e "
-          const fs = require('fs');
-          const path = require('path');
-          const { execSync } = require('child_process');
-
-          const srcIcon = path.join(process.cwd(), 'public/icon.jpg');
-          const resDir = path.join(process.cwd(), 'android/app/src/main/res');
-
-          const densities = [
-            { dir: 'mipmap-mdpi', size: 48, fsize: 108 },
-            { dir: 'mipmap-hdpi', size: 72, fsize: 162 },
-            { dir: 'mipmap-xhdpi', size: 96, fsize: 216 },
-            { dir: 'mipmap-xxhdpi', size: 144, fsize: 324 },
-            { dir: 'mipmap-xxxhdpi', size: 192, fsize: 432 }
-          ];
-
-          for (const d of densities) {
-            const targetDir = path.join(resDir, d.dir);
-            fs.mkdirSync(targetDir, { recursive: true });
-            try {
-              execSync(\`convert "\${srcIcon}" -resize \${d.size}x\${d.size}! "\${targetDir}/ic_launcher.png"\`);
-              execSync(\`convert "\${srcIcon}" -resize \${d.size}x\${d.size}! "\${targetDir}/ic_launcher_round.png"\`);
-              execSync(\`convert "\${srcIcon}" -resize \${d.fsize}x\${d.fsize}! "\${targetDir}/ic_launcher_foreground.png"\`);
-              console.log('Generated launcher icons for', d.dir);
-            } catch (err) {
-              console.warn('Failed to resize for', d.dir, err.message);
-            }
-          }
-          "
+          mkdir -p android/app/src/main/res
+          cp -r android_res/* android/app/src/main/res/
+          echo "Successfully copied pre-rendered launcher icons to Android res!"
 
       # ----------------------------------------
       # 10. Gradle permission
