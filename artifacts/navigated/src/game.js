@@ -3904,26 +3904,46 @@ async function _googleLogin(){
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
 
-  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
-                   (typeof window.Capacitor !== 'undefined' && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  // Capacitor 네이티브 APK인지 확인 (UA 기반 isMobile과 분리)
+  const isCapacitorNative = typeof window.Capacitor !== 'undefined' &&
+                            typeof window.Capacitor.isNativePlatform === 'function' &&
+                            window.Capacitor.isNativePlatform();
 
-  if (isMobile) {
-    // On Mobile/Android, signInWithPopup throws auth/network-request-failed due to WebView popup RPC restrictions.
-    // Use signInWithRedirect directly!
+  if (isCapacitorNative) {
+    // Capacitor WebView: signInWithRedirect가 OAuth state를 제대로 처리하지 못해 400 에러 발생.
+    // 현재는 팝업으로 시도 → 차단 시 redirect 폴백 (네이티브 Google Auth 플러그인 미설치 상태)
     try {
-      await signInWithRedirect(_fbAuth, provider);
+      const res = await signInWithPopup(_fbAuth, provider);
+      if (res && res.user) {
+        _fbUser = res.user;
+        _hideAuthOv();
+        _setUserPill(res.user);
+        await fbCloudLoad();
+      }
       return;
-    } catch(rErr) {
-      console.warn('[Auth] Mobile redirect error:', rErr);
+    } catch(capErr) {
+      console.warn('[Auth] Capacitor popup error:', capErr);
+      if (capErr.code === 'auth/popup-blocked' ||
+          capErr.code === 'auth/operation-not-supported-in-this-environment' ||
+          capErr.code === 'auth/network-request-failed') {
+        // 팝업 차단 시 redirect 폴백
+        try {
+          await signInWithRedirect(_fbAuth, provider);
+          return;
+        } catch(rErr) {
+          console.warn('[Auth] Capacitor redirect fallback error:', rErr);
+        }
+      }
       document.getElementById('auth-loading').style.display='none';
       document.getElementById('btn-ggl').style.opacity='1';
-      if (rErr.code !== 'auth/popup-closed-by-user' && rErr.code !== 'auth/cancelled-popup-request') {
-        alert('로그인 오류: ' + (rErr.message || '인증 서버 연결 실패'));
+      if (capErr.code !== 'auth/popup-closed-by-user' && capErr.code !== 'auth/cancelled-popup-request') {
+        alert('로그인 오류: ' + (capErr.message || '인증 서버 연결 실패'));
       }
       return;
     }
   }
 
+  // 일반 브라우저 (데스크톱 / 모바일 Samsung Internet 등) - popup 우선
   try {
     const res = await signInWithPopup(_fbAuth, provider);
     if (res && res.user) {
@@ -3934,7 +3954,9 @@ async function _googleLogin(){
     }
   } catch(e) {
     console.warn('[Auth Popup Exception]', e);
-    if (e.code === 'auth/popup-blocked' || e.code === 'auth/network-request-failed' || e.code === 'auth/operation-not-supported-in-this-environment') {
+    if (e.code === 'auth/popup-blocked' ||
+        e.code === 'auth/network-request-failed' ||
+        e.code === 'auth/operation-not-supported-in-this-environment') {
       try {
         await signInWithRedirect(_fbAuth, provider);
         return;
