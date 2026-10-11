@@ -221,7 +221,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
   color:#fff!important;transform:translateY(-2px);
 }
 .dock-item:active{transform:scale(0.92)}
-.dock-ico{font-size:20px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4))}
+.dock-ico{font-size:10px;font-weight:900;letter-spacing:0.5px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4))}
 .dock-lbl{font-size:11px;font-weight:850;letter-spacing:0.2px;white-space:nowrap}
 .dock-item-wrap{position:relative;width:100%;display:flex;align-items:center;justify-content:center}
 #friend-badge,#bp-badge{
@@ -400,7 +400,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 .overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:all;background:rgba(0,0,0,0.35)}
 .r-card{background:rgba(8,8,28,0.93);border:1px solid rgba(100,100,220,0.22);border-radius:24px;padding:36px 28px;text-align:center;max-width:320px;width:88%;backdrop-filter:blur(20px)}
 .r-card h2{color:#fff;font-size:23px;font-weight:900;margin-bottom:8px}
-.r-emoji{font-size:54px;margin-bottom:10px}
+.r-emoji{display:none}
 .r-stars{font-size:24px;letter-spacing:5px;margin-bottom:6px}
 .r-coins{font-size:28px;font-weight:900;color:#FFD700;margin:10px 0;text-shadow:0 0 18px rgba(255,215,0,0.6)}
 .r-sub{color:#5a5aaa;font-size:13px;line-height:1.7;margin-bottom:20px}
@@ -607,7 +607,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
   border:1px solid rgba(247,37,133,0.25);
 }
 .mr-card h2{color:#fff;font-size:26px;font-weight:900;margin-bottom:6px}
-.mr-emoji{font-size:60px;margin-bottom:14px}
+.mr-emoji{display:none}
 .mr-detail{color:#5a5aaa;font-size:13px;margin-bottom:24px;line-height:1.7}
 .mr-stat-row{display:flex;justify-content:space-around;margin-bottom:22px}
 .mr-stat{text-align:center}
@@ -775,34 +775,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 
 </style>
 
-<script>
-// ── ZOOM & DOUBLE-TAP BLOCK ────────────────────────
-(function(){
-  // Block pinch zoom (2+ touches with scale change)
-  var _lastScale = 1;
-  document.addEventListener('touchstart', function(e){
-    if(e.touches.length >= 2){ e.preventDefault(); }
-  }, {passive: false});
-  document.addEventListener('touchmove', function(e){
-    if(e.touches.length >= 2){ e.preventDefault(); return; }
-  }, {passive: false});
-  // Block double-tap zoom (non-interactive areas only)
-  var _lastTap = 0;
-  document.addEventListener('touchend', function(e){
-    var now = Date.now();
-    if(now - _lastTap < 300){ e.preventDefault(); }
-    _lastTap = now;
-  }, {passive: false});
-  // Block gesturestart / gesturechange (iOS Safari pinch)
-  document.addEventListener('gesturestart',  function(e){ e.preventDefault(); }, {passive: false});
-  document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, {passive: false});
-  document.addEventListener('gestureend',    function(e){ e.preventDefault(); }, {passive: false});
-  // Wheel zoom block (trackpad pinch on desktop)
-  document.addEventListener('wheel', function(e){
-    if(e.ctrlKey){ e.preventDefault(); }
-  }, {passive: false});
-})();
-</script>
+
 
 <!-- Firebase config (모듈 초기화는 game script 내부에서) -->
 <script>
@@ -1819,24 +1792,7 @@ button:active, .btn:active, [role="button"]:active {
       Google 계정으로 로그인
     </button>
 
-    <div style="display:flex;align-items:center;gap:10px;width:100%;max-width:300px;margin:4px 0">
-      <div style="flex:1;height:1px;background:rgba(255,255,255,0.12)"></div>
-      <span style="color:rgba(180,180,240,0.6);font-size:11px">또는 이메일</span>
-      <div style="flex:1;height:1px;background:rgba(255,255,255,0.12)"></div>
-    </div>
-
-    <div id="auth-email-box" style="width:100%;max-width:300px;display:flex;flex-direction:column;gap:8px">
-      <input type="email" id="auth-email-input" placeholder="이메일 (example@email.com)"
-        style="width:100%;padding:12px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:12px;color:#fff;font-size:13px;outline:none">
-      <input type="password" id="auth-pw-input" placeholder="비밀번호 (6자 이상)"
-        style="width:100%;padding:12px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:12px;color:#fff;font-size:13px;outline:none">
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-secondary btn-sm" id="btn-email-signin" style="flex:1;min-height:42px;font-size:13px">이메일 로그인</button>
-        <button class="btn btn-secondary btn-sm" id="btn-email-signup" style="flex:1;min-height:42px;font-size:13px">회원가입</button>
-      </div>
-    </div>
-
-    <button class="btn-gst" id="btn-gst">게스트로 시작 (자동 클라우드 연동)</button>
+    <button class="btn-gst" id="btn-gst">게스트로 시작</button>
     <div id="auth-loading">연동 중...</div>
 </div>
 <!-- ACCOUNT MODAL -->
@@ -1845,7 +1801,7 @@ button:active, .btn:active, [role="button"]:active {
       <img id="am-avatar" src="" alt="avatar">
     <div class="am-name" id="am-name"></div>
     <div class="am-email" id="am-email"></div>
-    <div class="am-sync-box" id="am-sync-info">☁️ 랭크·기록·진행상황이 클라우드에 저장됩니다.</div>
+    <div class="am-sync-box" id="am-sync-info">랭크·기록·진행상황이 클라우드에 저장됩니다.</div>
       <button class="btn-lo" id="btn-lo">로그아웃</button>
       <button class="btn-cam" id="btn-cam">닫기</button>
     </div>
@@ -1912,20 +1868,20 @@ button:active, .btn:active, [role="button"]:active {
         <img id="up-avatar" src="" alt="avatar">
         <div class="up-col">
           <span class="up-name" id="up-name">게스트</span>
-          <span class="up-badge" id="up-badge">☁️ 저장 없음</span>
+          <span class="up-badge" id="up-badge">저장 없음</span>
         </div>
       </div>
 
       <div class="menu-top-actions">
-        <div id="coin-pill">💰 <span id="coin-val">0</span></div>
-        <button class="menu-icon-btn" id="btn-quick-sound" title="소리 켜기/끄기" aria-label="사운드 토글">🔊</button>
-        <button class="menu-icon-btn" id="btn-settings-quick" title="설정" aria-label="설정 열기">⚙️</button>
+        <div id="coin-pill"><span id="coin-val">0</span></div>
+        <button class="menu-icon-btn" id="btn-quick-sound" title="소리 켜기/끄기" aria-label="사운드 토글">♪</button>
+        <button class="menu-icon-btn" id="btn-settings-quick" title="설정" aria-label="설정 열기">&#9881;</button>
       </div>
     </div>
 
     <!-- SSS HERO BRANDING -->
     <div id="menu-top">
-      <div class="menu-kicker">✦ SSS ARCADE PUZZLE ✦</div>
+      <div class="menu-kicker">SSS ARCADE PUZZLE</div>
       <h1>NAVIGATED</h1>
       <div class="tag">NEON DIMENSION // SEASON 1</div>
       <div class="menu-hero-badge">
@@ -1940,13 +1896,13 @@ button:active, .btn:active, [role="button"]:active {
       <div class="menu-hero-actions">
         <button class="btn btn-primary btn-hero sss-shimmer" id="btn-start">
           <div class="btn-hero-content">
-            <span class="btn-hero-main">▶ 게임 시작</span>
+            <span class="btn-hero-main">게임 시작</span>
             <span class="btn-hero-sub">STAGE CHALLENGE</span>
           </div>
         </button>
 
         <button class="btn btn-secondary" id="btn-cont" style="display:none">
-          <span>↩ 이어하기</span>
+          이어하기
         </button>
       </div>
 
@@ -1954,41 +1910,41 @@ button:active, .btn:active, [role="button"]:active {
       <div class="menu-sub-actions">
         <button class="btn btn-multi" id="btn-multi">
           <span class="btn-live-dot"></span>
-          <span>⚡ 멀티플레이</span>
+          멀티플레이
         </button>
         <button class="btn btn-plaza" id="btn-plaza" style="display:none">
-          <span>💬 소통 라운지</span>
+          소통 라운지
         </button>
       </div>
 
       <!-- SSS FLOATING DOCK BAR -->
       <div class="menu-dock-bar">
-        <button class="dock-item" id="btn-modes" title="게임 모드 &amp; 컨텐츠">
-          <span class="dock-ico">🎮</span>
+        <button class="dock-item" id="btn-modes" title="게임 모드">
+          <span class="dock-ico">MODE</span>
           <span class="dock-lbl">모드</span>
         </button>
 
         <button class="dock-item" id="btn-shop" title="상점">
-          <span class="dock-ico">🛒</span>
+          <span class="dock-ico">SHOP</span>
           <span class="dock-lbl">상점</span>
         </button>
 
         <div class="dock-item-wrap btn-bp-wrap">
           <button class="dock-item" id="btn-battlepass" title="배틀패스">
-            <span class="dock-ico">🎖️</span>
+            <span class="dock-ico">PASS</span>
             <span class="dock-lbl">패스</span>
           </button>
           <span id="bp-badge">!</span>
         </div>
 
-        <button class="dock-item" id="btn-history" title="전적 · 리플레이">
-          <span class="dock-ico">📊</span>
+        <button class="dock-item" id="btn-history" title="전적">
+          <span class="dock-ico">RANK</span>
           <span class="dock-lbl">전적</span>
         </button>
 
         <div class="dock-item-wrap btn-friend-wrap">
           <button class="dock-item" id="btn-friend" title="친구">
-            <span class="dock-ico">👥</span>
+            <span class="dock-ico">CREW</span>
             <span class="dock-lbl">친구</span>
           </button>
           <span id="friend-badge">0</span>
@@ -2007,9 +1963,9 @@ button:active, .btn:active, [role="button"]:active {
     <div id="hud-top">
       <div id="lives-txt"></div>
       <div id="level-txt"></div>
-      <div id="coins-txt">💰 <span id="hud-coin-val">0</span></div>
+      <div id="coins-txt"><span id="hud-coin-val">0</span></div>
     </div>
-    <div id="blocked-flash">막혔습니다! 💥</div>
+    <div id="blocked-flash">막혔습니다!</div>
     <div id="danger-vignette"></div>
     <div id="fever-vignette"></div>
     <!-- COMBO & FEVER VERTICAL BAR HUD -->
@@ -2022,13 +1978,13 @@ button:active, .btn:active, [role="button"]:active {
     </div>
     <div id="hint-bar">탭: 선택 · 더블탭 또는 버튼: 발사</div>
     <div id="tap-restore">화면을 탭하면 UI 표시</div>
-    <div id="launch-wrap"><button id="launch-btn">탈출! 🚀</button></div>
+    <div id="launch-wrap"><button id="launch-btn">탈출!</button></div>
   </div>
 
   <!-- WIN -->
   <div class="overlay" id="win-ov">
     <div class="r-card">
-      <div class="r-emoji">🎉</div>
+
       <h2>레벨 클리어!</h2>
       <div class="r-stars" id="w-stars"></div>
       <div class="r-coins" id="w-coins"></div>
@@ -2045,7 +2001,7 @@ button:active, .btn:active, [role="button"]:active {
   <!-- OVER -->
   <div class="overlay" id="over-ov">
     <div class="r-card">
-      <div class="r-emoji">💀</div>
+
       <h2>게임 오버</h2>
       <p class="r-sub">생명을 모두 잃었습니다.<br>다시 도전해보세요!</p>
       <div class="r-row">
@@ -2059,15 +2015,15 @@ button:active, .btn:active, [role="button"]:active {
   <!-- SHOP -->
   <div id="shop">
     <div id="shop-hdr">
-      <h2>🛒 상점</h2>
+      <h2>상점</h2>
       <div style="display:flex;align-items:center;gap:12px">
-        <div id="shop-coins">💰 <span id="shop-coin-val">0</span></div>
-        <button id="shop-x">✕</button>
+        <div id="shop-coins"><span id="shop-coin-val">0</span></div>
+        <button id="shop-x">X</button>
       </div>
     </div>
     <div id="shop-tabs">
-      <button class="s-tab on" id="tab-skin" onclick="setShopTab('skin')">🏹 스킨</button>
-      <button class="s-tab"    id="tab-map"  onclick="setShopTab('map')">🗺️ 맵</button>
+      <button class="s-tab on" id="tab-skin" onclick="setShopTab('skin')">스킨</button>
+      <button class="s-tab"    id="tab-map"  onclick="setShopTab('map')">맵</button>
     </div>
     <div id="shop-body">
       <div class="item-grid" id="skin-grid"></div>
@@ -2121,11 +2077,11 @@ button:active, .btn:active, [role="button"]:active {
       <h2 style="margin-bottom:6px">경쟁 플레이</h2>
       <p class="sub" style="margin-bottom:18px">랭크전 모드를 선택하세요</p>
       <button class="rank-mode-choice escape" id="escape-rank-select-btn">
-        <b>🏹 탈출 랭크전 (기존)</b>
+        <b>탈출 랭크전 (기존)</b>
         <small>화살표를 모두 먼저 탈출시키면 승리 · AI 또는 사람과 경쟁 · 배치고사 5판 후 티어 배정</small>
       </button>
       <button class="rank-mode-choice blast" id="blast-rank-select-btn">
-        <b>💥 폭발 랭크전 (신규)</b>
+        <b>폭발 랭크전 (신규)</b>
         <small>제한 시간 안에 더 많은 화살표를 탈출시키면 승리 · 탈출한 화살표는 2~4초 후 재생성 · 티어가 높을수록 시간 단축</small>
       </button>
       <button class="btn btn-secondary btn-sm" id="rank-mode-select-back-btn" style="width:100%;margin-top:4px">뒤로</button>
@@ -2440,7 +2396,7 @@ button:active, .btn:active, [role="button"]:active {
   <!-- MULTI RESULT -->
   <div id="multi-result">
     <div class="mr-card">
-      <div class="mr-emoji" id="mr-emoji">🏆</div>
+      <div class="mr-emoji" id="mr-emoji"></div>
       <h2 id="mr-title">승리!</h2>
       <!-- Rank score animation (only shown for rank matches) -->
       <div id="mr-rank-score">
@@ -2745,11 +2701,11 @@ button:active, .btn:active, [role="button"]:active {
 </div>
 <div id="story-box">
   <div id="story-inner">
-    <div id="story-avatar">🏹</div>
+    <div id="story-avatar"></div>
     <div id="story-bubble">
       <div id="story-name">에로</div>
       <div id="story-text"></div>
-      <div id="story-tap">▼</div>
+      <div id="story-tap">&#9660;</div>
     </div>
     <button id="story-skip">건너뛰기</button>
   </div>
@@ -2757,7 +2713,7 @@ button:active, .btn:active, [role="button"]:active {
 <div id="story-choices"></div>
 <button id="story-main-btn"></button>
 <div id="story-ending-ov">
-  <div id="story-ending-emoji">✨</div>
+  <div id="story-ending-emoji"></div>
   <div id="story-ending-title">1챕터 완료!</div>
   <div id="story-ending-text"></div>
   <button id="story-ending-close">메뉴로 돌아가기</button>
@@ -2765,12 +2721,13 @@ button:active, .btn:active, [role="button"]:active {
 
 <!-- ══ BOSS ROUND HUD ══ -->
 <div id="boss-hud">
-  <div id="boss-title">⚡ BOSS ROUND ⚡</div>
+  <div id="boss-title">BOSS ROUND</div>
   <div id="boss-bar-wrap"><div id="boss-bar" style="width:100%"></div></div>
   <div id="boss-timer-txt">25초</div>
 </div>
-<div id="boss-shuffle-warn">⚡ 배열 변경!</div>
+<div id="boss-shuffle-warn">배열 변경!</div>
 <canvas id="boss-glitch-canvas"></canvas>
 
 </body>
 </html>
+
