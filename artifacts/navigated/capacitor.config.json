@@ -9,7 +9,6 @@
       "*.googleapis.com",
       "*.google.com",
       "*.firebasestorage.app",
-      "*.firebaseio.com",
       "*.onrender.com"
     ]
   },

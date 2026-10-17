@@ -29,212 +29,27 @@ button{min-height:44px;min-width:44px;}
 input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 #ui{position:fixed;inset:0;pointer-events:none}
 
-/* ── SSS-GRADE MENU SYSTEM ───────────────────────── */
-#menu{
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;justify-content:space-between;
-  overflow:hidden;touch-action:pan-x pan-y;
-  pointer-events:none;transition:opacity .45s cubic-bezier(0.16,1,0.3,1);
-}
+/* ── MENU ────────────────────────────────────────── */
+#menu{position:absolute;inset:0;display:flex;flex-direction:column;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y!important;pointer-events:none;transition:opacity .5s}
 #menu button,#menu a,#menu [role="button"],#menu input,#menu label,#menu select{touch-action:manipulation!important}
 #menu:not(.hidden){pointer-events:auto}
-#menu.hidden{opacity:0;pointer-events:none}
-#menu.hidden *{pointer-events:none!important}
-
-/* SSS Top Navigation Bar */
-#menu-top-bar{
-  position:absolute;top:0;left:0;right:0;
-  height:calc(64px + env(safe-area-inset-top, 0px));
-  padding:calc(12px + env(safe-area-inset-top, 0px)) 16px 0;
-  display:flex;align-items:center;justify-content:space-between;
-  z-index:60;pointer-events:none;
-}
-.menu-top-actions{
-  display:flex;align-items:center;gap:8px;pointer-events:auto;
-}
-.menu-icon-btn{
-  width:40px;height:40px;border-radius:50%;
-  background:rgba(18,22,50,0.78);
-  border:1px solid rgba(255,255,255,0.18);
-  color:#fff;font-size:16px;
-  display:inline-flex;align-items:center;justify-content:center;
-  cursor:pointer;backdrop-filter:blur(16px);
-  box-shadow:0 6px 18px rgba(0,0,0,0.35);
-  transition:transform .2s,border-color .2s,background .2s;
-}
-.menu-icon-btn:hover{transform:scale(1.08);border-color:rgba(76,201,240,0.6);background:rgba(28,34,75,0.9)}
-.menu-icon-btn:active{transform:scale(0.92)}
-
-/* Coin Pill */
-#coin-pill{
-  position:relative;
-  background:linear-gradient(135deg,rgba(35,26,10,0.85),rgba(20,15,5,0.9));
-  border:1.5px solid rgba(255,215,0,0.5);
-  border-radius:50px;padding:7px 16px;
-  display:none;align-items:center;gap:7px;
-  pointer-events:auto;font-size:14px;font-weight:900;
-  color:#FFD700;cursor:pointer;
-  backdrop-filter:blur(16px);
-  box-shadow:0 0 20px rgba(255,215,0,0.25),inset 0 1px 1px rgba(255,255,255,0.35);
-  transition:transform .2s,box-shadow .2s;
-}
-#coin-pill:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(255,215,0,0.45)}
-#coin-pill:active{transform:scale(0.96)}
-
-/* SSS Center Branding */
-#menu-top{
-  padding-top:calc(74px + env(safe-area-inset-top, 0px));
-  text-align:center;pointer-events:none;flex-shrink:0;
-  display:flex;flex-direction:column;align-items:center;gap:3px;
-  z-index:20;
-}
-.menu-kicker{
-  font-size:11px;font-weight:900;letter-spacing:4px;
-  color:#4cc9f0;text-transform:uppercase;
-  text-shadow:0 0 14px rgba(76,201,240,0.8);
-}
-#menu-top h1{
-  font-size:clamp(34px, 7.5vw, 50px);
-  font-weight:950;letter-spacing:6px;line-height:1.08;
-  margin:2px 0 0;
-  background:linear-gradient(180deg,#ffffff 25%,#90e0ef 65%,#4361ee 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  filter:drop-shadow(0 0 32px rgba(76,201,240,0.7));
-}
-#menu-top .tag{
-  color:rgba(180,195,240,0.75);
-  font-size:11px;font-weight:800;letter-spacing:3px;
-  margin-top:2px;
-}
-.menu-hero-badge{
-  display:inline-flex;align-items:center;gap:7px;
-  margin-top:5px;padding:4px 14px;
-  background:rgba(18,24,60,0.65);
-  border:1px solid rgba(114,9,183,0.45);
-  border-radius:30px;font-size:11px;font-weight:800;
-  color:#dbeafe;backdrop-filter:blur(12px);
-  box-shadow:0 4px 16px rgba(0,0,0,0.3);
-}
-.mhb-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:#00f5d4;box-shadow:0 0 8px #00f5d4;
-  animation:mhbGlow 1.5s infinite alternate ease-in-out;
-}
-@keyframes mhbGlow{0%{opacity:.6;transform:scale(.9)}100%{opacity:1;transform:scale(1.25)}}
-
-/* SSS Bottom Action Hub */
-#menu-bottom{
-  position:absolute;bottom:0;left:50%;transform:translateX(-50%);
-  width:min(480px, calc(100% - 24px));
-  padding:0 0 calc(16px + env(safe-area-inset-bottom, 0px));
-  display:flex;flex-direction:column;gap:10px;
-  pointer-events:all;flex-shrink:0;z-index:50;
-}
-.menu-hero-actions{width:100%;display:flex;flex-direction:column;gap:8px}
-.menu-sub-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
-
-/* Global SSS Button Core */
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;
-  gap:8px;padding:14px 28px;border-radius:18px;
-  font-size:15px;font-weight:850;cursor:pointer;
-  border:none;outline:none;color:#fff;
-  transition:transform .2s cubic-bezier(0.16,1,0.3,1),box-shadow .2s,filter .2s;
-  width:100%;text-align:center;text-decoration:none;
-}
-.btn:active{transform:scale(0.96)}
-
-/* Hero Start Button (SSS Mega CTA) */
-.btn-hero{
-  min-height:64px;border-radius:20px;
-  background:linear-gradient(135deg,#00f5d4 0%,#4361ee 45%,#7209b7 100%)!important;
-  border:1.5px solid rgba(0,245,212,0.6)!important;
-  box-shadow:0 10px 36px rgba(67,97,238,0.6),0 0 25px rgba(0,245,212,0.35),inset 0 1px 2px rgba(255,255,255,0.7)!important;
-  position:relative;overflow:hidden;
-}
-.btn-hero:hover{
-  transform:translateY(-3px) scale(1.015);
-  box-shadow:0 16px 44px rgba(67,97,238,0.75),0 0 35px rgba(0,245,212,0.5)!important;
-  filter:brightness(1.08);
-}
-.btn-hero:active{transform:scale(0.97)}
-.btn-hero-content{display:flex;flex-direction:column;align-items:center;gap:1px}
-.btn-hero-main{font-size:20px;font-weight:950;letter-spacing:2px;text-shadow:0 2px 8px rgba(0,0,0,0.4)}
-.btn-hero-sub{font-size:10px;font-weight:800;letter-spacing:3px;color:rgba(255,255,255,0.85);text-transform:uppercase}
-
-/* Shimmer Sweep Animation */
-.sss-shimmer::after{
-  content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent);
-  transform:skewX(-22deg);
-  animation:sssSweep 3.2s infinite ease-in-out;
-  pointer-events:none;
-}
-@keyframes sssSweep{0%,40%{left:-100%}100%{left:200%}}
-
+#menu.hidden{opacity:0;pointer-events:none}#menu.hidden *{pointer-events:none!important}
+#menu-top{padding:52px 0 0;text-align:center;pointer-events:none;flex-shrink:0;margin-bottom:32px}
+#menu-top h1{color:#fff;font-size:32px;font-weight:900;letter-spacing:5px;text-shadow:0 0 32px rgba(76,201,240,0.7)}
+#menu-top .tag{color:rgba(170,170,220,0.7);font-size:12px;margin-top:6px;letter-spacing:2px}
+#menu-bottom{padding:0 28px calc(44px + env(safe-area-inset-bottom, 0px));display:flex;flex-direction:column;gap:10px;pointer-events:all;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:15px 32px;border-radius:50px;font-size:15px;font-weight:700;cursor:pointer;border:none;outline:none;color:#fff;transition:transform .12s,opacity .12s;width:100%}
+.btn:active{transform:scale(0.96);opacity:0.85}
 .btn-primary{background:linear-gradient(135deg,#4361ee,#4cc9f0);box-shadow:0 0 28px rgba(67,97,238,0.5)}
-.btn-secondary{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(14px)}
+.btn-secondary{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);backdrop-filter:blur(8px)}
 .btn-shop{background:linear-gradient(135deg,#f77f00,#d62828);box-shadow:0 0 22px rgba(247,127,0,0.4)}
-.btn-multi{
-  background:linear-gradient(135deg,#7209b7,#f72585)!important;
-  border:1px solid rgba(247,37,133,0.5)!important;
-  box-shadow:0 6px 24px rgba(247,37,133,0.4),inset 0 1px 1px rgba(255,255,255,0.3)!important;
-  min-height:48px;font-size:14px;
-}
-.btn-multi:hover{box-shadow:0 10px 32px rgba(247,37,133,0.6)!important}
-.btn-plaza{
-  background:linear-gradient(135deg,#134e72,#237ca5)!important;
-  border:1px solid rgba(76,201,240,0.45)!important;
-  box-shadow:0 6px 24px rgba(35,124,165,0.35),inset 0 1px 1px rgba(255,255,255,0.3)!important;
-  min-height:48px;font-size:14px;
-}
-.btn-live-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:#fff;box-shadow:0 0 8px #fff;
-  animation:btnDotBlink 1.2s infinite alternate;
-}
-@keyframes btnDotBlink{0%{opacity:.4}100%{opacity:1}}
+.btn-multi{background:linear-gradient(135deg,#7209b7,#f72585);box-shadow:0 0 28px rgba(247,37,133,0.45)}
 .btn-sm{width:auto;padding:11px 24px;font-size:14px}
+/* 솔로·멀티 버튼 터치 영역 확대 */
+#btn-start,#btn-multi{padding:22px 32px;font-size:18px;min-height:68px;letter-spacing:.3px}
 #btn-history{background:linear-gradient(135deg,#0b7285,#4361ee);border:1px solid rgba(76,201,240,.38);box-shadow:0 0 22px rgba(67,97,238,.25)}
 
-/* SSS Floating Glass Dock Bar */
-.menu-dock-bar{
-  display:grid;grid-template-columns:repeat(5,1fr);gap:6px;
-  padding:8px 10px;
-  background:rgba(10,14,38,0.86);
-  border:1.5px solid rgba(255,255,255,0.16);
-  border-radius:20px;
-  backdrop-filter:blur(24px) saturate(180%);
-  box-shadow:0 14px 40px rgba(0,0,0,0.6),inset 0 1px 1px rgba(255,255,255,0.25);
-  width:100%;
-}
-.dock-item{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;padding:7px 4px;border-radius:12px;border:none;outline:none;
-  background:transparent!important;cursor:pointer;
-  color:rgba(225,232,255,0.85)!important;
-  transition:transform .2s,background .2s,color .2s;
-  width:100%;min-height:50px;
-}
-.dock-item:hover{
-  background:rgba(255,255,255,0.12)!important;
-  color:#fff!important;transform:translateY(-2px);
-}
-.dock-item:active{transform:scale(0.92)}
-.dock-ico{font-size:10px;font-weight:900;letter-spacing:0.5px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4))}
-.dock-lbl{font-size:11px;font-weight:850;letter-spacing:0.2px;white-space:nowrap}
-.dock-item-wrap{position:relative;width:100%;display:flex;align-items:center;justify-content:center}
-#friend-badge,#bp-badge{
-  position:absolute;top:-2px;right:6px;
-  background:#f72585;color:#fff;
-  font-size:10px;font-weight:900;
-  width:18px;height:18px;border-radius:50%;
-  border:2px solid #060719;
-  display:none;align-items:center;justify-content:center;
-  z-index:100!important;
-  box-shadow:0 0 10px rgba(247,37,133,0.85);
-  pointer-events:none;
-}
+#coin-pill{position:absolute;top:18px;right:18px;background:rgba(10,10,35,0.8);border:1px solid rgba(255,215,0,0.35);border-radius:50px;padding:8px 16px;display:none;align-items:center;gap:6px;pointer-events:all;font-size:14px;font-weight:700;color:#FFD700;cursor:pointer;backdrop-filter:blur(10px)}
 
 /* ── HISTORY + REPLAY ───────────────────────────── */
 #history-ov,#replay-ov{position:absolute;inset:0;display:none;z-index:80;background:radial-gradient(circle at 50% 0%,rgba(38,54,130,.42),rgba(6,6,26,.98) 62%);overflow-y:auto;padding:22px 18px calc(28px + env(safe-area-inset-bottom,0px));pointer-events:all}
@@ -281,98 +96,27 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 .replay-actions #replay-play{background:linear-gradient(135deg,#4361ee,#7209b7);border-color:rgba(150,170,255,.55)}
 .replay-speeds{display:flex;gap:6px;margin-top:9px}.replay-speed{flex:1;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(220,230,255,.72);border-radius:9px;padding:7px;font:11px monospace}.replay-speed.on{color:#fff;background:rgba(76,201,240,.25);border-color:#4cc9f0}
 
-/* ── EXIT (SSS Frosted Pill) ──────────────────────── */
-#exit-btn{
-  position:absolute;top:max(14px, env(safe-area-inset-top, 14px));left:16px;
-  background:rgba(10,14,40,0.84);
-  border:1.5px solid rgba(255,255,255,0.22);
-  border-radius:50px;padding:8px 18px;
-  color:#fff;font-size:13px;font-weight:850;letter-spacing:.3px;
-  cursor:pointer;pointer-events:all;
-  backdrop-filter:blur(16px);
-  box-shadow:0 8px 24px rgba(0,0,0,0.45),inset 0 1px 1px rgba(255,255,255,0.3);
-  display:none;align-items:center;gap:6px;z-index:65;
-  transition:transform .2s,border-color .2s,background .2s;
-}
-#exit-btn:hover{transform:translateY(-2px);border-color:rgba(76,201,240,0.7);background:rgba(20,28,70,0.92)}
-#exit-btn:active{transform:scale(0.95)}
+/* ── EXIT ────────────────────────────────────────── */
+#exit-btn{position:absolute;top:18px;left:18px;background:rgba(8,8,28,0.78);border:1px solid rgba(255,255,255,0.14);border-radius:50px;padding:9px 18px;color:rgba(255,255,255,0.85);font-size:13px;font-weight:700;cursor:pointer;pointer-events:all;backdrop-filter:blur(10px);display:none;z-index:50;transition:opacity .15s}
+#exit-btn:active{opacity:0.65}
 
-/* ── HUD (SSS Futuristic Dashboard) ───────────────── */
-#hud{position:absolute;inset:0;transition:opacity .45s ease;pointer-events:none;display:none}
-#hud-top{
-  position:absolute;top:0;left:0;right:0;
-  height:calc(60px + env(safe-area-inset-top, 0px));
-  display:flex;align-items:center;justify-content:space-between;
-  padding:calc(10px + env(safe-area-inset-top, 0px)) 18px 0 115px;
-  background:linear-gradient(180deg,rgba(6,7,26,0.85) 0%,rgba(6,7,26,0.35) 75%,transparent 100%);
-  backdrop-filter:blur(10px);
-  z-index:45;
-}
-#lives-txt{
-  font-size:18px;letter-spacing:3px;
-  filter:drop-shadow(0 0 8px rgba(255,50,90,0.7));
-}
+/* ── HUD ─────────────────────────────────────────── */
+#hud{position:absolute;inset:0;transition:opacity .55s;pointer-events:none;display:none}
+#hud-top{position:absolute;top:0;left:0;right:0;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;padding-left:90px;background:linear-gradient(to bottom,rgba(6,6,26,0.7),transparent)}
+#lives-txt{font-size:18px;letter-spacing:2px}
 #danger-vignette{position:fixed;inset:0;pointer-events:none;z-index:49;transition:box-shadow .4s}
 #danger-vignette.on{animation:dangerPulse .85s ease-in-out infinite}
 @keyframes dangerPulse{0%,100%{box-shadow:inset 0 0 60px 18px rgba(220,0,0,0.45)}50%{box-shadow:inset 0 0 130px 55px rgba(255,20,0,0.72)}}
-#level-txt{
-  color:#4cc9f0;font-size:13px;font-weight:900;letter-spacing:1px;
-  background:rgba(76,201,240,0.12);border:1px solid rgba(76,201,240,0.3);
-  padding:4px 12px;border-radius:20px;
-  box-shadow:0 0 12px rgba(76,201,240,0.25);
-}
-#coins-txt{
-  color:#FFD700;font-size:13px;font-weight:900;
-  background:rgba(255,215,0,0.12);border:1px solid rgba(255,215,0,0.3);
-  padding:4px 12px;border-radius:20px;
-  box-shadow:0 0 12px rgba(255,215,0,0.25);
-}
-#launch-wrap{
-  position:absolute;bottom:max(24px, calc(18px + env(safe-area-inset-bottom, 0px)));
-  left:50%;transform:translateX(-50%);
-  pointer-events:all;z-index:55;
-}
-#launch-btn{
-  padding:18px 52px;border-radius:99px;
-  font-size:19px;font-weight:950;letter-spacing:2px;
-  cursor:pointer;border:2px solid rgba(0,245,212,0.7);
-  color:#fff;
-  background:linear-gradient(135deg,#00f5d4 0%,#4361ee 50%,#7209b7 100%);
-  box-shadow:0 12px 38px rgba(0,245,212,0.45),0 0 28px rgba(67,97,238,0.6),inset 0 1px 2px rgba(255,255,255,0.7);
-  display:none;min-width:210px;min-height:64px;
-  position:relative;overflow:hidden;
-  animation:launchPulse 1.8s infinite alternate ease-in-out;
-  transition:transform .2s cubic-bezier(0.16,1,0.3,1);
-}
-#launch-btn:hover{transform:scale(1.03);box-shadow:0 16px 48px rgba(0,245,212,0.6),0 0 36px rgba(67,97,238,0.75)}
-#launch-btn:active{transform:scale(0.95)}
-@keyframes launchPulse{0%{box-shadow:0 8px 30px rgba(0,245,212,0.35),0 0 20px rgba(67,97,238,0.5)}100%{box-shadow:0 14px 44px rgba(0,245,212,0.6),0 0 32px rgba(67,97,238,0.8)}}
-
-#hint-bar{
-  position:absolute;bottom:94px;left:50%;transform:translateX(-50%);
-  color:rgba(200,215,255,0.85);font-size:12px;font-weight:750;
-  white-space:nowrap;opacity:0;transition:opacity .35s;
-  pointer-events:none;z-index:54;
-  background:rgba(8,12,34,0.7);padding:5px 14px;border-radius:20px;
-  border:1px solid rgba(255,255,255,0.12);backdrop-filter:blur(8px);
-}
-#blocked-flash{
-  position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);
-  color:#ff4d6d;font-size:24px;font-weight:950;opacity:0;
-  transition:opacity .25s;pointer-events:none;
-  text-shadow:0 0 28px rgba(255,77,109,0.95);z-index:56;
-}
-#tap-restore{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.25);font-size:12px;pointer-events:none;white-space:nowrap}
-#pbar{position:absolute;top:0;left:0;right:0;height:4px;background:rgba(255,255,255,0.1);z-index:62}
-#pfill{height:4px;background:linear-gradient(90deg,#00f5d4,#4cc9f0,#f72585);width:0;transition:width .35s;box-shadow:0 0 10px #00f5d4}
-#hud-timer{
-  position:absolute;top:0;left:50%;transform:translateX(-50%);
-  height:calc(60px + env(safe-area-inset-top, 0px));
-  padding-top:env(safe-area-inset-top, 0px);
-  display:flex;align-items:center;font-family:monospace;font-size:21px;font-weight:950;
-  color:#4cc9f0;letter-spacing:1.5px;text-shadow:0 0 14px rgba(76,201,240,0.8);
-  pointer-events:none;user-select:none;z-index:46;
-}
+#level-txt{color:#5a5aaa;font-size:13px;font-weight:700}
+#coins-txt{color:#FFD700;font-size:13px;font-weight:700}
+#launch-wrap{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);pointer-events:all}
+#launch-btn{padding:22px 60px;border-radius:50px;font-size:19px;font-weight:700;cursor:pointer;border:none;color:#fff;background:linear-gradient(135deg,#4361ee,#4cc9f0);box-shadow:0 0 26px rgba(67,97,238,0.5);display:none;letter-spacing:1px;min-width:200px;min-height:66px}
+#hint-bar{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);color:rgba(180,180,220,0.6);font-size:12px;white-space:nowrap;opacity:0;transition:opacity .4s;pointer-events:none}
+#blocked-flash{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);color:#ff6b6b;font-size:22px;font-weight:900;opacity:0;transition:opacity .25s;pointer-events:none;text-shadow:0 0 24px rgba(255,80,80,0.9)}
+#tap-restore{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.22);font-size:12px;pointer-events:none;white-space:nowrap}
+#pbar{position:absolute;top:0;left:0;right:0;height:3px}
+#pfill{height:3px;background:linear-gradient(90deg,#4361ee,#4cc9f0);width:0;transition:width .35s}
+#hud-timer{position:absolute;top:0;left:50%;transform:translateX(-50%);height:58px;display:flex;align-items:center;font-family:monospace;font-size:22px;font-weight:900;color:#4cc9f0;letter-spacing:1px;text-shadow:0 0 12px rgba(76,201,240,0.7);pointer-events:none;user-select:none}
 
 /* ── FEVER RAINBOW VIGNETTE FRAME ── */
 #fever-vignette{position:fixed;inset:0;pointer-events:none;z-index:48;opacity:0;transition:opacity .3s ease;box-shadow:inset 0 0 45px 16px rgba(255,0,150,.6),inset 0 0 90px 35px rgba(0,240,255,.5)}
@@ -400,7 +144,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 .overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:all;background:rgba(0,0,0,0.35)}
 .r-card{background:rgba(8,8,28,0.93);border:1px solid rgba(100,100,220,0.22);border-radius:24px;padding:36px 28px;text-align:center;max-width:320px;width:88%;backdrop-filter:blur(20px)}
 .r-card h2{color:#fff;font-size:23px;font-weight:900;margin-bottom:8px}
-.r-emoji{display:none}
+.r-emoji{font-size:54px;margin-bottom:10px}
 .r-stars{font-size:24px;letter-spacing:5px;margin-bottom:6px}
 .r-coins{font-size:28px;font-weight:900;color:#FFD700;margin:10px 0;text-shadow:0 0 18px rgba(255,215,0,0.6)}
 .r-sub{color:#5a5aaa;font-size:13px;line-height:1.7;margin-bottom:20px}
@@ -607,7 +351,7 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
   border:1px solid rgba(247,37,133,0.25);
 }
 .mr-card h2{color:#fff;font-size:26px;font-weight:900;margin-bottom:6px}
-.mr-emoji{display:none}
+.mr-emoji{font-size:60px;margin-bottom:14px}
 .mr-detail{color:#5a5aaa;font-size:13px;margin-bottom:24px;line-height:1.7}
 .mr-stat-row{display:flex;justify-content:space-around;margin-bottom:22px}
 .mr-stat{text-align:center}
@@ -775,7 +519,34 @@ input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-ou
 
 </style>
 
-
+<script>
+// ── ZOOM & DOUBLE-TAP BLOCK ────────────────────────
+(function(){
+  // Block pinch zoom (2+ touches with scale change)
+  var _lastScale = 1;
+  document.addEventListener('touchstart', function(e){
+    if(e.touches.length >= 2){ e.preventDefault(); }
+  }, {passive: false});
+  document.addEventListener('touchmove', function(e){
+    if(e.touches.length >= 2){ e.preventDefault(); return; }
+  }, {passive: false});
+  // Block double-tap zoom (non-interactive areas only)
+  var _lastTap = 0;
+  document.addEventListener('touchend', function(e){
+    var now = Date.now();
+    if(now - _lastTap < 300){ e.preventDefault(); }
+    _lastTap = now;
+  }, {passive: false});
+  // Block gesturestart / gesturechange (iOS Safari pinch)
+  document.addEventListener('gesturestart',  function(e){ e.preventDefault(); }, {passive: false});
+  document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, {passive: false});
+  document.addEventListener('gestureend',    function(e){ e.preventDefault(); }, {passive: false});
+  // Wheel zoom block (trackpad pinch on desktop)
+  document.addEventListener('wheel', function(e){
+    if(e.ctrlKey){ e.preventDefault(); }
+  }, {passive: false});
+})();
+</script>
 
 <!-- Firebase config (모듈 초기화는 game script 내부에서) -->
 <script>
@@ -799,33 +570,11 @@ window._FB_CFG={
 .btn-gst{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.65);padding:13px 28px;border-radius:50px;font-size:14px;font-weight:600;cursor:pointer;width:100%;max-width:300px;text-align:center;transition:transform .12s;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent}
 .btn-gst:active{transform:scale(0.96)}
 #auth-loading{color:rgba(76,201,240,0.7);font-size:13px;display:none;letter-spacing:1px}
-#user-pill{
-  position:relative;
-  background:rgba(12,17,46,0.85);
-  border:1.5px solid rgba(76,201,240,0.45);
-  border-radius:50px;padding:6px 14px 6px 7px;
-  display:none;align-items:center;gap:9px;
-  pointer-events:all;cursor:pointer;
-  backdrop-filter:blur(16px);
-  box-shadow:0 8px 24px rgba(0,0,0,0.4),0 0 16px rgba(76,201,240,0.2),inset 0 1px 1px rgba(255,255,255,0.3);
-  z-index:200;
-  transition:transform .2s,border-color .2s,box-shadow .2s;
-}
-#user-pill:hover{
-  transform:translateY(-2px);
-  border-color:rgba(76,201,240,0.8);
-  box-shadow:0 12px 28px rgba(0,0,0,0.5),0 0 22px rgba(76,201,240,0.4);
-}
-#user-pill:active{transform:scale(0.96)}
-#user-pill img{
-  width:28px;height:28px;border-radius:50%;object-fit:cover;
-  border:1.5px solid #4cc9f0;
-  background:linear-gradient(135deg,#4361ee,#4cc9f0);
-  box-shadow:0 0 10px rgba(76,201,240,0.5);
-}
+#user-pill{position:absolute;bottom:20px;left:14px;background:rgba(10,10,35,0.85);border:1px solid rgba(255,255,255,0.14);border-radius:50px;padding:6px 14px 6px 8px;display:none;align-items:center;gap:8px;pointer-events:all;cursor:pointer;backdrop-filter:blur(10px);z-index:200}
+#user-pill img{width:26px;height:26px;border-radius:50%;object-fit:cover;background:linear-gradient(135deg,#4361ee,#4cc9f0)}
 #user-pill .up-col{display:flex;flex-direction:column;gap:1px}
-#user-pill .up-name{color:#fff;font-size:12px;font-weight:800;letter-spacing:.3px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#user-pill .up-badge{font-size:10px;font-weight:750;color:#4cc9f0}
+#user-pill .up-name{color:#fff;font-size:12px;font-weight:700;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#user-pill .up-badge{font-size:10px;color:rgba(76,201,240,0.75)}
 #am-ov{position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.65);display:none;align-items:center;justify-content:center;pointer-events:all}
 #am-ov.show{display:flex}
 .am-card{background:rgba(10,10,36,0.98);border:1px solid rgba(255,255,255,0.12);border-radius:26px;padding:30px 24px;width:min(340px,90vw);display:flex;flex-direction:column;align-items:center;gap:14px}
@@ -1363,72 +1112,71 @@ window._FB_CFG={
   font-family: 'Outfit', 'Plus Jakarta Sans', 'Noto Sans KR', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 
-/* ── MOTION GRAPHICS & SSS GLASSMORPHISM FOR BUTTONS ── */
-button, .btn, [role="button"], input[type="button"], input[type="submit"], .rev-ctrl-btn, .plz-sbtn, .sdm-close-btn, .btn-xs {
-  position: relative;
-  backdrop-filter: blur(20px) saturate(190%);
-  -webkit-backdrop-filter: blur(20px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.4);
-  color: #ffffff;
-  font-weight: 800;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
-              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
-              background 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              filter 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+/* ── MOTION GRAPHICS & GLASSMORPHISM FOR ALL BUTTONS ── */
+button, .btn, [role="button"], input[type="button"], input[type="submit"], .rev-ctrl-btn, .plz-sbtn, .sdm-close-btn, .btn-xs, .chest-card {
+  position: relative !important;
+  overflow: hidden !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(20px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 1px 0 rgba(255, 255, 255, 0.45) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              background 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-/* SSS Button Top Gloss Sheen */
-button:not(.dock-item):not(.menu-icon-btn)::before,
-.btn:not(.dock-item):not(.menu-icon-btn)::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0) 65%);
-  pointer-events: none;
-  border-radius: inherit;
-  z-index: 1;
+button::before, .btn::before, [role="button"]::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 65%) !important;
+  pointer-events: none !important;
+  border-radius: inherit !important;
+  z-index: 1 !important;
 }
 
 button:hover, .btn:hover, [role="button"]:hover {
-  transform: translateY(-2px) scale(1.015);
-  box-shadow: 0 14px 38px 0 rgba(0, 0, 0, 0.48), inset 0 1px 2px 0 rgba(255, 255, 255, 0.55);
-  border-color: rgba(255, 255, 255, 0.45);
-  filter: brightness(1.1);
+  transform: translateY(-3px) scale(1.025) !important;
+  box-shadow: 0 16px 42px 0 rgba(0, 0, 0, 0.55), inset 0 1px 2px 0 rgba(255, 255, 255, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  filter: brightness(1.18) !important;
 }
 
 button:active, .btn:active, [role="button"]:active {
-  transform: translateY(1px) scale(0.96);
-  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.4), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
-  filter: brightness(0.94);
+  transform: translateY(1px) scale(0.95) !important;
+  box-shadow: 0 4px 18px 0 rgba(0, 0, 0, 0.45), inset 0 1px 1px 0 rgba(255, 255, 255, 0.25) !important;
+  filter: brightness(0.92) !important;
 }
 
-/* Ensure badges and dock items never get clipped */
-.dock-item-wrap, .btn-friend-wrap, .btn-bp-wrap, .menu-dock-bar {
-  overflow: visible !important;
-}
-
-/* Translucent Glass & Neon Accent Palettes */
+/* Translucent Glass Colors */
 .btn-primary {
-  background: linear-gradient(135deg, rgba(58, 134, 255, 0.85) 0%, rgba(76, 201, 240, 0.85) 100%) !important;
-  border-color: rgba(120, 210, 255, 0.65) !important;
+  background: linear-gradient(135deg, rgba(58, 134, 255, 0.55) 0%, rgba(76, 201, 240, 0.45) 100%) !important;
+  border-color: rgba(120, 210, 255, 0.6) !important;
   box-shadow: 0 10px 32px -4px rgba(58, 134, 255, 0.55), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+.btn-reverse {
+  background: linear-gradient(135deg, rgba(114, 9, 183, 0.55) 0%, rgba(247, 37, 133, 0.45) 100%) !important;
+  border-color: rgba(247, 37, 133, 0.6) !important;
+  box-shadow: 0 10px 32px -4px rgba(247, 37, 133, 0.55), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 .btn-secondary {
   background: rgba(255, 255, 255, 0.12) !important;
-  border-color: rgba(255, 255, 255, 0.25) !important;
-  backdrop-filter: blur(14px) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
 }
 .btn-shop {
-  background: linear-gradient(135deg, rgba(255, 140, 0, 0.9) 0%, rgba(220, 50, 0, 0.9) 100%) !important;
+  background: linear-gradient(135deg, rgba(255, 159, 28, 0.55) 0%, rgba(255, 64, 0, 0.45) 100%) !important;
   border-color: rgba(255, 180, 60, 0.6) !important;
   box-shadow: 0 10px 32px -4px rgba(255, 100, 0, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 .btn-multi {
-  background: linear-gradient(135deg, rgba(114, 9, 183, 0.9) 0%, rgba(247, 37, 133, 0.9) 100%) !important;
-  border-color: rgba(247, 37, 133, 0.65) !important;
-  box-shadow: 0 10px 32px -4px rgba(247, 37, 133, 0.55), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5) !important;
+  background: linear-gradient(135deg, rgba(67, 97, 238, 0.55) 0%, rgba(114, 9, 183, 0.45) 100%) !important;
+  border-color: rgba(180, 100, 255, 0.6) !important;
+  box-shadow: 0 10px 32px -4px rgba(114, 9, 183, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
 /* ── RAINBOW RIPPLE TOUCH EFFECT ── */
@@ -1473,57 +1221,9 @@ button:active, .btn:active, [role="button"]:active {
 </style>
 <script>
 (function(){
-  // ── SSS HAPTIC AUDIO ENGINE ──
-  var _audioCtx = null;
-  function _getAudioCtx() {
-    if (!_audioCtx) {
-      var AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) _audioCtx = new AC();
-    }
-    if (_audioCtx && _audioCtx.state === 'suspended') {
-      _audioCtx.resume();
-    }
-    return _audioCtx;
-  }
-
-  function playSssSfx(type) {
-    try {
-      var ctx = _getAudioCtx();
-      if (!ctx) return;
-      var osc = ctx.createOscillator();
-      var gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      var t = ctx.currentTime;
-      if (type === 'hero') {
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(320, t);
-        osc.frequency.exponentialRampToValueAtTime(680, t + 0.12);
-        gain.gain.setValueAtTime(0.22, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
-        osc.start(t);
-        osc.stop(t + 0.14);
-      } else {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(540, t);
-        osc.frequency.exponentialRampToValueAtTime(880, t + 0.05);
-        gain.gain.setValueAtTime(0.12, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
-        osc.start(t);
-        osc.stop(t + 0.06);
-      }
-    } catch(err) {}
-  }
-
   function triggerRainbowRipple(e) {
-    var btn = e.target.closest('button, .btn, [role="button"], input[type="button"], input[type="submit"], .rev-ctrl-btn, .plz-sbtn, .btn-xs, .chest-card, .dock-item');
+    var btn = e.target.closest('button, .btn, [role="button"], input[type="button"], input[type="submit"], .rev-ctrl-btn, .plz-sbtn, .btn-xs, .chest-card');
     if(!btn) return;
-
-    if (btn.id === 'btn-start' || btn.id === 'launch-btn') {
-      playSssSfx('hero');
-    } else {
-      playSssSfx('tap');
-    }
 
     var rect = btn.getBoundingClientRect();
     var clientX = e.clientX;
@@ -1560,240 +1260,22 @@ button:active, .btn:active, [role="button"]:active {
   }
 
   document.addEventListener('pointerdown', triggerRainbowRipple, { passive: true });
-
-  // Quick sound & settings buttons hookup
-  function initQuickBar() {
-    var quickSet = document.getElementById('btn-settings-quick');
-    var realSet = document.getElementById('btn-settings');
-    if (quickSet) {
-      quickSet.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var setOv = document.getElementById('settings-ov');
-        if (setOv) setOv.classList.add('on');
-        else if (realSet) realSet.click();
-      });
-    }
-
-    var soundBtn = document.getElementById('btn-quick-sound');
-    if (soundBtn) {
-      var isMuted = false;
-      soundBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        isMuted = !isMuted;
-        soundBtn.textContent = isMuted ? '🔇' : '🔊';
-        soundBtn.style.opacity = isMuted ? '0.6' : '1';
-        var bgmEl = window.bgm;
-        if (bgmEl) bgmEl.muted = isMuted;
-      });
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initQuickBar);
-  } else {
-    initQuickBar();
-  }
 })();
 </script>
 
 </head>
 <body>
-
-<!-- ══ SPLASH SCREEN ANIMATION ══ -->
-<div id="splash-screen">
-  <canvas id="splash-canvas"></canvas>
-  <div id="splash-logo">
-    <span id="splash-j">J</span><span id="splash-u">U</span><span id="splash-n">N</span><span id="splash-k">K</span><span id="splash-s">S</span>
-  </div>
-</div>
-
-<style>
-/* ── SPLASH SCREEN ─────────────────────────────── */
-#splash-screen {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  transition: opacity 0.5s cubic-bezier(0.4,0,0.2,1);
-}
-#splash-screen.fade-out {
-  opacity: 0;
-  pointer-events: none;
-}
-#splash-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-#splash-logo {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 0;
-  font-family: 'Inter', 'Arial Black', sans-serif;
-  font-size: clamp(64px, 18vw, 120px);
-  font-weight: 900;
-  letter-spacing: 8px;
-  color: #000000;
-  line-height: 1;
-  text-transform: uppercase;
-  user-select: none;
-}
-#splash-logo span {
-  display: inline-block;
-  opacity: 0;
-  transform: translateY(40px) scale(0.7);
-  animation: splashLetterIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
-}
-#splash-j { animation-delay: 0.1s; }
-#splash-u { animation-delay: 0.18s; }
-#splash-n { animation-delay: 0.26s; }
-#splash-k { animation-delay: 0.34s; }
-#splash-s { animation-delay: 0.42s; }
-
-@keyframes splashLetterIn {
-  from { opacity:0; transform: translateY(40px) scale(0.7); }
-  to   { opacity:1; transform: translateY(0) scale(1); }
-}
-</style>
-
-<script>
-(function() {
-  const ARROW_COLORS = [
-    '#FF3B30','#FF9500','#FFCC00','#34C759','#007AFF',
-    '#5856D6','#AF52DE','#FF2D55','#00C7BE','#FF6B35',
-    '#00E5FF','#69FF47','#F72585','#7209B7','#4CC9F0'
-  ];
-  const ARROW_SHAPES = ['→','←','↑','↓','↗','↙','↖','↘','➜','➡','⬆','⬇','⬅'];
-
-  const splash = document.getElementById('splash-screen');
-  const canvas = document.getElementById('splash-canvas');
-  const ctx = canvas.getContext('2d');
-
-  let W, H, arrows = [], raf;
-  let startTime = performance.now();
-  let animDone = false;
-
-  function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  function createArrow(burst) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = burst ? 4 + Math.random() * 8 : 1.5 + Math.random() * 4;
-    const startX = burst ? W/2 + (Math.random()-0.5)*80 : Math.random()*W;
-    const startY = burst ? H/2 + (Math.random()-0.5)*80 : Math.random()*H;
-    return {
-      x: startX, y: startY,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      char: ARROW_SHAPES[Math.floor(Math.random()*ARROW_SHAPES.length)],
-      color: ARROW_COLORS[Math.floor(Math.random()*ARROW_COLORS.length)],
-      size: burst ? 18 + Math.random()*32 : 12 + Math.random()*20,
-      alpha: burst ? 0.9 + Math.random()*0.1 : 0.5 + Math.random()*0.4,
-      rot: (Math.random()-0.5)*0.3,
-      rotV: (Math.random()-0.5)*0.08,
-      life: 1.0,
-      decay: burst ? 0.012 + Math.random()*0.01 : 0.006 + Math.random()*0.006,
-      spin: (Math.random()-0.5)*0.06,
-      scale: 1,
-    };
-  }
-
-  // Spawn initial ambient arrows
-  for (let i = 0; i < 28; i++) {
-    const a = createArrow(false);
-    a.life = Math.random(); // random life start
-    arrows.push(a);
-  }
-
-  // Burst on logo appear (~500ms)
-  setTimeout(() => {
-    for (let i = 0; i < 50; i++) arrows.push(createArrow(true));
-  }, 500);
-
-  // Second burst
-  setTimeout(() => {
-    for (let i = 0; i < 30; i++) arrows.push(createArrow(true));
-  }, 900);
-
-  function draw() {
-    const now = performance.now();
-    const elapsed = now - startTime;
-
-    ctx.clearRect(0, 0, W, H);
-
-    // Update & draw arrows
-    for (let i = arrows.length-1; i >= 0; i--) {
-      const a = arrows[i];
-      a.x += a.vx;
-      a.y += a.vy;
-      a.rot += a.spin;
-      a.life -= a.decay;
-      a.vx *= 0.99;
-      a.vy *= 0.99;
-
-      if (a.life <= 0) {
-        // Respawn ambient arrows
-        if (arrows.length < 35 && !animDone) {
-          arrows[i] = createArrow(false);
-        } else {
-          arrows.splice(i, 1);
-        }
-        continue;
-      }
-
-      ctx.save();
-      ctx.translate(a.x, a.y);
-      ctx.rotate(a.rot);
-      ctx.globalAlpha = a.life * a.alpha;
-      ctx.font = `bold ${a.size}px Arial`;
-      ctx.fillStyle = a.color;
-      ctx.shadowColor = a.color;
-      ctx.shadowBlur = 8;
-      ctx.fillText(a.char, 0, 0);
-      ctx.restore();
-    }
-
-    if (!animDone) raf = requestAnimationFrame(draw);
-  }
-
-  draw();
-
-  // Fade out after 2.6s
-  setTimeout(() => {
-    animDone = true;
-    if (raf) cancelAnimationFrame(raf);
-    splash.classList.add('fade-out');
-    setTimeout(() => {
-      splash.style.display = 'none';
-      window.removeEventListener('resize', resize);
-    }, 520);
-  }, 2600);
-})();
-</script>
-
 <canvas id="c"></canvas>
   <!-- AUTH OVERLAY -->
 <div id="auth-ov">
     <h2>3D ESCAPE</h2>
-    <p class="auth-sub">계정으로 로그인하면 랭크·기록·진행상황이<br>클라우드에 안전하게 보관됩니다.</p>
+    <p class="auth-sub">Google 계정으로 로그인하면 랭크·기록·진행상황이<br>클라우드에 저장됩니다.</p>
     <button class="btn-ggl" id="btn-ggl">
       <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.96 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Google 계정으로 로그인
     </button>
-
-    <button class="btn-gst" id="btn-gst">게스트로 시작</button>
-    <div id="auth-loading">연동 중...</div>
+    <button class="btn-gst" id="btn-gst">게스트로 시작 (저장 없음)</button>
+<div id="auth-loading">로그인 중...</div>
 </div>
 <!-- ACCOUNT MODAL -->
 <div id="am-ov">
@@ -1801,7 +1283,7 @@ button:active, .btn:active, [role="button"]:active {
       <img id="am-avatar" src="" alt="avatar">
     <div class="am-name" id="am-name"></div>
     <div class="am-email" id="am-email"></div>
-    <div class="am-sync-box" id="am-sync-info">랭크·기록·진행상황이 클라우드에 저장됩니다.</div>
+    <div class="am-sync-box" id="am-sync-info">☁️ 랭크·기록·진행상황이 클라우드에 저장됩니다.</div>
       <button class="btn-lo" id="btn-lo">로그아웃</button>
       <button class="btn-cam" id="btn-cam">닫기</button>
     </div>
@@ -1862,99 +1344,53 @@ button:active, .btn:active, [role="button"]:active {
 
   <!-- MENU -->
   <div id="menu">
-    <!-- SSS TOP NAVIGATION BAR -->
-    <div id="menu-top-bar">
-      <div id="user-pill">
-        <img id="up-avatar" src="" alt="avatar">
-        <div class="up-col">
-          <span class="up-name" id="up-name">게스트</span>
-          <span class="up-badge" id="up-badge">저장 없음</span>
-        </div>
-      </div>
-
-      <div class="menu-top-actions">
-        <div id="coin-pill"><span id="coin-val">0</span></div>
-        <button class="menu-icon-btn" id="btn-quick-sound" title="소리 켜기/끄기" aria-label="사운드 토글">♪</button>
-        <button class="menu-icon-btn" id="btn-settings-quick" title="설정" aria-label="설정 열기">&#9881;</button>
-      </div>
-    </div>
-
-    <!-- SSS HERO BRANDING -->
     <div id="menu-top">
-      <div class="menu-kicker">SSS ARCADE PUZZLE</div>
       <h1>NAVIGATED</h1>
-      <div class="tag">NEON DIMENSION // SEASON 1</div>
-      <div class="menu-hero-badge">
-        <span class="mhb-dot"></span>
-        <span class="mhb-text">3D 퍼즐 탈출 아케이드 · 준비 완료</span>
+      <div class="tag">PUZZLE GAME</div>
+    </div>
+    <div id="user-pill">
+      <img id="up-avatar" src="" alt="">
+      <div class="up-col">
+        <span class="up-name" id="up-name">게스트</span>
+        <span class="up-badge" id="up-badge">☁️ 저장 없음</span>
       </div>
     </div>
-
-    <!-- SSS BOTTOM CONTROL DECK -->
     <div id="menu-bottom">
-      <!-- HERO PRIMARY CTA -->
-      <div class="menu-hero-actions">
-        <button class="btn btn-primary btn-hero sss-shimmer" id="btn-start">
-          <div class="btn-hero-content">
-            <span class="btn-hero-main">게임 시작</span>
-            <span class="btn-hero-sub">STAGE CHALLENGE</span>
-          </div>
-        </button>
-
-        <button class="btn btn-secondary" id="btn-cont" style="display:none">
-          이어하기
-        </button>
+      <button class="btn btn-primary" id="btn-start">▶ 게임 시작</button>
+      <button class="btn btn-secondary" id="btn-cont" style="display:none">↩ 이어하기</button>
+      <button class="btn" id="btn-plaza" style="display:none;background:linear-gradient(135deg,#155477,#237ca5);border:1px solid rgba(143,231,255,.35)">💬 소통 라운지</button>
+      <button class="btn btn-multi" id="btn-multi">⚡ 멀티플레이</button>
+      <button class="btn" id="btn-history">📊 전적 · 리플레이</button>
+      <button class="btn btn-shop" id="btn-shop">🛒 상점</button>
+      <button class="btn btn-xs" id="btn-modes" style="background:linear-gradient(135deg,#1a1a4e,#2d2d80);border:1px solid rgba(100,100,255,.35);font-size:14px;padding:13px">🎮 게임 모드 &amp; 컨텐츠</button>
+      <button class="btn btn-xs" id="btn-settings">⚙️ 설정</button>
+      <div class="btn-friend-wrap" style="position:relative">
+        <button class="btn btn-secondary" id="btn-friend">👥 친구</button>
+        <span id="friend-badge" style="position:absolute;top:-4px;right:-4px;background:#f72585;color:#fff;font-size:10px;font-weight:900;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center">0</span>
       </div>
-
-      <!-- SECONDARY ACTIONS -->
-      <div class="menu-sub-actions">
-        <button class="btn btn-multi" id="btn-multi">
-          <span class="btn-live-dot"></span>
-          멀티플레이
-        </button>
-        <button class="btn btn-plaza" id="btn-plaza" style="display:none">
-          소통 라운지
-        </button>
+      <div class="btn-bp-wrap" style="position:relative">
+        <button class="btn" id="btn-battlepass" style="background:linear-gradient(135deg,#7209b7,#f72585);box-shadow:0 0 24px rgba(114,9,183,.45)">🎖️ 배틀패스</button>
+        <span id="bp-badge" style="position:absolute;top:-4px;right:-4px;background:#f72585;color:#fff;font-size:10px;font-weight:900;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center">!</span>
       </div>
-
-      <!-- SSS FLOATING DOCK BAR -->
-      <div class="menu-dock-bar">
-        <button class="dock-item" id="btn-modes" title="게임 모드">
-          <span class="dock-ico">MODE</span>
-          <span class="dock-lbl">모드</span>
-        </button>
-
-        <button class="dock-item" id="btn-shop" title="상점">
-          <span class="dock-ico">SHOP</span>
-          <span class="dock-lbl">상점</span>
-        </button>
-
-        <div class="dock-item-wrap btn-bp-wrap">
-          <button class="dock-item" id="btn-battlepass" title="배틀패스">
-            <span class="dock-ico">PASS</span>
-            <span class="dock-lbl">패스</span>
-          </button>
-          <span id="bp-badge">!</span>
-        </div>
-
-        <button class="dock-item" id="btn-history" title="전적">
-          <span class="dock-ico">RANK</span>
-          <span class="dock-lbl">전적</span>
-        </button>
-
-        <div class="dock-item-wrap btn-friend-wrap">
-          <button class="dock-item" id="btn-friend" title="친구">
-            <span class="dock-ico">CREW</span>
-            <span class="dock-lbl">친구</span>
-          </button>
-          <span id="friend-badge">0</span>
-        </div>
-      </div>
-
-      <!-- Legacy hidden fallback for btn-settings if needed -->
-      <button id="btn-settings" style="display:none" aria-hidden="true"></button>
     </div>
   </div>
+
+  <!-- 승급 오버레이 -->
+  <div id="tier-promo-ov">
+    <div class="tp-backdrop"></div>
+    <div class="tp-stars" id="tp-stars"></div>
+    <div class="tp-card">
+      <span class="tp-label">TIER UP!</span>
+      <span class="tp-symbol" id="tp-symbol">✦</span>
+      <span class="tp-badge">승급</span>
+      <div class="tp-title" id="tp-title">골드</div>
+      <div class="tp-name" id="tp-name">다음 티어 달성!</div>
+      <div class="tp-tap">탭하여 닫기</div>
+    </div>
+  </div>
+
+  <!-- COIN -->
+  <div id="coin-pill">💰 <span id="coin-val">0</span></div>
 
   <!-- HUD -->
   <div id="hud">
@@ -1963,9 +1399,9 @@ button:active, .btn:active, [role="button"]:active {
     <div id="hud-top">
       <div id="lives-txt"></div>
       <div id="level-txt"></div>
-      <div id="coins-txt"><span id="hud-coin-val">0</span></div>
+      <div id="coins-txt">💰 <span id="hud-coin-val">0</span></div>
     </div>
-    <div id="blocked-flash">막혔습니다!</div>
+    <div id="blocked-flash">막혔습니다! 💥</div>
     <div id="danger-vignette"></div>
     <div id="fever-vignette"></div>
     <!-- COMBO & FEVER VERTICAL BAR HUD -->
@@ -1978,13 +1414,13 @@ button:active, .btn:active, [role="button"]:active {
     </div>
     <div id="hint-bar">탭: 선택 · 더블탭 또는 버튼: 발사</div>
     <div id="tap-restore">화면을 탭하면 UI 표시</div>
-    <div id="launch-wrap"><button id="launch-btn">탈출!</button></div>
+    <div id="launch-wrap"><button id="launch-btn">탈출! 🚀</button></div>
   </div>
 
   <!-- WIN -->
   <div class="overlay" id="win-ov">
     <div class="r-card">
-
+      <div class="r-emoji">🎉</div>
       <h2>레벨 클리어!</h2>
       <div class="r-stars" id="w-stars"></div>
       <div class="r-coins" id="w-coins"></div>
@@ -2001,7 +1437,7 @@ button:active, .btn:active, [role="button"]:active {
   <!-- OVER -->
   <div class="overlay" id="over-ov">
     <div class="r-card">
-
+      <div class="r-emoji">💀</div>
       <h2>게임 오버</h2>
       <p class="r-sub">생명을 모두 잃었습니다.<br>다시 도전해보세요!</p>
       <div class="r-row">
@@ -2015,15 +1451,15 @@ button:active, .btn:active, [role="button"]:active {
   <!-- SHOP -->
   <div id="shop">
     <div id="shop-hdr">
-      <h2>상점</h2>
+      <h2>🛒 상점</h2>
       <div style="display:flex;align-items:center;gap:12px">
-        <div id="shop-coins"><span id="shop-coin-val">0</span></div>
-        <button id="shop-x">X</button>
+        <div id="shop-coins">💰 <span id="shop-coin-val">0</span></div>
+        <button id="shop-x">✕</button>
       </div>
     </div>
     <div id="shop-tabs">
-      <button class="s-tab on" id="tab-skin" onclick="setShopTab('skin')">스킨</button>
-      <button class="s-tab"    id="tab-map"  onclick="setShopTab('map')">맵</button>
+      <button class="s-tab on" id="tab-skin" onclick="setShopTab('skin')">🏹 스킨</button>
+      <button class="s-tab"    id="tab-map"  onclick="setShopTab('map')">🗺️ 맵</button>
     </div>
     <div id="shop-body">
       <div class="item-grid" id="skin-grid"></div>
@@ -2077,11 +1513,11 @@ button:active, .btn:active, [role="button"]:active {
       <h2 style="margin-bottom:6px">경쟁 플레이</h2>
       <p class="sub" style="margin-bottom:18px">랭크전 모드를 선택하세요</p>
       <button class="rank-mode-choice escape" id="escape-rank-select-btn">
-        <b>탈출 랭크전 (기존)</b>
+        <b>🏹 탈출 랭크전 (기존)</b>
         <small>화살표를 모두 먼저 탈출시키면 승리 · AI 또는 사람과 경쟁 · 배치고사 5판 후 티어 배정</small>
       </button>
       <button class="rank-mode-choice blast" id="blast-rank-select-btn">
-        <b>폭발 랭크전 (신규)</b>
+        <b>💥 폭발 랭크전 (신규)</b>
         <small>제한 시간 안에 더 많은 화살표를 탈출시키면 승리 · 탈출한 화살표는 2~4초 후 재생성 · 티어가 높을수록 시간 단축</small>
       </button>
       <button class="btn btn-secondary btn-sm" id="rank-mode-select-back-btn" style="width:100%;margin-top:4px">뒤로</button>
@@ -2396,7 +1832,7 @@ button:active, .btn:active, [role="button"]:active {
   <!-- MULTI RESULT -->
   <div id="multi-result">
     <div class="mr-card">
-      <div class="mr-emoji" id="mr-emoji"></div>
+      <div class="mr-emoji" id="mr-emoji">🏆</div>
       <h2 id="mr-title">승리!</h2>
       <!-- Rank score animation (only shown for rank matches) -->
       <div id="mr-rank-score">
@@ -2701,11 +2137,11 @@ button:active, .btn:active, [role="button"]:active {
 </div>
 <div id="story-box">
   <div id="story-inner">
-    <div id="story-avatar"></div>
+    <div id="story-avatar">🏹</div>
     <div id="story-bubble">
       <div id="story-name">에로</div>
       <div id="story-text"></div>
-      <div id="story-tap">&#9660;</div>
+      <div id="story-tap">▼</div>
     </div>
     <button id="story-skip">건너뛰기</button>
   </div>
@@ -2713,7 +2149,7 @@ button:active, .btn:active, [role="button"]:active {
 <div id="story-choices"></div>
 <button id="story-main-btn"></button>
 <div id="story-ending-ov">
-  <div id="story-ending-emoji"></div>
+  <div id="story-ending-emoji">✨</div>
   <div id="story-ending-title">1챕터 완료!</div>
   <div id="story-ending-text"></div>
   <button id="story-ending-close">메뉴로 돌아가기</button>
@@ -2721,13 +2157,12 @@ button:active, .btn:active, [role="button"]:active {
 
 <!-- ══ BOSS ROUND HUD ══ -->
 <div id="boss-hud">
-  <div id="boss-title">BOSS ROUND</div>
+  <div id="boss-title">⚡ BOSS ROUND ⚡</div>
   <div id="boss-bar-wrap"><div id="boss-bar" style="width:100%"></div></div>
   <div id="boss-timer-txt">25초</div>
 </div>
-<div id="boss-shuffle-warn">배열 변경!</div>
+<div id="boss-shuffle-warn">⚡ 배열 변경!</div>
 <canvas id="boss-glitch-canvas"></canvas>
 
 </body>
 </html>
-
